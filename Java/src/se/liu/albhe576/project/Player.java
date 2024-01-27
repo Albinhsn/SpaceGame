@@ -2,7 +2,6 @@ package se.liu.albhe576.project;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class Player  extends Entity{
 
@@ -23,7 +22,7 @@ public class Player  extends Entity{
 	this.direction.x = 0;
 	this.direction.y = 0;
     }
-    @Override public void update(){
+    @Override public void update(long startTime){
 	this.move();
 	this.resetDirection();
     }
@@ -39,7 +38,7 @@ public class Player  extends Entity{
 	    this.canShoot = timer + gcd;
 	    Texture texture = null;
 	    try{
-		texture = Game.loadPNGFile("./resources/images/PNG/Sprites/Missiles/spaceMissiles_002.png");
+		texture = GameData.loadPNGFile("./resources/images/PNG/Sprites/Missiles/spaceMissiles_002.png");
 	    }catch(IOException e){
 		e.printStackTrace();
 		System.exit(1);

@@ -123,7 +123,7 @@ public class SwingPlatformLayer extends PlatformLayer
 
     private long lastDrawCall;
     @Override public void drawEntities(final ArrayList<Entity> entities) {
-        // ToDO do more testing to see what fps we actually can manage
+        // ToDo do more testing to see what fps we actually can manage
         if(this.lastDrawCall + 16 <= System.currentTimeMillis()){
             entities.sort(new ZComparator());
             this.gameComponent.setEntities(entities);

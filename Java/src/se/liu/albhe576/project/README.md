@@ -1,22 +1,23 @@
 # Galaga? 
 
 ## ToDo
-* design enemies/levels
-* Fileformat for entitys
-* Binary reader
-* Create enemies
-* Hittable
+* Figure out editor for paths
+* figure out data format for the game
+* Actual Level and Wave class or smth
+* Enemies need to shoot
+  * Just another gcd?
+* Start screen
+* End screen
+* Pause screen
 
 ## Cleanup/Refactor
-* float vec
 * Change position from -1.0f - 1.0f to smth else
+* float vec
+  * Essentially refactor out the float[] everywhere to something easier to access
 * remove renderEntity
+* Shooting starts from outside your own bounds
 
 
-* Levels, Waves, Boss?
-* Enemies
-* AI
-* Binary reader
 
 ### Notes
 
@@ -34,8 +35,4 @@
 
 ### Goals
 * Abstract platform layer for swing, openGL, maybe vulkan
-* Use binary file to store data, create an inspector tool for it
 * Some sort of tool to create paths for enemies
-
-### Binary file inspector
-* Store/Create a format for which we try to parse the given file 

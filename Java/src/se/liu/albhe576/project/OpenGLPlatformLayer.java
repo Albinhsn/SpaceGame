@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,27 +30,25 @@ public class OpenGLPlatformLayer extends PlatformLayer
     private boolean drawCall;
 
     private int bufferId;
-
-    private void init(){
-        final String title ="Space Invaders";
-
-        if(!glfwInit()){
-            throw new IllegalStateException("Unable to initialize GLFW");
-        }
-
-        glfwDefaultWindowHints();
-
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-        window = glfwCreateWindow(this.getWidth(), this.getHeight(), title, NULL, NULL);
-        if(window == NULL){
-            throw new RuntimeException("Failed to create the GLFW window");
-        }
+    private void initInputHandling(){
+        glfwSetMouseButtonCallback(window,(window2, button, action, mods) -> {
+            if(action == GLFW_PRESS || action == GLFW_RELEASE){
+                boolean mousePressed = action == GLFW_PRESS;
+		switch(button){
+                    case GLFW_MOUSE_BUTTON_LEFT:{
+			this.inputState.setMouse1(mousePressed);
+                        break;
+                    }
+                    default:{
+                        break;
+                    }
+                }
+            }
+        });
 
         glfwSetKeyCallback(window, (window2, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ) {
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+                glfwSetWindowShouldClose(window, true);
             }
             else if(action == GLFW_PRESS || action == GLFW_RELEASE){
                 boolean pressed = action == GLFW_PRESS;
@@ -80,6 +79,26 @@ public class OpenGLPlatformLayer extends PlatformLayer
                 }
             }
         });
+    }
+
+    private void init(){
+        final String title ="Space Invaders";
+
+        if(!glfwInit()){
+            throw new IllegalStateException("Unable to initialize GLFW");
+        }
+
+        glfwDefaultWindowHints();
+
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+        window = glfwCreateWindow(this.getWidth(), this.getHeight(), title, NULL, NULL);
+        if(window == NULL){
+            throw new RuntimeException("Failed to create the GLFW window");
+        }
+
+        this.initInputHandling();
 
         try(MemoryStack stack = stackPush()){
             IntBuffer pWidth = stack.mallocInt(1);
@@ -252,9 +271,10 @@ public class OpenGLPlatformLayer extends PlatformLayer
 
         Bounds bounds = entity.getBounds();
         float [] boundsBufferData = this.getBoundsBufferData(entity.x, entity.y, bounds);
-        // renderTexture(texture.getWidth(), texture.getHeight(), entity.getBounds().getByteBuffer(), boundsBufferData);
+        renderTexture(texture.getWidth(), texture.getHeight(), entity.getBounds().getByteBuffer(), boundsBufferData);
 
     }
+
 
     public void draw(){
         glUseProgram(this.program);
@@ -262,6 +282,16 @@ public class OpenGLPlatformLayer extends PlatformLayer
         for(int i = 0; i< this.entities.size(); i++){
             this.renderEntity(this.entities.get(i));
         }
+    }
+    private void handleMouseInput(){
+        DoubleBuffer posBufferX = BufferUtils.createDoubleBuffer(1);
+        DoubleBuffer posBufferY= BufferUtils.createDoubleBuffer(1);
+        glfwGetCursorPos(this.window, posBufferX, posBufferY);
+
+        float posX = (float) posBufferX.get(0);
+        float posY = (float) posBufferY.get(0);
+
+        this.inputState.setMousePosition(posX, posY);
     }
     private void loop(){
 
@@ -276,6 +306,7 @@ public class OpenGLPlatformLayer extends PlatformLayer
 
 
             glfwPollEvents();
+            this.handleMouseInput();
         }
 
     }

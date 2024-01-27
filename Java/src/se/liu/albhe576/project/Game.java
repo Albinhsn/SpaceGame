@@ -1,17 +1,10 @@
 package se.liu.albhe576.project;
 
-import org.lwjgl.BufferUtils;
-
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Game
 {
@@ -19,64 +12,17 @@ public class Game
 
     private final PlatformLayer platformLayer;
 
-    public static Texture loadPNGFile(String fileLocation) throws IOException{
-        File file = new File(fileLocation);
-        BufferedImage image = ImageIO.read(file);
-
-        Raster raster = image.getData();
-        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-
-        byte [] bytes = data.getData();
-        ByteBuffer buffer = null;
-
-        ColorModel model = image.getColorModel();
-        int pixelSize = model.getPixelSize();
-        switch(pixelSize){
-            case 8:{
-                // ToDo, figure out how to shift this another way
-                buffer = BufferUtils.createByteBuffer(bytes.length * 4);
-                for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
-                    byte a = bytes[i];
-                    byte val = a > (byte)20 ? (byte)(a * 4) : (byte)0;
-                    buffer.put(idx + 0, val);
-                    buffer.put(idx + 1, val);
-                    buffer.put(idx + 2, val);
-                    buffer.put(idx + 3, (byte)0xFF);
-                }
-                break;
-            }
-            case 32:{
-                buffer = BufferUtils.createByteBuffer(bytes.length);
-                for(int i = 0; i < bytes.length; i+=4){
-                    byte a = bytes[i];
-                    byte r = bytes[i + 1];
-                    byte g = bytes[i + 2];
-                    byte b = bytes[i + 3];
-                    buffer.put(i + 3, a);
-                    buffer.put(i + 0, b);
-                    buffer.put( i + 1, g);
-                    buffer.put(i + 2, r);
-                }
-                break;
-            }
-            default:{
-                System.out.println("Don't know how to load png with bpp of " + pixelSize);
-                System.exit(1);
-            }
-
-        }
-        buffer.flip();
-
-        return new Texture(image.getWidth(), image.getHeight(), image, buffer);
-
-    }
 
     private ArrayList<Entity> loadEntities() throws IOException {
-        Texture texture = this.loadPNGFile("./resources/images/PNG/Default/ship_A.png");
-        Bounds bounds = new Bounds(0.04f, 0.11f, -0.03f, -0.09f, new Color(255, 255, 255, 255), 8, texture.getWidth(), texture.getHeight());
-        Player entity = new Player(0.0f, 0.0f, 0.0f, 0.1f, 0.2f, texture, bounds);
+        Texture texture = GameData.loadPNGFile("./resources/images/PNG/Default/enemy_B.png");
+        Bounds bounds = new Bounds(0.03f, 0.04f, 0.0f, 0.0f, new Color(255, 255, 255, 255), 2, texture.getWidth(), texture.getHeight());
+        Player entity = new Player(0.0f, 0.0f, 0.0f, 0.03f, 0.06f, texture, bounds);
+
         ArrayList<Entity> entities = new ArrayList<>();
         entities.add(entity);
+        ArrayList<Entity> waveData = GameData.getLevel1();
+        entities.addAll(waveData);
+
         return entities;
     }
 
@@ -126,9 +72,15 @@ public class Game
         return out;
     }
 
-    private void updateEntities(){
+    private void updateEntities(long startTime){
         for(int i = 0; i < entities.size(); i++){
-            this.entities.get(i).update();
+            this.entities.get(i).update(startTime);
+        }
+        List<Entity> bullets =  this.entities.stream().filter(s -> s instanceof Bullet).toList();
+        List<Entity> rest = this.entities.stream().filter(s -> !(s instanceof Bullet)).toList();
+        for(Entity bulletEntity  : bullets){
+            Bullet bullet = (Bullet) bulletEntity;
+            bullet.checkCollision(rest);
         }
     }
 
@@ -145,16 +97,18 @@ public class Game
 
     public void runGame(){
         Thread platformThread = this.runPlatformLayer(this.platformLayer);
-
         this.lastGC = System.currentTimeMillis();
+        long startTime = this.lastGC;
 
+        long lastTick = this.lastGC;
 
         while(platformThread.isAlive()){
-            updateEntities();
+            updateEntities(startTime);
             handleInput();
+            this.entities.removeIf(s -> !s.isInScene());
             this.platformLayer.drawEntities(this.entities);
-
-            this.handleGarbage();
+            // ToDo this should only be neccessary if we get multiple levels/waves
+            // this.handleGarbage();
         }
     }
 
