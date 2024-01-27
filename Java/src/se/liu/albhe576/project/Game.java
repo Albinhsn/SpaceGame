@@ -12,11 +12,21 @@ public class Game
 
     private final PlatformLayer platformLayer;
 
+    public static float convertIntSpaceToFloatSpace(int value){
+        return value * 0.002f;
+    }
+    public static int convertFloatSpaceToIntSpace(float value){
+        return (int)(value * 500);
+    }
+
+    public static final int SCREEN_WIDTH = 620;
+    public static final int SCREEN_HEIGHT = 480;
+
 
     private ArrayList<Entity> loadEntities() throws IOException {
         Texture texture = GameData.loadPNGFile("./resources/images/PNG/Default/enemy_B.png");
-        Bounds bounds = new Bounds(0.03f, 0.04f, 0.0f, 0.0f, new Color(255, 255, 255, 255), 2, texture.getWidth(), texture.getHeight());
-        Player entity = new Player(0.0f, 0.0f, 0.0f, 0.03f, 0.06f, texture, bounds);
+        Bounds bounds = new Bounds(0.07f, 0.05f, 0, 0, new Color(255, 255, 255, 255), 2, texture.getWidth(), texture.getHeight());
+        Player entity = new Player(0, 0, 0.10f, 0.05f, texture, bounds);
 
         ArrayList<Entity> entities = new ArrayList<>();
         entities.add(entity);
@@ -28,7 +38,7 @@ public class Game
 
     public Game() throws IOException {
         this.entities = loadEntities();
-        this.platformLayer = new OpenGLPlatformLayer(620, 480);
+        this.platformLayer = new OpenGLPlatformLayer(620, 480, false);
     }
     private Thread runPlatformLayer(PlatformLayer platformLayer){
         Thread platformThread = new Thread(platformLayer);

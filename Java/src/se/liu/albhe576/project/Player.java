@@ -7,10 +7,9 @@ public class Player  extends Entity{
 
     private Point direction;
     private long canShoot;
-    public Player(final float x, final float y, final float z, final float width, final float height, final Texture texture,
-		  final Bounds bounds)
+    public Player(final int x, final int y, final float textureWidth, final float textureHeight, final Texture texture,final Bounds bounds)
     {
-	super(x, y, z, width, height, texture, bounds);
+	super(x, y, textureWidth, textureHeight, texture, bounds);
 	this.direction = new Point(0, 0);
 	this.lastUpdate = 0;
 	this.canShoot = 0;
@@ -44,8 +43,24 @@ public class Player  extends Entity{
 		System.exit(1);
 	    }
 	    // ToDo :)
-	    return new Bullet(this.x, this.y, this.z, 0.02f, 0.04f, texture, new Bounds(0.02f, 0.04f, 0.0f, 0.0f, Color.BLUE, 10, texture.getWidth(),
-											texture.getHeight()), this, -0.006f);
+	    return new Bullet(
+		    this.x,
+		    this.y - (int)(500* ((0.03f + this.getTextureHeight()) / 2.0f)),
+		   0.03f,
+		    0.03f,
+		    texture,
+		   new Bounds(
+			   0.04f,
+			   0.04f,
+			   0.0f,
+			   0.0f,
+			   Color.BLUE,
+			   1,
+			   texture.getWidth(),
+			   texture.getHeight()),
+		    this,
+		    -3
+	    );
 	}
 	return null;
     }
@@ -56,37 +71,37 @@ public class Player  extends Entity{
 	// ToDo figure out better way to handle this, since we can actually miss some input
 	if(lastUpdate + 10 <= System.currentTimeMillis()){
 	    lastUpdate = System.currentTimeMillis();
-	    final float moveSpeed = 0.004f;
+	    final int moveSpeed = 3;
 	    this.x += this.direction.x * moveSpeed;
 	    this.y += this.direction.y * moveSpeed;
-	    this.handleOutOfBounds();
+
+	    if(this.isOutOfBounds()){
+		this.x -= this.direction.x * moveSpeed;
+		this.y -= this.direction.y * moveSpeed;
+	    }
 	}
     }
 
-    private void handleOutOfBounds(){
+    private boolean isOutOfBounds(){
 	Bounds bounds = this.getBounds();
 	float width = bounds.getWidth();
 	float height = bounds.getHeight();
 
-	float yOffset = bounds.getTextureOffsetY();
+	float xOffset = this.x * 0.002f + bounds.getTextureOffsetX();
+	float yOffset = this.y * 0.002f + bounds.getTextureOffsetY();
 
-	float minX = -width + x;
-	float maxX = width + x;
+	float minX = -width + xOffset;
+	float maxX = width + xOffset;
 
-	float maxY = height - y + yOffset;
-	float minY = -height - y + yOffset;
+	float minY = -height + yOffset;
+	float maxY = height + yOffset;
 
-	if(minX < -1.0f){
-	    this.x += -1.0f - minX;
-	}else if(maxX > 1.0f){
-	    this.x -= maxX - 1.0f;
+	if(minX < -1.0f || maxX > 1.0f || minY < -1.0f || maxY > 1.0f){
+	    System.out.printf("x:(%f, %f), y:(%f, %f)\n", minX, maxX, minY, maxY);
+	    return true;
 	}
 
-	if(minY < -1.0f){
-	    this.y -= -1.0f - minY;
-	}else if(maxY > 1.0f){
-	    this.y += maxY - 1.0f;
-	}
+	return false;
     }
 
     public void moveLeft(){

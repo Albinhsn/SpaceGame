@@ -11,10 +11,10 @@ public class Enemy extends Entity
 
     private long lastUpdate;
 
-    public Enemy(final float x, final float y, final float z, final float textureWidth, final float textureHeight, final Texture texture,
+    public Enemy(final int x, final int y, final float textureWidth, final float textureHeight, final Texture texture,
 		 final Bounds bounds, float spawnTime, int type)
     {
-	super(x, y, z, textureWidth, textureHeight, texture, bounds);
+	super(x, y, textureWidth, textureHeight, texture, bounds);
 	this.spawnTime = spawnTime;
 	this.alive = false;
 	this.spawned = false;
@@ -39,7 +39,7 @@ public class Enemy extends Entity
 
     private void move(long tick){
 	if(lastUpdate + 10 <= tick){
-	    final float moveSpeed = 0.004f;
+	    final int moveSpeed = 3;
 	    this.y -= sinYDiff(this.x);
 	    this.x -= this.direction ? moveSpeed : -moveSpeed;
 	    lastUpdate = System.currentTimeMillis();

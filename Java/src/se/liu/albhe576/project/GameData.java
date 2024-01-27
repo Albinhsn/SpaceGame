@@ -123,9 +123,8 @@ public class GameData
 
 	float[] enemySpawnLocation = GET_WAVE1_ENEMY_DATA[enemyId];
 	Enemy enemy = new Enemy(
-		enemySpawnLocation[1],
-		enemySpawnLocation[2],
-		0,
+		(int)(Game.SCREEN_WIDTH * enemySpawnLocation[1]),
+		(int)(Game.SCREEN_HEIGHT * enemySpawnLocation[2]),
 		enemyData[4],
 		enemyData[5],
 		texture,

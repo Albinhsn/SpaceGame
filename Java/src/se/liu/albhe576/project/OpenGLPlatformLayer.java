@@ -5,6 +5,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -12,6 +13,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -26,10 +28,15 @@ public class OpenGLPlatformLayer extends PlatformLayer
 
     private int program;
     private int vertexArrayId;
+    private int lineProgram;
+    private int lineVertexArrayId;
 
+    private int lineBufferId;
     private boolean drawCall;
 
     private int bufferId;
+    private int lineIndexBufferId;
+
     private void initInputHandling(){
         glfwSetMouseButtonCallback(window,(window2, button, action, mods) -> {
             if(action == GLFW_PRESS || action == GLFW_RELEASE){
@@ -37,6 +44,10 @@ public class OpenGLPlatformLayer extends PlatformLayer
 		switch(button){
                     case GLFW_MOUSE_BUTTON_LEFT:{
 			this.inputState.setMouse1(mousePressed);
+                        break;
+                    }
+                    case GLFW_MOUSE_BUTTON_RIGHT:{
+                        this.inputState.setMouse2(mousePressed);
                         break;
                     }
                     default:{
@@ -162,8 +173,8 @@ public class OpenGLPlatformLayer extends PlatformLayer
         float width = entity.getTextureWidth();
         float height = entity.getTextureHeight();
 
-        float x = entity.x;
-        float y = entity.y;
+        float x = Game.convertIntSpaceToFloatSpace(entity.x);
+        float y = Game.convertIntSpaceToFloatSpace(entity.y);
 
         return new float[]{
             -width + x, -height - y, 0.0f, 0.0f, 1.0f,
@@ -172,19 +183,58 @@ public class OpenGLPlatformLayer extends PlatformLayer
             width + x, height - y, 0.0f,   1.0f, 0.0f
         };
     }
-    private float[] getBoundsBufferData(float x, float y, Bounds bounds){
+    private float[] getBoundsBufferData(int x, int y, Bounds bounds){
         float width = bounds.getWidth();
         float height = bounds.getHeight();
 
-        float yOffset = bounds.getTextureOffsetY();
+
+        float yOffset = Game.convertIntSpaceToFloatSpace(-y) + bounds.getTextureOffsetY();
+        float xOffset = Game.convertIntSpaceToFloatSpace(x) + bounds.getTextureOffsetX();
 
         return new float[]{
-                -width + x, -height + yOffset - y, 0.0f, 0.0f, 1.0f,
-                width + x, -height + yOffset - y, 0.0f,  1.0f, 1.0f,
-                -width + x, height + yOffset - y, 0.0f,  0.0f, 0.0f,
-                width +x, height + yOffset - y, 0.0f,   1.0f, 0.0f
+                -width + xOffset, -height + yOffset, 0.0f, 0.0f, 1.0f,
+                width + xOffset, -height + yOffset, 0.0f,  1.0f, 1.0f,
+                -width + xOffset, height + yOffset, 0.0f,  0.0f, 0.0f,
+                width + xOffset, height + yOffset, 0.0f,   1.0f, 0.0f
         };
 
+    }
+    private void initLineTextureProgram(){
+        int vShader = createAndCompileShader("./shaders/white_line.vs", GL_VERTEX_SHADER);
+        int fShader = createAndCompileShader("./shaders/white_line.ps", GL_FRAGMENT_SHADER);
+
+        this.lineProgram = glCreateProgram();
+        glAttachShader(this.lineProgram, vShader);
+        glAttachShader(this.lineProgram, fShader);
+
+        glBindAttribLocation(this.lineProgram, 0, "inputPosition");
+
+        glLinkProgram(this.lineProgram);
+
+        IntBuffer status = BufferUtils.createIntBuffer(1);
+        glGetProgramiv(this.lineProgram, GL_LINK_STATUS, status);
+        if(status.get(0) != 1){
+            String infoLog = glGetProgramInfoLog(this.lineProgram);
+            System.out.println(infoLog);
+            System.exit(1);
+        }
+
+        glUseProgram(this.lineProgram);
+
+        int []indicies = new int[]{0,1};
+        this.lineVertexArrayId = glGenVertexArrays();
+        glBindVertexArray(this.lineVertexArrayId);
+
+        this.lineBufferId = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, this.lineBufferId);
+
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeofFloatArray(3), 0);
+
+        this.lineIndexBufferId = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.lineIndexBufferId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies, GL_STATIC_DRAW);
     }
 
 
@@ -234,8 +284,12 @@ public class OpenGLPlatformLayer extends PlatformLayer
     public void run(){
         this.init();
         this.initQuadTextureProgram();
-
-        this.loop();
+        this.initLineTextureProgram();
+        if(this.editor){
+            this.editorLoop();
+        }else{
+            this.gameLoop();
+        }
 
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
@@ -243,7 +297,24 @@ public class OpenGLPlatformLayer extends PlatformLayer
         glfwTerminate();
     }
 
-    private void renderTexture(int width, int height, ByteBuffer byteBuffer, float[] bufferData){
+    public void renderMapEdge(){
+        glUseProgram(this.program);
+        glBindVertexArray(this.vertexArrayId);
+        glBindBuffer(GL_ARRAY_BUFFER, this.bufferId);
+        ByteBuffer mapBuffer = Bounds.getBoundsBuffer(128, 128, Color.GREEN, 1);
+        float width = 0.8f;
+        float height = 0.8f;
+        float [] mapBufferData = new float[]{
+                -width, -height, 0.0f, 0.0f, 1.0f,
+                width, -height, 0.0f,  1.0f, 1.0f,
+                -width, height, 0.0f,  0.0f, 0.0f,
+                width, height, 0.0f,   1.0f, 0.0f
+        };
+        this.renderQuadTexture(128, 128, mapBuffer, mapBufferData);
+
+    }
+
+    public void renderQuadTexture(int width, int height, ByteBuffer byteBuffer, float[] bufferData){
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferId);
         glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW);
@@ -267,18 +338,51 @@ public class OpenGLPlatformLayer extends PlatformLayer
         ByteBuffer byteBuffer = texture.getData();
 
         // Render entity texture
-        renderTexture(texture.getWidth(), texture.getHeight(), byteBuffer, bufferData);
+        renderQuadTexture(texture.getWidth(), texture.getHeight(), byteBuffer, bufferData);
 
         Bounds bounds = entity.getBounds();
         float [] boundsBufferData = this.getBoundsBufferData(entity.x, entity.y, bounds);
-        renderTexture(texture.getWidth(), texture.getHeight(), entity.getBounds().getByteBuffer(), boundsBufferData);
+        renderQuadTexture(texture.getWidth(), texture.getHeight(), entity.getBounds().getByteBuffer(), boundsBufferData);
 
     }
 
+    @Override public void drawLines(List<ScreenPoint> points){
+        this.drawCall = true;
+        this.screenPoints =points;
+    }
+    private List<ScreenPoint> screenPoints;
 
-    public void draw(){
+    public void drawLines(){
+        glUseProgram(this.lineProgram);
+        glBindVertexArray(this.lineVertexArrayId);
+
+        glBindBuffer(GL_ARRAY_BUFFER, this.lineBufferId);
+        for(int i = 0; i < this.screenPoints.size() - 1; i++){
+            ScreenPoint start = this.screenPoints.get(i);
+            ScreenPoint end = this.screenPoints.get(i+1);
+
+            float startX = Game.convertIntSpaceToFloatSpace(start.x);
+            float startY = Game.convertIntSpaceToFloatSpace(start.y);
+
+            float endX = Game.convertIntSpaceToFloatSpace(end.x);
+            float endY = Game.convertIntSpaceToFloatSpace(end.y);
+
+            float[]buffer = new float[]{
+                    startX, startY, 0.0f,
+                    endX, endY, 0.0f
+            };
+
+            glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+            glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
+        }
+
+
+    }
+
+    public void drawEntities(){
         glUseProgram(this.program);
         glBindVertexArray(this.vertexArrayId);
+        glBindBuffer(GL_ARRAY_BUFFER, this.bufferId);
         for(int i = 0; i< this.entities.size(); i++){
             this.renderEntity(this.entities.get(i));
         }
@@ -288,18 +392,39 @@ public class OpenGLPlatformLayer extends PlatformLayer
         DoubleBuffer posBufferY= BufferUtils.createDoubleBuffer(1);
         glfwGetCursorPos(this.window, posBufferX, posBufferY);
 
-        float posX = (float) posBufferX.get(0);
-        float posY = (float) posBufferY.get(0);
+        // This is in range from 0 - ScreenWidth/ScreenHeight
+        int posX = -Game.SCREEN_WIDTH + (int) posBufferX.get(0) * 2;
+        int posY = -1 * (-Game.SCREEN_HEIGHT + (int) posBufferY.get(0) * 2);
 
         this.inputState.setMousePosition(posX, posY);
     }
-    private void loop(){
+    private void editorLoop(){
+
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        this.renderMapEdge();
+        glfwSwapBuffers(window);
+        while(!glfwWindowShouldClose(this.window)){
+            if(this.drawCall){
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                this.drawLines();
+                this.renderMapEdge();
+                this.drawCall = false;
+                glfwSwapBuffers(window);
+            }
+
+
+            glfwPollEvents();
+            this.handleMouseInput();
+        }
+
+    }
+    private void gameLoop(){
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         while(!glfwWindowShouldClose(this.window)){
             if(this.drawCall){
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                this.draw();
+                this.drawEntities();
                 this.drawCall = false;
                 glfwSwapBuffers(window);
             }
@@ -311,8 +436,8 @@ public class OpenGLPlatformLayer extends PlatformLayer
 
     }
 
-    public OpenGLPlatformLayer(int width, int height){
-        super(width, height);
+    public OpenGLPlatformLayer(int width, int height, boolean editor){
+        super(width, height, editor);
     }
 
     @Override public void drawEntities(final ArrayList<Entity> entities) {

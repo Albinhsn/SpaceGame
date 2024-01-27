@@ -1,7 +1,14 @@
 # Galaga? 
 
 ## ToDo
-* Figure out editor for paths
+* Be able to decrease the density of points
+  * plus and minus texture at some portion of the screen
+  * Always store original amount
+    * recalculated when we increase/decrease
+* Be able to store the line
+
+
+
 * figure out data format for the game
 * Actual Level and Wave class or smth
 * Enemies need to shoot
@@ -9,15 +16,12 @@
 * Start screen
 * End screen
 * Pause screen
+* Debug mode
+  * fps?
 
 ## Cleanup/Refactor
-* Change position from -1.0f - 1.0f to smth else
 * float vec
   * Essentially refactor out the float[] everywhere to something easier to access
-* remove renderEntity
-* Shooting starts from outside your own bounds
-
-
 
 ### Notes
 

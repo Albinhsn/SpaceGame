@@ -14,6 +14,9 @@ public class Bounds
 
     private ByteBuffer byteBuffer;
 
+    private float textureOffsetX;
+    private float textureOffsetY;
+
     public ByteBuffer getByteBuffer(){
         return this.byteBuffer;
     }
@@ -26,8 +29,6 @@ public class Bounds
         return this.thickness;
     }
 
-    private float textureOffsetX;
-    private float textureOffsetY;
     public float getWidth(){
         return this.width;
     }

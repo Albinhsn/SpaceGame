@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SwingPlatformLayer extends PlatformLayer
 {
@@ -109,13 +110,15 @@ public class SwingPlatformLayer extends PlatformLayer
         actionMap.put("rleft", new ReleaseAction(inputState, Key.K_A));
         actionMap.put("right", new PressAction(inputState, Key.K_D));
         actionMap.put("rright", new ReleaseAction(inputState, Key.K_D));
+        actionMap.put("space", new PressAction(inputState, Key.K_SPACE));
+        actionMap.put("rspace", new ReleaseAction(inputState, Key.K_SPACE));
     }
 
     private JFrame frame;
     private final SwingGameComponent gameComponent;
 
-    protected SwingPlatformLayer(final int width, final int height) {
-        super(width, height);
+    protected SwingPlatformLayer(final int width, final int height, boolean editor) {
+        super(width, height, editor);
         this.frame = new JFrame();
         this.gameComponent = new SwingGameComponent(width, height);
         this.lastDrawCall = 0;
@@ -125,11 +128,15 @@ public class SwingPlatformLayer extends PlatformLayer
     @Override public void drawEntities(final ArrayList<Entity> entities) {
         // ToDo do more testing to see what fps we actually can manage
         if(this.lastDrawCall + 16 <= System.currentTimeMillis()){
-            entities.sort(new ZComparator());
             this.gameComponent.setEntities(entities);
             this.gameComponent.repaint();
             this.lastDrawCall = System.currentTimeMillis();
         }
+    }
+
+    @Override public void drawLines(final List<ScreenPoint> points) {
+        System.out.println("Maybe implement this?");
+        System.exit(1);
     }
 
     private final String[] YES_NO_OPTIONS = new String[]{"Yes!", "No!"};

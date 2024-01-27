@@ -8,15 +8,22 @@ public class Bullet extends Entity
 {
     private Entity shooter;
 
-    private float yDirection;
+    private int yDirection;
 
-    public Bullet(final float x, final float y, final float z, final float textureWidth, final float textureHeight, final Texture texture,
-		  final Bounds bounds, Entity shooter, float yDirection)
+    public Bullet(
+	    final int x,
+	    final int y,
+	    final float textureWidth,
+	    final float textureHeight,
+	    final Texture texture,
+	    final Bounds bounds,
+	    Entity shooter,
+	    int yDirection
+    )
     {
-	super(x, y, z, textureWidth, textureHeight, texture, bounds);
+	super(x, y, textureWidth, textureHeight, texture, bounds);
 	this.yDirection = yDirection;
 	this.shooter = shooter;
-	this.alive = true;
     }
     private long lastUpdate;
 
@@ -39,7 +46,7 @@ public class Bullet extends Entity
     }
 
     @Override public boolean isInScene() {
-	if(this.y < -1.1f || !this.alive){
+	if(this.y < -Game.SCREEN_HEIGHT || !this.alive){
 	    return false;
 	}
 	return true;

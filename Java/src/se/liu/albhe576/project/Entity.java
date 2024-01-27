@@ -5,9 +5,8 @@ import java.util.Objects;
 
 public abstract class Entity
 {
-    public float x;
-    public float y;
-    public float z;
+    public int x;
+    public int y;
     private Bounds bounds;
     private float textureWidth;
     private float textureHeight;
@@ -26,15 +25,6 @@ public abstract class Entity
 
     private Texture texture;
     private byte bufferId;
-    public float getX(){
-        return this.x;
-    }
-    public float getY(){
-        return this.y;
-    }
-    public float getZ(){
-        return this.y;
-    }
     public float getTextureWidth(){
         return this.textureWidth;
     }
@@ -49,8 +39,8 @@ public abstract class Entity
 
     public float[] getBoundPosition(){
         Bounds bounds = this.getBounds();
-        float boundX = this.x + bounds.getTextureOffsetX();
-        float boundY = this.y + bounds.getTextureOffsetY();
+        float boundX = Game.convertIntSpaceToFloatSpace(this.x) + bounds.getTextureOffsetX();
+        float boundY = Game.convertIntSpaceToFloatSpace(this.x) + bounds.getTextureOffsetY();
         float leftX = boundX;
         float rightX = boundX + bounds.getWidth();
         float topY = boundY;
@@ -88,10 +78,9 @@ public abstract class Entity
 
     public abstract boolean isInScene();
 
-    protected Entity(float x, float y, float z, float textureWidth, float textureHeight, Texture texture, Bounds bounds){
+    protected Entity(int x, int y, float textureWidth, float textureHeight, Texture texture, Bounds bounds){
         this.x = x;
         this.y = y;
-        this.z = z;
         this.textureWidth = textureWidth;
         this.textureHeight = textureHeight;
         this.texture = texture;

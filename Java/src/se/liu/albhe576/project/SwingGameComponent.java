@@ -25,41 +25,42 @@ public class SwingGameComponent extends JComponent {
 	return (int)(size * this.getHeight());
     }
 
-  private Point convertCoordinatesToScreenSpace(float x, float y, Point size){
-      int xScreen = (int)(((x+1.0f) * 0.5f) * this.getWidth());
-      xScreen -= size.x / 2;
-      int yScreen = (int)(((y+1.0f) * 0.5f) * this.getHeight());
-      yScreen -= size.y / 2;
-
-
-
-      return new Point(xScreen, yScreen);
+  private Point convertCoordinatesToScreenSpace(float entityX, float entityY, Point size){
+      int x = (int) (entityX - size.x / 2 + Game.SCREEN_WIDTH / 2);
+      int y = (int) (entityY - size.y / 2 + Game.SCREEN_HEIGHT / 2);
+      return new Point(x, y);
   }
 
   private void drawEntity(Graphics2D g2d, Entity entity){
+      // Swing treats the given coordinates as the top left corner
+      // While we treat it as the middle of the texture
       Point size = convertSizeToScreenSpace(entity.getTextureSize());
-      Point position = convertCoordinatesToScreenSpace(entity.getX(), entity.y, size);
-      // Change so the texture is drawn in the middle
+      Point position = convertCoordinatesToScreenSpace(entity.x, entity.y, size);
+
 
       Texture texture = entity.getTexture();
       ImageIcon icon = new ImageIcon();
       icon.setImage(texture.getImage());
-      g2d.drawImage(icon.getImage(), position.x,position.y, size.x, size.y, null);
+      g2d.drawImage(icon.getImage(), position.x, position.y, size.x, size.y, null);
 
 
   }
     private void drawBounds(Graphics2D g2d, Entity entity){
-      	Point size = convertSizeToScreenSpace(entity.getTextureSize());
-	Point position = convertCoordinatesToScreenSpace(entity.getX(), entity.y, size);
+      	Point textureSize = convertSizeToScreenSpace(entity.getTextureSize());
 	Bounds bounds = entity.getBounds();
+
 
 	int w = convertWidthToScreenSpace(bounds.getWidth());
 	int h = convertHeightToScreenSpace(bounds.getHeight());
 	int xOffset = convertWidthToScreenSpace(bounds.getTextureOffsetX());
 	int yOffset = convertHeightToScreenSpace(bounds.getTextureOffsetY());
 
+	Point position = convertCoordinatesToScreenSpace(entity.x, entity.y, new Point(w, h));
+	position.x += xOffset;
+	position.y += yOffset;
+
 	g2d.setColor(entity.getBounds().getColor());
-	g2d.drawRect(position.x - xOffset, position.y - yOffset,w, h);
+	g2d.drawRect(position.x, position.y,w, h);
     }
 
   @Override
