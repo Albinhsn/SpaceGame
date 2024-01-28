@@ -4,13 +4,12 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Game
 {
     private final ArrayList<Entity> entities;
 
-    private final PlatformLayer platformLayer;
+    private final GraphicsLayer platformLayer;
 
     public static float convertIntSpaceToFloatSpace(int value){
         return value * 0.002f;
@@ -24,9 +23,9 @@ public class Game
 
 
     private ArrayList<Entity> loadEntities() throws IOException {
-        Texture texture = GameData.loadPNGFile("./resources/images/PNG/Default/enemy_B.png");
+        Texture texture = GameData.loadPNGFile("./resources/fonts/font01.png");
         Bounds bounds = new Bounds(0.07f, 0.05f, 0, 0, new Color(255, 255, 255, 255), 2, texture.getWidth(), texture.getHeight());
-        Player entity = new Player(0, 0, 0.10f, 0.05f, texture, bounds);
+        Player entity = new Player(0, 0, 1.10f, 0.1f, texture, bounds);
 
         ArrayList<Entity> entities = new ArrayList<>();
         entities.add(entity);
@@ -38,9 +37,9 @@ public class Game
 
     public Game() throws IOException {
         this.entities = loadEntities();
-        this.platformLayer = new OpenGLPlatformLayer(620, 480, false);
+        this.platformLayer = new OpenGLGraphicsLayer(SCREEN_WIDTH, SCREEN_HEIGHT, false);
     }
-    private Thread runPlatformLayer(PlatformLayer platformLayer){
+    private Thread runPlatformLayer(GraphicsLayer platformLayer){
         Thread platformThread = new Thread(platformLayer);
         platformThread.start();
 

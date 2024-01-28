@@ -1,13 +1,12 @@
 package se.liu.albhe576.project;
 
 import java.awt.*;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Editor
 {
-    private final OpenGLPlatformLayer platformLayer;
+    private final OpenGLGraphicsLayer platformLayer;
 
     private Thread runPlatformLayer(){
 	Thread platformThread = new Thread(this.platformLayer);
@@ -46,7 +45,7 @@ public class Editor
     }
 
     public Editor(){
-	this.platformLayer = new OpenGLPlatformLayer(620, 480, true);
+	this.platformLayer = new OpenGLGraphicsLayer(620, 480, true);
 	this.points = new ArrayList<>();
 	this.lastInput = System.currentTimeMillis();
     }

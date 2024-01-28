@@ -12,6 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+
+import static java.lang.Byte.toUnsignedInt;
 
 public class GameData
 {
@@ -29,6 +32,18 @@ public class GameData
 	ColorModel model = image.getColorModel();
 	int pixelSize = model.getPixelSize();
 	switch(pixelSize){
+	    // Black or white
+	    case 4:{
+		buffer = BufferUtils.createByteBuffer(bytes.length * 4);
+		for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
+		    buffer.put(idx + 0, bytes[i]);
+		    buffer.put(idx + 1, bytes[i]);
+		    buffer.put(idx + 2, bytes[i]);
+		    buffer.put(idx + 3, (byte)0xFF);
+		}
+		break;
+	    }
+	    // Grayscale
 	    case 8:{
 		// ToDo, figure out how to shift this another way
 		buffer = BufferUtils.createByteBuffer(bytes.length * 4);
@@ -42,6 +57,7 @@ public class GameData
 		}
 		break;
 	    }
+	    // RGBA
 	    case 32:{
 		buffer = BufferUtils.createByteBuffer(bytes.length);
 		for(int i = 0; i < bytes.length; i+=4){
@@ -67,6 +83,13 @@ public class GameData
 	return new Texture(image.getWidth(), image.getHeight(), image, buffer);
 
     }
+
+    private static final String[]FONT_FILE_LOCATIONS = new String[]{
+	    "./resources/fonts/font01.png"
+    };
+    private static final String[]FONT_INFO_LOCATIONS = new String[]{
+	    "./resources/fonts/font01.txt"
+    };
     private static final String []TEXTURE_LOCATIONS= new String[]{
 	"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 	"./resources/images/PNG/Default/enemy_B.png",
@@ -112,9 +135,13 @@ public class GameData
 	    {20.0f, -0.2f, -1.2f}, // 10
 
     };
-    public static String getFileLocation(int index){
+    public static String getTextureFileLocation(int index){
 	return TEXTURE_LOCATIONS[index];
     }
+
+    public static String getFontFileLocation(int index){return FONT_FILE_LOCATIONS[index];}
+    public static String getFontInfoLocation(int index){return FONT_INFO_LOCATIONS[index];}
+
 
     private static Enemy createEnemy(int enemyId, Texture texture, int enemyTypeId){
 	float [] enemyData =GET_ENTITY_DATA[enemyTypeId];
@@ -139,10 +166,10 @@ public class GameData
     public static ArrayList<Entity> getLevel1() throws IOException {
 	// This can still be read from a binary file
 	ArrayList<Entity> entities = new ArrayList<>();
-	Texture enemyType0Texture = GameData.loadPNGFile(getFileLocation(2));
-	Texture enemyType1Texture = GameData.loadPNGFile(getFileLocation(3));
-	Texture enemyType2Texture = GameData.loadPNGFile(getFileLocation(4));
-	Texture bossTexture = GameData.loadPNGFile(getFileLocation(5));
+	Texture enemyType0Texture = GameData.loadPNGFile(getTextureFileLocation(2));
+	Texture enemyType1Texture = GameData.loadPNGFile(getTextureFileLocation(3));
+	Texture enemyType2Texture = GameData.loadPNGFile(getTextureFileLocation(4));
+	Texture bossTexture = GameData.loadPNGFile(getTextureFileLocation(5));
 	Texture[]textures = new Texture[]{
 		enemyType0Texture,
 		enemyType1Texture,

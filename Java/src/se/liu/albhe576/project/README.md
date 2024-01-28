@@ -22,6 +22,9 @@
 ## Cleanup/Refactor
 * float vec
   * Essentially refactor out the float[] everywhere to something easier to access
+* figure out better way to name OpenGLTexture
+* lookover platformlayer and it's purpose
+  * refactor openglplatformlayer
 
 ### Notes
 
