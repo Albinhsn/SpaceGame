@@ -262,7 +262,7 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
 
         fontTexture.vertexBufferId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, fontTexture.vertexBufferId);
-        glBufferData(GL_ARRAY_BUFFER, vertices, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
@@ -313,6 +313,8 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         lineTexture.indexBufferId = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineTexture.indexBufferId);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies, GL_STATIC_DRAW);
+
+        lineTexture.textureId = 0;
     }
 
 
@@ -394,10 +396,13 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
 
     }
 
-    public void renderQuadTexture(int width, int height, ByteBuffer byteBuffer, float[] bufferData, int bufferId, int vertices){
-        glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-        glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW);
+    public void renderQuadTexture(OpenGLTexture texture, int width, int height, ByteBuffer byteBuffer, float[] bufferData, int bufferId, int vertices){
 
+        glUseProgram(texture.program);
+        glBindVertexArray(texture.vertexArrayId);
+
+        glActiveTexture(texture.textureId);
+        glBindTexture(GL_TEXTURE_2D,  texture.textureId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, byteBuffer);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -408,6 +413,8 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
 
         glGenerateMipmap(GL_TEXTURE_2D);
         glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(0);
 
     }
 
@@ -513,43 +520,51 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
 
     }
 
-
-    private void updateText(final String text, final int fontSize, int x, int y){
-
+    private List<float[]> buildStringVertexBuffer(String text, int fontSize, int x, int y){
         List<float[]> vertexBufferList = new ArrayList<>();
 
-        float drawX = (((Game.SCREEN_WIDTH / 2) * -1 ) + x);
-        float drawY = (((Game.SCREEN_HEIGHT / 2)) - y);
+        float drawX = Game.convertIntSpaceToFloatSpace(x);
+        float drawY = Game.convertIntSpaceToFloatSpace(y);
+        float fontSizeF=  Game.convertIntSpaceToFloatSpace(fontSize);
 
         // Update the buffer
         int size = 0;
+        float spaceSize = Game.convertIntSpaceToFloatSpace(this.font.spaceSize);
         for(int textIdx = 0; textIdx < text.length(); textIdx++){
             int letterIdx =  ((int)text.charAt(textIdx)) - 32;
             if(letterIdx == 0){
-                drawX += this.font.spaceSize;
+                drawX += spaceSize;
                 continue;
             }
             Letter letter = this.font.getLetterByIndex(letterIdx);
 
+            float letterSizeF32 = Game.convertIntSpaceToFloatSpace(letter.size);
+
 
             float [] charVertexBuffer = new float[]{
-                drawX,                  drawY,                    0.0f,          letter.left,          1.0f,
-                drawX + letter.size,    drawY - fontSize,         0.0f,          letter.right,         0.0f,
-                drawX,                  drawY - fontSize,         0.0f,          letter.left,          0.0f,
-                drawX,                  drawY,                    0.0f,          letter.left,          1.0f,
-                drawX + letter.size,    drawY,                    0.0f,          letter.right,         1.0f,
-                drawX + letter.size,    drawY - fontSize,         0.0f,          letter.right,         0.0f
+                    drawX,                    drawY,                    0.0f,          letter.left,          0.0f,
+                    drawX + letterSizeF32,    drawY - fontSizeF,         0.0f,          letter.right,         1.0f,
+                    drawX,                    drawY - fontSizeF,         0.0f,          letter.left,          1.0f,
+                    drawX,                    drawY,                    0.0f,          letter.left,          0.0f,
+                    drawX + letterSizeF32,    drawY,                    0.0f,          letter.right,         0.0f,
+                    drawX + letterSizeF32,    drawY - fontSize,         0.0f,          letter.right,         1.0f
             };
-            System.out.println(drawX + " " + drawY);
-            System.out.println((drawX + letter.size) + " " + (drawY - fontSize));
-            System.out.println(letter.left + " " + letter.right);
 
             drawX += letter.size + 1.0f;
             vertexBufferList.add(charVertexBuffer);
             size += 30;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, this.fontTexture.vertexBufferId);
+        return vertexBufferList;
+
+    }
+
+
+    private void updateText(final String text, final int fontSize, int x, int y){
+
+        glBindVertexArray(this.fontTexture.vertexArrayId);
+
+        List<float[]> vertexBufferList = this.buildStringVertexBuffer(text, fontSize, x, y);
         ByteBuffer byteBuffer = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         for(int i = 0; i < vertexBufferList.size(); i++){
             float[] vbo = vertexBufferList.get(i);
@@ -586,22 +601,15 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
 
     }
     @Override public void drawText(final String text, final int fontSize, final int x, final int y, final Color color) {
-        // disable z buffer and enable alpha blending
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
+        this.updateText(text, fontSize, x, y);
+        glBindVertexArray(this.fontTexture.vertexArrayId);
 
         setFontShaderParams(color);
         this.setTexture(this.fontTexture.textureId, this.fontTexture.textureUnit);
 
-        glBindVertexArray(this.fontTexture.vertexArrayId);
         glDrawElements(GL_TRIANGLES, this.fontTexture.indexCount, GL_UNSIGNED_INT, 0);
 
-        // enable z buffer and disable alpha blending
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
-
-        Texture t = this.font.texture;
     }
 
 
