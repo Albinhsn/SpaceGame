@@ -24,8 +24,15 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class OpenGLGraphicsLayer extends GraphicsLayer
 {
+    private int textureProgram;
+    private final int MAX_TEXT_LENGTH = 32;
+    private int textProgram;
+    private int textTextureId;
+    private int lineProgram;
+    private int lineVertexArrayId;
+    private int lineVertexBufferId;
+    private int lineIndexBufferId;
     private static class OpenGLTexture{
-        public int program;
         public int vertexArrayId;
         public int vertexBufferId;
         public int vertexCount;
@@ -36,9 +43,6 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         public int textureUnit;
 
     }
-    private final OpenGLTexture rectTexture;
-    private final OpenGLTexture lineTexture;
-    private final OpenGLTexture fontTexture;
     private Font font;
     private List<ScreenPoint> screenPoints;
     private long window;
@@ -209,12 +213,12 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
 
     }
     private void initTextProgram(){
-        this.fontTexture.textureUnit = 0;
-        glActiveTexture(GL_TEXTURE0 + this.fontTexture.textureUnit);
-        this.fontTexture.textureId = glGenTextures();
         Texture texture = this.font.texture;
 
-        glBindTexture(GL_TEXTURE_2D, this.fontTexture.textureId);
+        this.textTextureId = glGenTextures();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, this.textTextureId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.getData());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -229,27 +233,24 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         int fShader = createAndCompileShader("./shaders/font.ps", GL_FRAGMENT_SHADER);
 
 
-        fontTexture.program = glCreateProgram();
-        glAttachShader(fontTexture.program, vShader);
-        glAttachShader(fontTexture.program, fShader);
+        this.textProgram = glCreateProgram();
+        glAttachShader(this.textProgram, vShader);
+        glAttachShader(this.textProgram, fShader);
 
-        glBindAttribLocation(fontTexture.program, 0, "inputPosition");
-        glBindAttribLocation(fontTexture.program, 1, "inputTexCoord");
-        glLinkProgram(fontTexture.program);
+        glBindAttribLocation(this.textProgram, 0, "inputPosition");
+        glBindAttribLocation(this.textProgram, 1, "inputTexCoord");
+        glLinkProgram(this.textProgram);
 
         IntBuffer status = BufferUtils.createIntBuffer(1);
-        glGetProgramiv(fontTexture.program, GL_LINK_STATUS, status);
+        glGetProgramiv(this.textProgram, GL_LINK_STATUS, status);
         if(status.get(0) != 1){
-            String infoLog = glGetProgramInfoLog(fontTexture.program);
+            String infoLog = glGetProgramInfoLog(this.textProgram);
             System.out.println(infoLog);
             System.exit(1);
         }
 
-        glUseProgram(fontTexture.program);
-
-        final int maxLength = 32 * 6;
-        this.fontTexture.vertexCount = maxLength;
-        this.fontTexture.indexCount = maxLength;
+        this.fontTexture.vertexCount = MAX_TEXT_LENGTH;
+        this.fontTexture.indexCount = MAX_TEXT_LENGTH;
 
         float [] vertices = new float[this.fontTexture.vertexCount];
         Arrays.fill(vertices, 0);
@@ -270,8 +271,8 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeofFloatArray(3), 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeofFloatArray(5), sizeofFloatArray(3));
 
-        fontTexture.indexBufferId = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fontTexture.indexBufferId);
+        int indexBufferId = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies, GL_STATIC_DRAW);
 
         this.updateText("A", 32, 10,10);
@@ -281,90 +282,83 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         int vShader = createAndCompileShader("./shaders/white.vs", GL_VERTEX_SHADER);
         int fShader = createAndCompileShader("./shaders/white.ps", GL_FRAGMENT_SHADER);
 
-        lineTexture.program = glCreateProgram();
-        glAttachShader(lineTexture.program, vShader);
-        glAttachShader(lineTexture.program, fShader);
+        this.lineProgram = glCreateProgram();
+        glAttachShader(this.lineProgram, vShader);
+        glAttachShader(this.lineProgram, fShader);
 
-        glBindAttribLocation(lineTexture.program, 0, "inputPosition");
+        glBindAttribLocation(this.lineProgram, 0, "inputPosition");
 
-        glLinkProgram(lineTexture.program);
+        glLinkProgram(this.lineProgram);
 
         IntBuffer status = BufferUtils.createIntBuffer(1);
-        glGetProgramiv(lineTexture.program, GL_LINK_STATUS, status);
+        glGetProgramiv(this.lineProgram, GL_LINK_STATUS, status);
         if(status.get(0) != 1){
-            String infoLog = glGetProgramInfoLog(lineTexture.program);
+            String infoLog = glGetProgramInfoLog(this.lineProgram);
             System.out.println(infoLog);
             System.exit(1);
         }
 
-        glUseProgram(lineTexture.program);
+        glUseProgram(this.lineProgram);
 
         int []indicies = new int[]{0,1};
-        lineTexture.vertexArrayId = glGenVertexArrays();
-        glBindVertexArray(lineTexture.vertexArrayId);
+        this.lineVertexArrayId = glGenVertexArrays();
+        glBindVertexArray(this.lineVertexArrayId);
 
-        lineTexture.vertexBufferId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, lineTexture.vertexBufferId);
+        this.lineVertexBufferId = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, this.lineVertexBufferId);
 
         glEnableVertexAttribArray(0);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeofFloatArray(3), 0);
 
-        lineTexture.indexBufferId = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineTexture.indexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies, GL_STATIC_DRAW);
+        this.lineIndexBufferId = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.lineIndexBufferId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies, GL_DYNAMIC_DRAW);
 
-        lineTexture.textureId = 0;
     }
 
 
-    private void initRectangleTextureProgram(OpenGLTexture texture){
+
+
+    private void initRectangleTextureProgram(){
         int vShader = createAndCompileShader("./shaders/texture.vs", GL_VERTEX_SHADER);
         int fShader = createAndCompileShader("./shaders/texture.ps", GL_FRAGMENT_SHADER);
 
-        texture.program = glCreateProgram();
-        glAttachShader(texture.program, vShader);
-        glAttachShader(texture.program, fShader);
+        this.textureProgram = glCreateProgram();
+        glAttachShader(this.textureProgram, vShader);
+        glAttachShader(this.textureProgram, fShader);
 
-        glBindAttribLocation(texture.program, 0, "inputPosition");
-        glBindAttribLocation(texture.program, 1, "inputTexCoord");
+        glBindAttribLocation(this.textureProgram, 0, "inputPosition");
+        glBindAttribLocation(this.textureProgram, 1, "inputTexCoord");
 
-        glLinkProgram(texture.program);
+        glLinkProgram(this.textureProgram);
 
         IntBuffer status = BufferUtils.createIntBuffer(1);
-        glGetProgramiv(texture.program, GL_LINK_STATUS, status);
+        glGetProgramiv(this.textureProgram, GL_LINK_STATUS, status);
         if(status.get(0) != 1){
-            String infoLog = glGetProgramInfoLog(texture.program);
+            String infoLog = glGetProgramInfoLog(this.textureProgram);
             System.out.println(infoLog);
             System.exit(1);
         }
-
-        glUseProgram(texture.program);
-
-        int []indicies = new int[]{0,1,2,1,3,2};
-
-        texture.vertexArrayId = glGenVertexArrays();
-        glBindVertexArray(texture.vertexArrayId);
-
-        texture.vertexBufferId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, texture.vertexBufferId);
-
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeofFloatArray(5), 0);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeofFloatArray(5), sizeofFloatArray(3));
 
-        texture.indexBufferId = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, texture.indexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies, GL_STATIC_DRAW);
+
+        int []indices = new int[]{0,1,2,1,3,2};
+
+        int indexBufferId = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 
     }
 
 
     public void run(){
         this.init();
-        this.initRectangleTextureProgram(rectTexture);
+        this.initRectangleTextureProgram();
         this.initLineTextureProgram();
         this.initTextProgram();
         if(this.editor){
@@ -380,29 +374,33 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
     }
 
     public void renderMapEdge(){
-        glUseProgram(rectTexture.program);
-        glBindVertexArray(rectTexture.vertexArrayId);
-        glBindBuffer(GL_ARRAY_BUFFER, rectTexture.vertexBufferId);
+        // This belongs in the editor
+        OpenGLTexture texture;
+        glUseProgram(this.textureProgram);
+        glBindVertexArray(texture.vertexArrayId);
+        glBindBuffer(GL_ARRAY_BUFFER, texture.vertexBufferId);
+
         ByteBuffer mapBuffer = Bounds.getBoundsBuffer(128, 128, Color.GREEN, 1);
-        float width = 0.8f;
-        float height = 0.8f;
-        float [] mapBufferData = new float[]{
+
+        final float width = 0.8f;
+        final float height = 0.8f;
+        float [] edgeBufferData = new float[]{
                 -width, -height, 0.0f, 0.0f, 1.0f,
                 width, -height, 0.0f,  1.0f, 1.0f,
                 -width, height, 0.0f,  0.0f, 0.0f,
                 width, height, 0.0f,   1.0f, 0.0f
         };
-        this.renderQuadTexture(128, 128, mapBuffer, mapBufferData, rectTexture.vertexBufferId, 6);
+        glBufferData(GL_ARRAY_BUFFER, edgeBufferData, GL_STATIC_DRAW);
+        this.renderRectangleTexture(texture.vertexArrayId, 128, 128, mapBuffer);
 
     }
 
-    public void renderQuadTexture(OpenGLTexture texture, int width, int height, ByteBuffer byteBuffer, float[] bufferData, int bufferId, int vertices){
+    public void renderRectangleTexture(int vertexArrayId, int width, int height, ByteBuffer byteBuffer){
+        final int vertices = 6;
 
-        glUseProgram(texture.program);
-        glBindVertexArray(texture.vertexArrayId);
-
-        glActiveTexture(texture.textureId);
-        glBindTexture(GL_TEXTURE_2D,  texture.textureId);
+        glBindVertexArray(vertexArrayId);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, byteBuffer);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -414,7 +412,7 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         glGenerateMipmap(GL_TEXTURE_2D);
         glDrawElements(GL_TRIANGLES, vertices, GL_UNSIGNED_INT, 0);
 
-        glBindVertexArray(0);
+        glBindVertexArray(6);
 
     }
 
@@ -422,11 +420,11 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         float [] bufferData = this.getBufferData(entity);
         Texture texture = entity.getTexture();
         // Render entity texture
-        renderQuadTexture(texture.getWidth(), texture.getHeight(), texture.getData(), bufferData, rectTexture.vertexBufferId, 6);
+        renderRectangleTexture(texture.getWidth(), texture.getHeight(), texture.getData(), bufferData, rectTexture.vertexBufferId, 6);
 
         Bounds bounds = entity.getBounds();
         float [] boundsBufferData = this.getBoundsBufferData(entity.x, entity.y, bounds);
-        renderQuadTexture(texture.getWidth(), texture.getHeight(), entity.getBounds().getByteBuffer(), boundsBufferData, rectTexture.vertexBufferId, 6);
+        renderRectangleTexture(texture.getWidth(), texture.getHeight(), entity.getBounds().getByteBuffer(), boundsBufferData, rectTexture.vertexBufferId, 6);
 
     }
 
@@ -435,11 +433,12 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         this.screenPoints =points;
     }
 
-    public void drawLines(){
-        glUseProgram(lineTexture.program);
-        glBindVertexArray(lineTexture.vertexArrayId);
+    private void drawLines(){
+        // ToDo optimize this to just be one draw call
+        glUseProgram(this.lineProgram);
+        glBindVertexArray(this.lineVertexArrayId);
 
-        glBindBuffer(GL_ARRAY_BUFFER, lineTexture.vertexBufferId);
+        glBindBuffer(GL_ARRAY_BUFFER, this.lineVertexBufferId);
         for(int i = 0; i < this.screenPoints.size() - 1; i++){
             ScreenPoint start = this.screenPoints.get(i);
             ScreenPoint end = this.screenPoints.get(i+1);
@@ -463,9 +462,7 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
     }
 
     public void drawEntities(){
-        glUseProgram(this.rectTexture.program);
-        glBindVertexArray(this.rectTexture.vertexArrayId);
-        glBindBuffer(GL_ARRAY_BUFFER, this.rectTexture.vertexBufferId);
+        glUseProgram(this.textureProgram);
         for(int i = 0; i< this.entities.size(); i++){
             this.renderEntity(this.entities.get(i));
         }
@@ -584,15 +581,15 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
     private void setFontShaderParams(Color color){
         // Set shader param
         float[] pixelColor = new float[]{  color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f};
-        glUseProgram(this.fontTexture.program);
-        int location = glGetUniformLocation(this.fontTexture.program, "pixelColor");
+        glUseProgram(this.textProgram);
+        int location = glGetUniformLocation(this.this.textProgram, "pixelColor");
         if(location == -1){
             System.out.println("Unable to find pixelColor location for fontShader");
             System.exit(1);
         }
         glUniform4fv(location, pixelColor);
 
-        location = glGetUniformLocation(this.fontTexture.program, "shaderTexture");
+        location = glGetUniformLocation(this.this.textProgram, "shaderTexture");
         if(location == -1){
             System.out.println("Unable to find shaderTexture location for fontShader");
             System.exit(1);
