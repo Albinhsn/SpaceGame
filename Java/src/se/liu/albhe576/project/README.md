@@ -1,45 +1,34 @@
 # Galaga? 
 
 ## ToDo
+* lookover and do a big rewrite of pretty much everything
+
+* read everything from the binary files instead
+  * aka create an actual glass for gamedata
 * Be able to decrease the density of points
   * plus and minus texture at some portion of the screen
   * Always store original amount
     * recalculated when we increase/decrease
 * Be able to store the line
+  * aka the path
+    * write the binary data out to a file
 
-
-
-* figure out data format for the game
 * Actual Level and Wave class or smth
+* Fix a nicer background
 * Enemies need to shoot
   * Just another gcd?
 * Start screen
 * End screen
 * Pause screen
 * Debug mode
-  * fps?
+  * debug text
+  * bounds visible
+  * next enemy timer
+  * enemies remaining
 
-## Cleanup/Refactor
-* float vec
-  * Essentially refactor out the float[] everywhere to something easier to access
-* figure out better way to name OpenGLTexture
-* lookover platformlayer and it's purpose
-  * refactor openglplatformlayer
-
-### Notes
-
-### Platform layer API
-* Background
-* Entity
-  * pointer to what that texture looks like in the format
-    * byte
-  * position
-    * x2 float
-  * bounds 
-      * x2 float
-
-
-
-### Goals
-* Abstract platform layer for swing, openGL, maybe vulkan
-* Some sort of tool to create paths for enemies
+  ### What do i want in the editor
+  * Be able to create waves/levels
+    * be able to add/remove enemies from a level
+    * be able to change the spawn location, path and enemy type for a given enemy
+  * Be able to create new paths for enemies to take
+    * be able to visualize the path the enemy would take

@@ -100,7 +100,7 @@ public class GameData
 	"./resources/images/PNG/Default/effect_yellow.png"
     };
 
-    private static final float[][] GET_ENTITY_DATA = new float[][]{
+    public static final float[][] GET_ENTITY_DATA = new float[][]{
 	    {0.03f, 0.04f, 0.0f, 0.0f, 0.03f, 0.06f}, // 0
 	    {0.03f, 0.05f, 0.0f, 0.0f, 0.03f, 0.06f}, // 1
 	    {0.04f, 0.04f, 0.0f, 0.0f, 0.03f, 0.06f}, // 2
@@ -108,7 +108,7 @@ public class GameData
 	    {0.05f, 0.1f, -0.03f, 0.0f, 0.05f, 0.1f}, // 4
     };
 
-    private static final float[][] GET_WAVE1_ENEMY_DATA = new float[][]{
+    public static final float[][] GET_WAVE1_ENEMY_DATA = new float[][]{
 	    {0.2f, -1.2f, -0.7f}, // 1
 	    {0.6f, 1.2f, -0.6f}, // 2
 	    {0.6f, -1.2f, -0.8f}, // 3
