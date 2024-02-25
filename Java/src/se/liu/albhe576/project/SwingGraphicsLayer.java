@@ -117,15 +117,11 @@ public class SwingGraphicsLayer extends GraphicsLayer
     private JFrame frame;
     private final SwingGameComponent gameComponent;
 
-    protected SwingGraphicsLayer(final int width, final int height, boolean editor) {
-        super(width, height, editor);
+    protected SwingGraphicsLayer(final int width, final int height) {
+        super(width, height);
         this.frame = new JFrame();
         this.gameComponent = new SwingGameComponent(width, height);
         this.lastDrawCall = 0;
-    }
-
-    @Override public void drawText(final String text, final int fontSize, final int x, final int y, final Color color) {
-
     }
 
     private long lastDrawCall;
@@ -136,11 +132,6 @@ public class SwingGraphicsLayer extends GraphicsLayer
             this.gameComponent.repaint();
             this.lastDrawCall = System.currentTimeMillis();
         }
-    }
-
-    @Override public void drawLines(final List<ScreenPoint> points) {
-        System.out.println("Maybe implement this?");
-        System.exit(1);
     }
 
     private final String[] YES_NO_OPTIONS = new String[]{"Yes!", "No!"};

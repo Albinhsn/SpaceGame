@@ -1,10 +1,9 @@
 # Galaga? 
 
 ## ToDo
-* lookover and do a big rewrite of pretty much everything
 
 * read everything from the binary files instead
-  * aka create an actual glass for gamedata
+  * aka create an actual class for gamedata
 * Be able to decrease the density of points
   * plus and minus texture at some portion of the screen
   * Always store original amount

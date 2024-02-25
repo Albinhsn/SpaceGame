@@ -15,12 +15,12 @@ public class Enemy extends Entity
 		 final Bounds bounds, float spawnTime, int type)
     {
 	super(x, y, textureWidth, textureHeight, texture, bounds);
-	this.spawnTime = spawnTime;
-	this.alive = false;
-	this.spawned = false;
-	this.direction = x > 0.0f;
-	this.type = type;
-	this.lastUpdate = 0;
+		this.spawnTime = spawnTime;
+		this.alive = false;
+		this.spawned = false;
+		this.direction = x > 0.0f;
+		this.type = type;
+		this.lastUpdate = 0;
     }
 
     @Override public void update(long startTime) {

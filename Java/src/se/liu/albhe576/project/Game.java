@@ -11,21 +11,14 @@ public class Game
 
     private final GraphicsLayer platformLayer;
 
-    public static float convertIntSpaceToFloatSpace(int value){
-        return value * 0.002f;
-    }
-    public static int convertFloatSpaceToIntSpace(float value){
-        return (int)(value * 500);
-    }
-
     public static final int SCREEN_WIDTH = 620;
     public static final int SCREEN_HEIGHT = 480;
 
 
     private ArrayList<Entity> loadEntities() throws IOException {
         Texture texture = GameData.loadPNGFile("./resources/fonts/font01.png");
-        Bounds bounds = new Bounds(0.07f, 0.05f, 0, 0, new Color(255, 255, 255, 255), 2, texture.getWidth(), texture.getHeight());
-        Player entity = new Player(0, 0, 1.10f, 0.1f, texture, bounds);
+        Bounds bounds = new Bounds(0f, 0f, 0, 0, new Color(255, 255, 255, 255), 2, texture.getWidth(), texture.getHeight());
+        Player entity = new Player(0, 0, 0f, 0f, texture, bounds);
 
         ArrayList<Entity> entities = new ArrayList<>();
         entities.add(entity);
@@ -37,8 +30,9 @@ public class Game
 
     public Game() throws IOException {
         this.entities = loadEntities();
-        this.platformLayer = new OpenGLGraphicsLayer(SCREEN_WIDTH, SCREEN_HEIGHT, false);
+        this.platformLayer = new OpenGLGraphicsLayer(SCREEN_WIDTH, SCREEN_HEIGHT);
     }
+
     private Thread runPlatformLayer(GraphicsLayer platformLayer){
         Thread platformThread = new Thread(platformLayer);
         platformThread.start();
@@ -50,36 +44,6 @@ public class Game
         return (Player) this.entities.get(0);
     }
 
-    private boolean handleInput(){
-        Player player = this.getPlayer();
-        InputState inputState = this.platformLayer.getInputState();
-        boolean out = false;
-        if(inputState.isAPressed()){
-            player.moveLeft();
-            out = true;
-        }
-        if(inputState.isDPressed()){
-            player.moveRight();
-            out = true;
-        }
-        if(inputState.isWPressed()){
-            player.moveUp();
-            out = true;
-        }
-        if(inputState.isSPressed()){
-            player.moveDown();
-            out = true;
-        }
-        if(inputState.isSpacePressed()){
-            Bullet bullet = player.shoot();
-            if(bullet != null){
-                this.entities.add(bullet);
-            }
-            out = true;
-        }
-
-        return out;
-    }
 
     private void updateEntities(long startTime){
         for(int i = 0; i < entities.size(); i++){
@@ -106,15 +70,11 @@ public class Game
 
     public void runGame(){
         Thread platformThread = this.runPlatformLayer(this.platformLayer);
-        this.lastGC = System.currentTimeMillis();
-        long startTime = this.lastGC;
-
-        long lastTick = this.lastGC;
 
         while(platformThread.isAlive()){
-            updateEntities(startTime);
-            handleInput();
-            this.entities.removeIf(s -> !s.isInScene());
+            //updateEntities(startTime);
+            //handleInput();
+            //this.entities.removeIf(s -> !s.isInScene());
             this.platformLayer.drawEntities(this.entities);
             // ToDo this should only be neccessary if we get multiple levels/waves
             // this.handleGarbage();

@@ -19,19 +19,13 @@ public abstract class GraphicsLayer implements Runnable
     public int getHeight(){
         return height;
     }
-    public final boolean editor;
 
-    protected GraphicsLayer(int width, int height, boolean editor){
+    protected GraphicsLayer(int width, int height){
         this.width = width;
         this.height = height;
-        this.editor = editor;
         this.inputState = new InputState();
     }
 
-    public abstract void drawText(String text, int fontSize, int x, int y, Color color);
-
     public abstract void drawEntities(List<Entity> entities);
 
-    // Used in current editor context
-    public abstract void drawLines(List<ScreenPoint> points);
 }

@@ -10,20 +10,20 @@ public class Player  extends Entity{
     public Player(final int x, final int y, final float textureWidth, final float textureHeight, final Texture texture,final Bounds bounds)
     {
 	super(x, y, textureWidth, textureHeight, texture, bounds);
-	this.direction = new Point(0, 0);
-	this.lastUpdate = 0;
-	this.canShoot = 0;
+		this.direction = new Point(0, 0);
+		this.lastUpdate = 0;
+		this.canShoot = 0;
     }
     public Point getDirection(){
 	return this.direction;
     }
     public void resetDirection(){
-	this.direction.x = 0;
-	this.direction.y = 0;
+		this.direction.x = 0;
+		this.direction.y = 0;
     }
     @Override public void update(long startTime){
-	this.move();
-	this.resetDirection();
+		this.move();
+		this.resetDirection();
     }
 
     @Override public boolean isInScene() {
@@ -31,38 +31,38 @@ public class Player  extends Entity{
     }
 
     public Bullet shoot(){
-	final long gcd = 300;
-	long timer = System.currentTimeMillis();
-	if(canShoot <= timer){
-	    this.canShoot = timer + gcd;
-	    Texture texture = null;
-	    try{
-		texture = GameData.loadPNGFile("./resources/images/PNG/Sprites/Missiles/spaceMissiles_002.png");
-	    }catch(IOException e){
-		e.printStackTrace();
-		System.exit(1);
-	    }
-	    // ToDo :)
-	    return new Bullet(
-		    this.x,
-		    this.y - (int)(500* ((0.03f + this.getTextureHeight()) / 2.0f)),
-		   0.03f,
-		    0.03f,
-		    texture,
-		   new Bounds(
-			   0.04f,
-			   0.04f,
-			   0.0f,
-			   0.0f,
-			   Color.BLUE,
-			   1,
-			   texture.getWidth(),
-			   texture.getHeight()),
-		    this,
-		    -3
-	    );
-	}
-	return null;
+		final long gcd = 300;
+		long timer = System.currentTimeMillis();
+		if(canShoot <= timer){
+			this.canShoot = timer + gcd;
+			Texture texture = null;
+			try{
+			texture = GameData.loadPNGFile("./resources/images/PNG/Sprites/Missiles/spaceMissiles_002.png");
+			}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+			}
+			// ToDo :)
+			return new Bullet(
+				this.x,
+				this.y - (int)(500* ((0.03f + this.getTextureHeight()) / 2.0f)),
+			   0.03f,
+				0.03f,
+				texture,
+			   new Bounds(
+				   0.04f,
+				   0.04f,
+				   0.0f,
+				   0.0f,
+				   Color.BLUE,
+				   1,
+				   texture.getWidth(),
+				   texture.getHeight()),
+				this,
+				-3
+			);
+		}
+		return null;
     }
 
     private  long lastUpdate;
