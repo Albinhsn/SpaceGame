@@ -8,21 +8,18 @@ import java.util.List;
 public class Game
 {
     private final ArrayList<Entity> entities;
-
-    private final GraphicsLayer platformLayer;
-
+    private final Renderer renderer;
     public static final int SCREEN_WIDTH = 620;
     public static final int SCREEN_HEIGHT = 480;
 
 
     private ArrayList<Entity> loadEntities() throws IOException {
-        Texture texture = GameData.loadPNGFile("./resources/fonts/font01.png");
-        Bounds bounds = new Bounds(0f, 0f, 0, 0, new Color(255, 255, 255, 255), 2, texture.getWidth(), texture.getHeight());
-        Player entity = new Player(0, 0, 0f, 0f, texture, bounds);
+        Bounds bounds = new Bounds(0f, 0f, 0, 0);
+        Player player = new Player(0, 0);
 
         ArrayList<Entity> entities = new ArrayList<>();
-        entities.add(entity);
         ArrayList<Entity> waveData = GameData.getLevel1();
+        entities.add(player);
         entities.addAll(waveData);
 
         return entities;
@@ -30,15 +27,9 @@ public class Game
 
     public Game() throws IOException {
         this.entities = loadEntities();
-        this.platformLayer = new OpenGLGraphicsLayer(SCREEN_WIDTH, SCREEN_HEIGHT);
+        this.renderer = new Renderer(SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 
-    private Thread runPlatformLayer(GraphicsLayer platformLayer){
-        Thread platformThread = new Thread(platformLayer);
-        platformThread.start();
-
-        return platformThread;
-    }
 
     private Player getPlayer(){
         return (Player) this.entities.get(0);
@@ -49,6 +40,9 @@ public class Game
         for(int i = 0; i < entities.size(); i++){
             this.entities.get(i).update(startTime);
         }
+    }
+
+    private void checkCollision(){
         List<Entity> bullets =  this.entities.stream().filter(s -> s instanceof Bullet).toList();
         List<Entity> rest = this.entities.stream().filter(s -> !(s instanceof Bullet)).toList();
         for(Entity bulletEntity  : bullets){
@@ -57,27 +51,12 @@ public class Game
         }
     }
 
-    private long lastGC;
-    private void handleGarbage(){
-        final long gcCooldown = 1000;
-
-        if(lastGC + gcCooldown <= System.currentTimeMillis()){
-            lastGC = System.currentTimeMillis();
-            this.entities.removeIf(s -> !s.isInScene());
-        }
-    }
-
 
     public void runGame(){
-        Thread platformThread = this.runPlatformLayer(this.platformLayer);
+        Thread platformThread = this.renderer.runRenderer();
 
         while(platformThread.isAlive()){
-            //updateEntities(startTime);
-            //handleInput();
-            //this.entities.removeIf(s -> !s.isInScene());
-            this.platformLayer.drawEntities(this.entities);
-            // ToDo this should only be neccessary if we get multiple levels/waves
-            // this.handleGarbage();
+            this.renderer.drawEntities(this.entities);
         }
     }
 

@@ -145,18 +145,12 @@ public class GameData
 
     private static Enemy createEnemy(int enemyId, Texture texture, int enemyTypeId){
 	float [] enemyData =GET_ENTITY_DATA[enemyTypeId];
-	Bounds enemy0Bounds = new Bounds(enemyData[0], enemyData[1], enemyData[2], enemyData[3], Color.GRAY, 2,
-					 texture.getWidth(), texture.getHeight());
+	Bounds enemy0Bounds = new Bounds(enemyData[0], enemyData[1], enemyData[2], enemyData[3]);
 
 	float[] enemySpawnLocation = GET_WAVE1_ENEMY_DATA[enemyId];
 	Enemy enemy = new Enemy(
 		(int)(Game.SCREEN_WIDTH * enemySpawnLocation[1]),
 		(int)(Game.SCREEN_HEIGHT * enemySpawnLocation[2]),
-		enemyData[4],
-		enemyData[5],
-		texture,
-		enemy0Bounds,
-		enemySpawnLocation[0],
 		enemyTypeId
 	);
 

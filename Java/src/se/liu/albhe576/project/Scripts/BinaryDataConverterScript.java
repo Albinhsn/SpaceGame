@@ -1,6 +1,7 @@
-package se.liu.albhe576.project;
+package se.liu.albhe576.project.Scripts;
 
 import org.lwjgl.BufferUtils;
+import se.liu.albhe576.project.GameData;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

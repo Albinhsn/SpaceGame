@@ -1,20 +1,16 @@
 package se.liu.albhe576.project;
 
+import java.util.List;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
-import java.awt.*;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -22,22 +18,56 @@ import static org.lwjgl.opengl.GL40.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class OpenGLGraphicsLayer extends GraphicsLayer
+public class Renderer implements Runnable
 {
     private List<Integer> textures;
     private List<Integer> programs;
     private long window;
     private List<Entity> entities;
-
     private boolean drawCall;
+
+    public InputState inputState;
+    private int screenHeight;
+    private int screenWidth;
+
+    public int getScreenWidth(){
+        return screenWidth;
+    }
+    public InputState getInputState(){
+        return this.inputState;
+    }
+    public int getScreenHeight(){
+        return screenHeight;
+    }
+
+    public Renderer(int screenWidth, int screenHeight){
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        this.inputState = new InputState();
+    }
+    public Thread runRenderer(){
+        Thread platformThread = new Thread(this);
+        platformThread.start();
+
+        return platformThread;
+    }
+
+    private void renderEntity(Entity entity){
+        glBindTexture(GL_TEXTURE_2D, entity.getTextureId());
+
+        // Figure out what to bind in terms of transformation matrix
+
+        // glDrawElements(GL_TRIANGLES, );
+    }
+
 
     private void initInputHandling(){
         glfwSetMouseButtonCallback(window,(window2, button, action, mods) -> {
             if(action == GLFW_PRESS || action == GLFW_RELEASE){
                 boolean mousePressed = action == GLFW_PRESS;
-		switch(button){
+                switch(button){
                     case GLFW_MOUSE_BUTTON_LEFT:{
-			this.inputState.setMouse1(mousePressed);
+                        this.inputState.setMouse1(mousePressed);
                         break;
                     }
                     case GLFW_MOUSE_BUTTON_RIGHT:{
@@ -98,7 +128,7 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        window = glfwCreateWindow(this.getWidth(), this.getHeight(), title, NULL, NULL);
+        window = glfwCreateWindow(this.getScreenWidth(), this.getScreenHeight(), title, NULL, NULL);
         if(window == NULL){
             throw new RuntimeException("Failed to create the GLFW window");
         }
@@ -131,7 +161,6 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
     private String getShaderSource(String fileLocation) throws IOException{
         return Files.readString(Paths.get(fileLocation));
     }
-
 
     private int createAndCompileShader(String fileLocation, int shaderType){
         String source = null;
@@ -183,12 +212,9 @@ public class OpenGLGraphicsLayer extends GraphicsLayer
         this.inputState.setMousePosition(posX, posY);
     }
 
-    @Override public void drawEntities(final List<Entity> entities) {
+    public void drawEntities(final List<Entity> entities) {
         this.drawCall = true;
         this.entities = entities;
     }
 
-    public OpenGLGraphicsLayer(int width, int height){
-        super(width, height);
-    }
 }

@@ -9,25 +9,9 @@ public class Bounds
 {
     private float width;
     private float height;
-    private Color color;
-    private int thickness;
-
-    private ByteBuffer byteBuffer;
 
     private float textureOffsetX;
     private float textureOffsetY;
-
-    public ByteBuffer getByteBuffer(){
-        return this.byteBuffer;
-    }
-
-    public Color getColor(){
-        return this.color;
-    }
-
-    public int getThickness(){
-        return this.thickness;
-    }
 
     public float getWidth(){
         return this.width;
@@ -42,14 +26,11 @@ public class Bounds
         return this.textureOffsetY;
     }
 
-    public Bounds(float width, float height, float xOffset, float yOffset, Color color, int thickness, int textureWidth, int textureHeight){
+    public Bounds(float width, float height, float xOffset, float yOffset){
         this.width = width;
         this.height = height;
         this.textureOffsetX = xOffset;
         this.textureOffsetY = yOffset;
-        this.color = color;
-        this.thickness = thickness;
-        this.byteBuffer = Bounds.getBoundsBuffer(textureWidth, textureHeight, color, thickness);
     }
 
     public static ByteBuffer getBoundsBuffer(int width, int height, Color color, int thickness){

@@ -7,22 +7,15 @@ import java.util.Objects;
 public class Bullet extends Entity
 {
     private Entity parent;
-
     private float yDirection;
 
     public Bullet(
 	    float x,
 	    float y,
-	    float textureWidth,
-	    float textureHeight,
-	    final Texture texture,
-	    final Bounds bounds,
-	    Entity shooter,
-	    float yDirection
+	    Entity shooter
     )
     {
-		super(x, y, textureWidth, textureHeight, texture, bounds);
-		this.yDirection = yDirection;
+		super(x, y);
 		this.parent = shooter;
     }
     private long lastUpdate;
@@ -34,21 +27,5 @@ public class Bullet extends Entity
 		}
     }
 
-    public void checkCollision(List<Entity> entities){
-		for(int i = 0; i < entities.size(); i++){
-			Entity entity = entities.get(i);
-			if(this.collided(entity) && !Objects.equals(this.parent, entity)){
-				entity.setAlive(false);
-				this.alive = false;
-				return;
-			}
-		}
-    }
-
-    @Override public boolean isInScene() {
-		if(this.y < -Game.SCREEN_HEIGHT || !this.alive){
-			return false;
-		}
-		return true;
-    }
+    public void checkCollision(List<Entity> entities){}
 }
