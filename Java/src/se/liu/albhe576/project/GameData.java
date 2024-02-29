@@ -18,6 +18,16 @@ import static java.lang.Byte.toUnsignedInt;
 
 public class GameData
 {
+	public static ArrayList<Entity> loadEntities() throws IOException {
+		Player player = new Player(0, 0, 50, 50, 0, 0);
+
+		ArrayList<Entity> entities = new ArrayList<>();
+		ArrayList<Entity> waveData = GameData.getLevel1();
+		entities.add(player);
+		//entities.addAll(waveData);
+
+		return entities;
+	}
 
     public static Texture loadPNGFile(String fileLocation) throws IOException {
 	File file = new File(fileLocation);
@@ -148,13 +158,14 @@ public class GameData
 	Bounds enemy0Bounds = new Bounds(enemyData[0], enemyData[1], enemyData[2], enemyData[3]);
 
 	float[] enemySpawnLocation = GET_WAVE1_ENEMY_DATA[enemyId];
-	Enemy enemy = new Enemy(
-		(int)(Game.SCREEN_WIDTH * enemySpawnLocation[1]),
-		(int)(Game.SCREEN_HEIGHT * enemySpawnLocation[2]),
-		enemyTypeId
-	);
+	//Enemy enemy = new Enemy(
+	//	(int)(Game.SCREEN_WIDTH * enemySpawnLocation[1]),
+	//	(int)(Game.SCREEN_HEIGHT * enemySpawnLocation[2]),
+	//	enemyTypeId
+	//);
 
-	return enemy;
+	//return enemy;
+		return null;
     }
 
     public static ArrayList<Entity> getLevel1() throws IOException {

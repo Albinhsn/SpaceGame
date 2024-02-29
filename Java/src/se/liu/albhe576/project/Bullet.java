@@ -12,10 +12,14 @@ public class Bullet extends Entity
     public Bullet(
 	    float x,
 	    float y,
+        float width,
+        float height,
+        int textureId,
+        int textureUnit,
 	    Entity shooter
     )
     {
-		super(x, y);
+		super(x, y, width, height, textureId, textureUnit);
 		this.parent = shooter;
     }
     private long lastUpdate;

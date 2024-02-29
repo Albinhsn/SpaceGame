@@ -5,12 +5,11 @@ import java.util.Objects;
 public class Enemy extends Entity
 {
     private int type;
-	private int textureId;
     private long lastUpdate;
 
-    public Enemy(final float x, final float y, int type)
+    public Enemy(final float x, final float y, final float width, final float height, int textureId, int textureUnit, int type)
     {
-		super(x, y);
+		super(x, y, width, height, textureId, textureUnit);
 			this.type = type;
 			this.lastUpdate = 0;
     }
