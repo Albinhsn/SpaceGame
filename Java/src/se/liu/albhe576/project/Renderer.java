@@ -75,7 +75,6 @@ public class Renderer
         int programId = this.resourceManager.programs.get(0);
         glUseProgram(programId);
 
-        glActiveTexture(GL_TEXTURE0 + texture.textureUnit);
         glBindTexture(GL_TEXTURE_2D, texture.textureId);
 
         glBindVertexArray(texture.vertexArrayId);

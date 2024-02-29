@@ -124,10 +124,9 @@ public class Game
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            //this.renderer.renderEntity(this.player);
-            //this.renderer.renderEntities(this.entities);
+            this.renderer.renderEntity(this.player);
+            this.renderer.renderEntities(this.entities);
             this.renderer.renderEntities(this.background.getMeteors());
-            System.out.println("---");
 
 
             glfwSwapBuffers(window);

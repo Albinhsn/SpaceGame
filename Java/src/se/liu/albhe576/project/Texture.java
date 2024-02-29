@@ -8,7 +8,6 @@ public class Texture
     private final int width;
     private final int height;
     private final ByteBuffer data;
-    public int textureUnit;
     public int textureId;
     public int vertexArrayId;
     public int getWidth(){

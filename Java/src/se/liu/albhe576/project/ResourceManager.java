@@ -43,7 +43,7 @@ public class ResourceManager
 {
 	public List<Texture> textures;
 	public List<Integer> programs;
-	class EntityData{
+	static class EntityData{
 		@Override
 		public String toString() {
 			return String.format("%d %f %f %f %f %f %f", textureId, boundsWidth, boundsHeight, boundsXOffset, boundsYOffset, width, height);
@@ -57,67 +57,52 @@ public class ResourceManager
 		float width;
 		float height ;
 	};
-	private void loadResources(){
-		String[] textureLocations = this.TEXTURE_LOCATIONS;
-		int numberOfTextures = textureLocations.length;
-		this.textures = new ArrayList<>();
 
+	private void generateTexture(Texture texture){
+
+		texture.textureId = glGenTextures();
+		glBindTexture(GL_TEXTURE_2D, texture.textureId);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.getData());
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+
+	private void generateVertexArrayAndVertexBuffer(Texture texture){
 		int []indices = new int[]{0,1,2,1,3,2};
+		float[] bufferData = new float[]{
+				-1.0f, -1.0f, 0.0f, 1.0f, //
+				1.0f, -1.0f, 1.0f, 1.0f, //
+				-1.0f, 1.0f, 0.0f, 0.0f, //
+				1.0f, 1.0f, 1.0f, 0.0f, //
+		};
 
-		for(int i = 0; i < numberOfTextures; i++){
-			String textureLocation = textureLocations[i];
+		texture.vertexArrayId = glGenVertexArrays();
+		glBindVertexArray(texture.vertexArrayId);
 
-			try{
-				Texture texture = this.loadPNGFile(textureLocation);
+		final int vertexBufferId = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+		glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW);
 
-				texture.textureId = glGenTextures();
-				glBindTexture(GL_TEXTURE_2D, texture.textureId);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.getData());
+		glVertexAttribPointer(0, 2, GL_FLOAT, false, 4 * 4, 0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * 4, 2 * 4);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		final int indexBufferId = glGenBuffers();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	}
 
-				glGenerateMipmap(GL_TEXTURE_2D);
-
-
-				float[] bufferData = new float[]{
-						-1.0f,-1.0f,0.0f,1.0f, //
-						1.0f,-1.0f,1.0f,1.0f, //
-						-1.0f,1.0f,0.0f,0.0f, //
-						1.0f,1.0f,1.0f,0.0f, //
-				};
-
-				texture.vertexArrayId = glGenVertexArrays();
-				glBindVertexArray(texture.vertexArrayId);
-
-				final int vertexBufferId = glGenBuffers();
-				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-				glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW);
-
-				glEnableVertexAttribArray(0);
-				glEnableVertexAttribArray(1);
-
-				glVertexAttribPointer(0, 2, GL_FLOAT,false, 4* 4, 0);
-				glVertexAttribPointer(1, 2, GL_FLOAT,false, 4 * 4, 2* 4);
-
-				final int indexBufferId = glGenBuffers();
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
-
-				this.textures.add(texture);
-			}catch(IOException e){
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
-		for(Texture texture : this.textures){
-			System.out.printf("done with %d %d\n", texture.textureId, texture.vertexArrayId);
-		}
-
+	private void compileTextureShader(){
 		this.programs = new ArrayList<>(1);
 		final int programId = glCreateProgram();
 		int vShader = createAndCompileShader("./shaders/texture.vs", GL_VERTEX_SHADER);
@@ -138,6 +123,25 @@ public class ResourceManager
 		}
 		this.programs.add(0, programId);
 	}
+	private void loadResources(){
+        this.textures = new ArrayList<>();
+
+        for (String textureLocation : this.TEXTURE_LOCATIONS) {
+			Texture texture;
+			try {
+				texture = this.loadPNGFile(textureLocation);
+			} catch (IOException e) {
+				e.printStackTrace();
+				continue;
+			}
+
+			this.generateTexture(texture);
+			this.generateVertexArrayAndVertexBuffer(texture);
+			this.textures.add(texture);
+		}
+
+		this.compileTextureShader();
+	}
 	public ResourceManager(){
 		this.loadResources();
 		this.loadEntityData();
@@ -153,11 +157,18 @@ public class ResourceManager
 		return ByteBuffer.wrap(data, idx, 4).getFloat();
 	}
 
+	private Wave loadWaveData(){
+		Wave wave = new Wave();
+
+		return wave;
+	}
+
 	private void loadEntityData(){
+		final String entityDataLocation = "./resources/entities/entityData.txt";
 		try{
-			List<String> data = Files.readAllLines(Path.of("./resources/entities/entityData.txt"));
+			List<String> data = Files.readAllLines(Path.of(entityDataLocation));
 			int count = Integer.parseInt(data.get(0));
-			System.out.println(data + " " + count);
+
 			this.entityData = new ArrayList<>(count);
 
 			byte[] binaryData = Files.readAllBytes(Path.of(data.get(1)));
@@ -183,6 +194,7 @@ public class ResourceManager
 
 		}catch(IOException e){
 			e.printStackTrace();
+			System.exit(1);
 
 		}
 	}
@@ -274,7 +286,7 @@ public class ResourceManager
 		return new Texture(image.getWidth(), image.getHeight(), buffer);
 
     }
-    public final String []TEXTURE_LOCATIONS= new String[]{
+    private final String []TEXTURE_LOCATIONS= new String[]{
 			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
 			"./resources/images/PNG/Default/meteor_detailedLarge.png",
