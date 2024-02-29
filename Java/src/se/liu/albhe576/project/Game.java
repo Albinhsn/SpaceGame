@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -70,6 +71,8 @@ public class Game
     private final ResourceManager resourceManager;
     private final Player player;
 
+    private final Background background;
+
     public Game() throws IOException {
         this.initGLFW();
         this.resourceManager = new ResourceManager();
@@ -78,13 +81,14 @@ public class Game
         this.entities = new ArrayList<>();
 
         this.renderer = new Renderer(this.window, SCREEN_WIDTH, SCREEN_HEIGHT, resourceManager);
+        this.background = new Background();
         this.inputState = new InputState(this.window);
     }
 
 
     private void updateEntities(long startTime){
-        for(int i = 0; i < entities.size(); i++){
-            this.entities.get(i).update(startTime);
+        for (Entity entity : entities) {
+            entity.update(startTime);
         }
     }
 
@@ -116,11 +120,14 @@ public class Game
 
             this.updatePlayer();
             this.updateEntities(startTime);
+            this.background.updateBackground(startTime);
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            this.renderer.renderEntity(this.player);
-            this.renderer.renderEntities(this.entities);
+            //this.renderer.renderEntity(this.player);
+            //this.renderer.renderEntities(this.entities);
+            this.renderer.renderEntities(this.background.getMeteors());
+            System.out.println("---");
 
 
             glfwSwapBuffers(window);

@@ -239,11 +239,12 @@ public class ResourceManager
 			buffer = BufferUtils.createByteBuffer(bytes.length * 4);
 			for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
 				byte a = bytes[i];
-				byte val = a > (byte)80 ? (byte)(a * 4) : (byte)0;
+				byte val = (byte)(a * 4);
+				val = val > 80 ? val : 0;
 				buffer.put(idx + 0, val);
 				buffer.put(idx + 1, val);
 				buffer.put(idx + 2, val);
-				buffer.put(idx + 3, (byte)0xFF);
+				buffer.put(idx + 3, val > 80 ? (byte)0xFF : (byte)0);
 			}
 			break;
 			}
@@ -276,6 +277,7 @@ public class ResourceManager
     public final String []TEXTURE_LOCATIONS= new String[]{
 			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
+			"./resources/images/PNG/Default/meteor_detailedLarge.png",
     };
 
 	private String getShaderSource(String fileLocation) throws IOException {

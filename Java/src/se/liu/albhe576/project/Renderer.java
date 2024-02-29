@@ -14,20 +14,16 @@ import static org.lwjgl.opengl.GL40.*;
 
 public class Renderer
 {
-    private long window;
-    private List<Entity> entities;
+    private final long window;
     private final int screenWidth;
     private final int screenHeight;
     private final ResourceManager resourceManager;
 
-
-    public Renderer(long window, int screenWidth, int screenHeight, ResourceManager resourceManager) throws IOException {
+    public Renderer(long window, int screenWidth, int screenHeight, ResourceManager resourceManager) {
         this.window = window;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.resourceManager = resourceManager;
-
-
     }
 
     private float[] matMul(float [] m0, float[]m1){
