@@ -58,9 +58,6 @@ public class BinaryDataConverterScript
         byteBuffer.get(bytes);
         BinaryDataConverterScript.writeBytesToFile("./resources/binaryData/entity" + new Timestamp(System.currentTimeMillis()) + ".bin", bytes);
 
-
-
-
     }
 
     private static void writeWaveData(){

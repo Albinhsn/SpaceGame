@@ -97,7 +97,7 @@ public class Game
     }
     public void updatePlayer(){
         float yAcc = 0.0f, xAcc = 0.0f;
-        final float moveSpeed = 1.0f;
+        final float moveSpeed = 5.0f;
         if(this.inputState.isWPressed()){
             yAcc += moveSpeed;
         }
@@ -112,18 +112,27 @@ public class Game
         }
         this.player.x += xAcc;
         this.player.y += yAcc;
-
+        if(this.inputState.isSpacePressed()){
+            Bullet bullet = this.player.shoot();
+            if(bullet != null){
+                this.entities.add(bullet);
+            }
+        }
     }
 
     public void runGame(){
 
+        final long startTime = System.currentTimeMillis();
+
         while(!glfwWindowShouldClose(window)){
             glfwPollEvents();
             this.updatePlayer();
+            this.updateEntities(startTime);
 
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             this.renderer.renderEntity(this.player);
+            this.renderer.renderEntities(this.entities);
 
             glfwSwapBuffers(window);
         }

@@ -1,6 +1,18 @@
 # Galaga? 
 
 ## ToDo
-* Figure out better way to store/read the data i need
-* Actually read in player data from file 
-* Load in more entities
+### Data
+* Rewrite binaryDataConvertScript thingy
+* Load in rest of entities
+
+### Game things
+* Be able to shoot again
+* Wall collision
+* Projectile collision
+* Wave logic
+
+### Random
+* Background thingy
+  * At random intervalls at random locations spawn like a dot that flows through the background
+
+### Then editor?

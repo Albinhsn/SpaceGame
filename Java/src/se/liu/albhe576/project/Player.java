@@ -12,21 +12,20 @@ public class Player  extends Entity{
 			this.canShoot = 0;
     }
     @Override public void update(long startTime){
-		this.move();
     }
 
     public Bullet shoot(){
 		final long gcd = 300;
 		long timer = System.currentTimeMillis();
-		if(canShoot <= timer){
-			this.canShoot = timer + gcd;
+		if(canShoot > timer){
+			return null;
 		}
-		return null;
+		this.canShoot = timer + gcd;
+		return Bullet.createNewPlayerBullet(this);
     }
 
     private  long lastUpdate;
 
-    public void move(){}
 
     private boolean isOutOfBounds(){
 		return false;

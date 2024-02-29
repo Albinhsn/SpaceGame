@@ -130,22 +130,26 @@ public class Renderer
                 0,0,1
         };
 
+
+        float transformX = ((x + this.screenWidth) / (float)this.screenWidth) - 1.0f;
+        float transformY = ((y + this.screenHeight) / (float)this.screenHeight) - 1.0f;
         float [] translationM = new float[]{
                 1,0,0,
                 0,1,0,
-                x,y,1
+                transformX, transformY, 1
         };
+
+        float scaleX = ((width + this.screenWidth) / (float)this.screenWidth) - 1.0f;
+        float scaleY = ((height + this.screenHeight) / (float)this.screenHeight) - 1.0f;
+
         float [] scaleM = new float[]{
-                width / this.screenWidth, 0, 0,
-                0, height /screenHeight, 0,
-                0,  0,1
+             scaleX, 0, 0,
+             0, scaleY, 0,
+             0,  0,1
         };
 
-        float [] m0 = this.matMul(scaleM, rotationM);
-
-        return this.matMul(m0, translationM);
-
-
+        float [] m0 = this.matMul(translationM, rotationM);
+        return this.matMul(m0, scaleM);
     }
 
 

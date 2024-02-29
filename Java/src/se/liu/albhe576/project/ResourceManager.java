@@ -55,7 +55,6 @@ public class ResourceManager
 			byte[] binaryData = Files.readAllBytes(Path.of(data.get(1)));
 			int idx = 0;
 
-			System.out.println(binaryData.length + " " + binaryData.length / count + " " + (6 * 4 + 4));
 			assert(binaryData.length / count == 6 * 4 + 4);
 
 			for(int i = 0; i < count; i++){
@@ -78,9 +77,6 @@ public class ResourceManager
 			e.printStackTrace();
 
 		}
-		for(EntityData data : this.entityData){
-			System.out.println(data);
-		}
 	}
 
 	public Player getPlayer(){
@@ -93,15 +89,9 @@ public class ResourceManager
 
 		return null;
 	}
-	// Load in every type of entity
-	// Get a "get player"
-	// Get a loadWaveFunction
 	public ArrayList<Entity> loadEntities() throws IOException {
-		Player player = new Player(0, 0, 30, 30, 0, 0);
-
 		ArrayList<Entity> entities = new ArrayList<>();
 		ArrayList<Entity> waveData = getLevel1();
-		entities.add(player);
 		//entities.addAll(waveData);
 
 		return entities;
