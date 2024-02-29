@@ -47,6 +47,7 @@ public class Game
 
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
+            assert vidmode != null;
             glfwSetWindowPos(
                     window,
                     (vidmode.width() - pWidth.get(0)) / 2,
@@ -74,9 +75,9 @@ public class Game
         this.resourceManager = new ResourceManager();
 
         this.player   = this.resourceManager.getPlayer();
-        this.entities = this.resourceManager.loadEntities();
+        this.entities = new ArrayList<>();
 
-        this.renderer = new Renderer(this.window, SCREEN_WIDTH, SCREEN_WIDTH);
+        this.renderer = new Renderer(this.window, SCREEN_WIDTH, SCREEN_HEIGHT, resourceManager);
         this.inputState = new InputState(this.window);
     }
 
@@ -96,26 +97,12 @@ public class Game
         }
     }
     public void updatePlayer(){
-        float yAcc = 0.0f, xAcc = 0.0f;
-        final float moveSpeed = 5.0f;
-        if(this.inputState.isWPressed()){
-            yAcc += moveSpeed;
-        }
-        if(this.inputState.isAPressed()){
-            xAcc -= moveSpeed;
-        }
-        if(this.inputState.isSPressed()){
-            yAcc -= moveSpeed;
-        }
-        if(this.inputState.isDPressed()){
-            xAcc += moveSpeed;
-        }
-        this.player.x += xAcc;
-        this.player.y += yAcc;
+        player.updatePlayerAcceleration(this.inputState);
+
         if(this.inputState.isSpacePressed()){
-            Bullet bullet = this.player.shoot();
-            if(bullet != null){
-                this.entities.add(bullet);
+            boolean shot =  this.player.shoot();
+            if(shot){
+                this.entities.add(resourceManager.createNewBullet(this.player));
             }
         }
     }
@@ -126,6 +113,7 @@ public class Game
 
         while(!glfwWindowShouldClose(window)){
             glfwPollEvents();
+
             this.updatePlayer();
             this.updateEntities(startTime);
 
@@ -133,6 +121,7 @@ public class Game
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             this.renderer.renderEntity(this.player);
             this.renderer.renderEntities(this.entities);
+
 
             glfwSwapBuffers(window);
         }

@@ -12,14 +12,10 @@ public abstract class Entity
 
     private float rotation;
 
-    private final int textureId;
-    private final int textureUnit;
+    private final int textureIdx;
 
-    public int getTextureId(){
-        return this.textureId;
-    }
-    public int getTextureUnit(){
-        return this.textureUnit;
+    public int getTextureIdx(){
+        return this.textureIdx;
     }
     public float getRotation(){
         return this.rotation;
@@ -31,13 +27,12 @@ public abstract class Entity
 
     public abstract void update(long startTime);
 
-    protected Entity(float x, float y, float width, float height, int textureId, int textureUnit){
+    protected Entity(float x, float y, float width, float height, int textureIdx){
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.textureId = textureId;
-        this.textureUnit = textureUnit;
+        this.textureIdx = textureIdx;
         this.xAcceleration = 0.0f;
         this.yAcceleration = 0.0f;
     }

@@ -14,13 +14,13 @@ public class Bullet extends Entity
 	    float y,
         float width,
         float height,
-        int textureId,
-        int textureUnit,
+        int textureIdx,
 	    Entity shooter,
         float yAcc
     )
     {
-		super(x, y, width, height, textureId, textureUnit);
+		super(x, y, width, height, textureIdx);
+        System.out.printf("Creating bullet width idx: %d\n", textureIdx);
 		this.parent = shooter;
         this.lastUpdate = System.currentTimeMillis();
         this.yAcc = yAcc;
@@ -32,20 +32,6 @@ public class Bullet extends Entity
 			lastUpdate = System.currentTimeMillis();
 			this.y += this.yAcc;
 		}
-    }
-
-    public static Bullet createNewPlayerBullet(Player player){
-        final float yOffset = player.height / 2.0f;
-        return new Bullet(
-                player.x,
-                player.y + yOffset + 10.0f,
-                10.0f,
-                10.0f,
-                0,
-                0,
-                player,
-                3.0f
-        );
     }
 
     public void checkCollision(List<Entity> entities){}

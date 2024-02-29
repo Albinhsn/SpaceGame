@@ -7,9 +7,9 @@ public class Enemy extends Entity
     private int type;
     private long lastUpdate;
 
-    public Enemy(final float x, final float y, final float width, final float height, int textureId, int textureUnit, int type)
+    public Enemy(final float x, final float y, final float width, final float height, int textureIdx, int type)
     {
-		super(x, y, width, height, textureId, textureUnit);
+		super(x, y, width, height, textureIdx);
 			this.type = type;
 			this.lastUpdate = 0;
     }

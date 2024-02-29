@@ -10,14 +10,39 @@ import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-// Change name to resourceManager or something
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.glBufferData;
+import static org.lwjgl.opengl.GL15.glGenBuffers;
+import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
+import static org.lwjgl.opengl.GL20.GL_LINK_STATUS;
+import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
+import static org.lwjgl.opengl.GL20.glAttachShader;
+import static org.lwjgl.opengl.GL20.glBindAttribLocation;
+import static org.lwjgl.opengl.GL20.glCreateProgram;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glGetProgramiv;
+import static org.lwjgl.opengl.GL20.glLinkProgram;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.*;
+
 public class ResourceManager
 {
+	public List<Texture> textures;
+	public List<Integer> programs;
 	class EntityData{
 		@Override
 		public String toString() {
@@ -32,7 +57,89 @@ public class ResourceManager
 		float width;
 		float height ;
 	};
+	private void loadResources(){
+		String[] textureLocations = this.TEXTURE_LOCATIONS;
+		int numberOfTextures = textureLocations.length;
+		this.textures = new ArrayList<>();
+
+		int []indices = new int[]{0,1,2,1,3,2};
+
+		for(int i = 0; i < numberOfTextures; i++){
+			String textureLocation = textureLocations[i];
+
+			try{
+				Texture texture = this.loadPNGFile(textureLocation);
+
+				texture.textureId = glGenTextures();
+				glBindTexture(GL_TEXTURE_2D, texture.textureId);
+
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.getData());
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+				glGenerateMipmap(GL_TEXTURE_2D);
+
+
+				float[] bufferData = new float[]{
+						-1.0f,-1.0f,0.0f,1.0f, //
+						1.0f,-1.0f,1.0f,1.0f, //
+						-1.0f,1.0f,0.0f,0.0f, //
+						1.0f,1.0f,1.0f,0.0f, //
+				};
+
+				texture.vertexArrayId = glGenVertexArrays();
+				glBindVertexArray(texture.vertexArrayId);
+
+				final int vertexBufferId = glGenBuffers();
+				glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+				glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW);
+
+				glEnableVertexAttribArray(0);
+				glEnableVertexAttribArray(1);
+
+				glVertexAttribPointer(0, 2, GL_FLOAT,false, 4* 4, 0);
+				glVertexAttribPointer(1, 2, GL_FLOAT,false, 4 * 4, 2* 4);
+
+				final int indexBufferId = glGenBuffers();
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+
+				this.textures.add(texture);
+			}catch(IOException e){
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+		for(Texture texture : this.textures){
+			System.out.printf("done with %d %d\n", texture.textureId, texture.vertexArrayId);
+		}
+
+		this.programs = new ArrayList<>(1);
+		final int programId = glCreateProgram();
+		int vShader = createAndCompileShader("./shaders/texture.vs", GL_VERTEX_SHADER);
+		int pShader = createAndCompileShader("./shaders/texture.ps", GL_FRAGMENT_SHADER);
+
+		glAttachShader(programId, vShader);
+		glAttachShader(programId, pShader);
+
+		glBindAttribLocation(programId, 0, "inputPosition");
+		glBindAttribLocation(programId, 1, "inputTexCoord");
+
+		glLinkProgram(programId);
+		int []status = new int[1];
+		glGetProgramiv(programId,GL_LINK_STATUS, status);
+		if(status[0] != 1){
+			System.out.println("Failed to link program");
+			System.exit(1);
+		}
+		this.programs.add(0, programId);
+	}
 	public ResourceManager(){
+		this.loadResources();
 		this.loadEntityData();
 	}
 
@@ -45,6 +152,7 @@ public class ResourceManager
 	private float parseFloatFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getFloat();
 	}
+
 	private void loadEntityData(){
 		try{
 			List<String> data = Files.readAllLines(Path.of("./resources/entities/entityData.txt"));
@@ -83,18 +191,22 @@ public class ResourceManager
 		EntityData playerData = this.entityData.get(0);
 		float width = playerData.width * Game.SCREEN_WIDTH;
 		float height = playerData.height * Game.SCREEN_HEIGHT;
-		return new Player(0,0, width, height, 0, 0);
+		return new Player(0,0, width, height, 0);
 	}
-	public Wave loadWave(){
 
-		return null;
-	}
-	public ArrayList<Entity> loadEntities() throws IOException {
-		ArrayList<Entity> entities = new ArrayList<>();
-		ArrayList<Entity> waveData = getLevel1();
-		//entities.addAll(waveData);
-
-		return entities;
+	public Bullet createNewBullet(Player player){
+		final float height = 10.0f;
+		final float width = 10.0f;
+		final float yOffset = (player.height + height) * 0.5f;
+		return new Bullet(
+		player.x,
+		player.y + yOffset,
+		width,
+		height,
+		1,
+		player,
+				5.0f
+		);
 	}
 
     public Texture loadPNGFile(String fileLocation) throws IOException {
@@ -161,109 +273,37 @@ public class ResourceManager
 		return new Texture(image.getWidth(), image.getHeight(), buffer);
 
     }
-
-    private final String[]FONT_FILE_LOCATIONS = new String[]{
-	    "./resources/fonts/font01.png"
-    };
-    private final String[]FONT_INFO_LOCATIONS = new String[]{
-	    "./resources/fonts/font01.txt"
-    };
     public final String []TEXTURE_LOCATIONS= new String[]{
-	"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
-	"./resources/images/PNG/Default/enemy_B.png",
-	"./resources/images/PNG/Default/enemy_E.png",
-	"./resources/images/PNG/Default/enemy_C.png",
-	"./resources/images/PNG/Default/satellite_C.png",
-	"./resources/images/PNG/Default/effect_purple.png",
-	"./resources/images/PNG/Default/effect_yellow.png"
+			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
     };
 
-    public final float[][] GET_ENTITY_DATA = new float[][]{
-	    {0.03f, 0.04f, 0.0f, 0.0f, 0.03f, 0.06f}, // 0
-	    {0.03f, 0.05f, 0.0f, 0.0f, 0.03f, 0.06f}, // 1
-	    {0.04f, 0.04f, 0.0f, 0.0f, 0.03f, 0.06f}, // 2
-	    {0.25f, 0.12f, 0.0f, 0.0f, 0.3f, 0.2f}, // 3
-	    {0.05f, 0.1f, -0.03f, 0.0f, 0.05f, 0.1f}, // 4
-    };
+	private String getShaderSource(String fileLocation) throws IOException {
+		return Files.readString(Paths.get(fileLocation));
+	}
 
-    public final float[][] GET_WAVE1_ENEMY_DATA = new float[][]{
-	    {0.2f, -1.2f, -0.7f}, // 1
-	    {0.6f, 1.2f, -0.6f}, // 2
-	    {0.6f, -1.2f, -0.8f}, // 3
-	    {1.5f, 1.2f, -0.4f}, // 4
-	    {1.5f, 1.2f, -0.2f}, // 5
-	    {4.0f, -1.2f, -0.7f}, // 6
-	    {4.2f, 1.2f, -0.6f}, // 7
-	    {4.2f, -1.2f, -0.8f}, // 8
-	    {5.5f, 1.2f, -0.4f}, // 9
-	    {5.7f, 1.2f, -0.2f}, // 10
-	    {8.0f, -1.2f, -0.7f}, // 11
-	    {8.5f, 1.2f, -0.6f}, // 12
-	    {9.0f, -1.2f, -0.8f}, // 13
-	    {9.2f, 1.2f, -0.4f}, // 14
-	    {12.0f, 1.2f, -0.2f}, // 15
-	    {12.1f, -1.2f, -0.7f}, // 16
-	    {13.0f, 1.2f, -0.6f}, // 17
-	    {13.2f, -1.2f, -0.8f}, // 18
-	    {13.5f, 1.2f, -0.4f}, // 19
-	    {15.0f, 1.2f, -0.2f}, // 20
-	    {15.2f, 1.2f, -0.9f}, // 21
-	    {15.2f, 1.2f, -0.8f}, // 22
-	    {15.2f, 1.2f, -0.7f}, // 13
-	    {20.0f, -0.2f, -1.2f}, // 10
-
-    };
-    public String getTextureFileLocation(int index){
-		return TEXTURE_LOCATIONS[index];
-    }
-
-    public String getFontFileLocation(int index){return FONT_FILE_LOCATIONS[index];}
-    public String getFontInfoLocation(int index){return FONT_INFO_LOCATIONS[index];}
-
-
-    private Enemy createEnemy(int enemyId, Texture texture, int enemyTypeId){
-		float [] enemyData =GET_ENTITY_DATA[enemyTypeId];
-		Bounds enemy0Bounds = new Bounds(enemyData[0], enemyData[1], enemyData[2], enemyData[3]);
-
-		float[] enemySpawnLocation = GET_WAVE1_ENEMY_DATA[enemyId];
-		//Enemy enemy = new Enemy(
-		//	(int)(Game.SCREEN_WIDTH * enemySpawnLocation[1]),
-		//	(int)(Game.SCREEN_HEIGHT * enemySpawnLocation[2]),
-		//	enemyTypeId
-		//);
-
-		//return enemy;
-			return null;
-    }
-
-    public ArrayList<Entity> getLevel1() throws IOException {
-		// This can still be read from a binary file
-		ArrayList<Entity> entities = new ArrayList<>();
-		Texture enemyType0Texture = loadPNGFile(getTextureFileLocation(2));
-		Texture enemyType1Texture = loadPNGFile(getTextureFileLocation(3));
-		Texture enemyType2Texture = loadPNGFile(getTextureFileLocation(4));
-		Texture bossTexture = loadPNGFile(getTextureFileLocation(5));
-		Texture[]textures = new Texture[]{
-			enemyType0Texture,
-			enemyType1Texture,
-			enemyType2Texture,
-			bossTexture
-		};
-		int[]waveEnemyTypes = new int[]{
-			1,1,2,0,0,
-			1,0,0,1,2,
-			2,1,1,2,0,
-			0,1,1,1,2,
-			0,0,0,4
-		};
-		final int enemies = 24;
-		for(int i = 0; i < enemies; i++){
-			entities.add(createEnemy(i, enemyType1Texture, waveEnemyTypes[i]));
+	private int createAndCompileShader(String fileLocation, int shaderType){
+		String source = null;
+		try{
+			source = getShaderSource(fileLocation);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
 		}
 
+		int shader = glCreateShader(shaderType);
+		glShaderSource(shader, source);
+		glCompileShader(shader);
 
+		IntBuffer intBuffer = BufferUtils.createIntBuffer(1);
+		glGetShaderiv(shader, GL_COMPILE_STATUS, intBuffer);
+		if(intBuffer.get(0) != 1){
+			String log = glGetShaderInfoLog(shader);
+			System.out.println("Error loading shader\n");
+			System.out.println(log);
+			System.exit(2);
+		}
 
-
-		return entities;
-    }
+		return shader;
+	}
 }
