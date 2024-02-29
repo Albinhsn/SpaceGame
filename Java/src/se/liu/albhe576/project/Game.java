@@ -3,6 +3,7 @@ package se.liu.albhe576.project;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+import static org.lwjgl.opengl.GL40.*;
 
 import java.awt.*;
 import java.io.IOException;
@@ -101,7 +102,13 @@ public class Game
 
         while(!glfwWindowShouldClose(window)){
             glfwPollEvents();
+
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
             this.renderer.renderEntities(this.entities);
+            glfwSwapBuffers(window);
         }
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);

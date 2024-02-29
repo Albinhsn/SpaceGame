@@ -4,12 +4,10 @@ import java.util.List;
 import org.lwjgl.BufferUtils;
 
 import java.io.IOException;
-import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL40.*;
 
@@ -20,6 +18,8 @@ public class Renderer
     private long window;
     private List<Entity> entities;
     private int textureId;
+    private int programId;
+    private int vertexArrayId;
 
     public Renderer(long window) throws IOException {
         this.window = window;
@@ -55,7 +55,9 @@ public class Renderer
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-        float min = -10, max = 10;
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        float min = -1, max = 1;
 
         float[] bufferData = new float[]{
             min,min,0.0f,1.0f, //
@@ -64,7 +66,7 @@ public class Renderer
             max,max,1.0f,0.0f, //
         };
 
-        int vertexArrayId = glGenVertexArrays();
+        this.vertexArrayId = glGenVertexArrays();
         glBindVertexArray(vertexArrayId);
 
         int vertexBufferId = glGenBuffers();
@@ -81,6 +83,7 @@ public class Renderer
         int indexBufferId = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+
     }
 
     public float[] getTransformationMatrix(float x, float y, float rotation){
@@ -108,25 +111,28 @@ public class Renderer
         return res;
     }
 
-    int programId;
 
     // ToDo
     //  Find correct program per entity or atleast know what to call for it
     private void renderEntity(Entity entity){
         glUseProgram(this.programId);
+        glBindVertexArray(this.vertexArrayId);
+
         glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, this.textureId);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
         float [] transMatrix = this.getTransformationMatrix(entity.x, entity.y, entity.getRotation());
 
-        int loc = glGetUniformLocation(this.programId, "transMatrix");
-        if(loc == -1){
-            System.out.println("Failed to get location of transMatrix");
-            glfwSetWindowShouldClose(this.window, true);
-            System.exit(1);
-        }
-        glUniformMatrix3fv(loc, true, transMatrix);
+        //int loc = glGetUniformLocation(this.programId, "transMatrix");
+        //if(loc == -1){
+         //   System.out.println("Failed to get location of transMatrix");
+          //  glfwSetWindowShouldClose(this.window, true);
+            //System.exit(1);
+        //}
+        //glUniformMatrix3fv(loc, true, transMatrix);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
 
