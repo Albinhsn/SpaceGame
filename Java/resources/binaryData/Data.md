@@ -19,10 +19,8 @@
 
 * boundsYOffset
     * float 
-
 * width
     * float 
-
 * height 
     * float
 ## Wave data

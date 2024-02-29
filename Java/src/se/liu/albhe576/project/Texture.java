@@ -5,10 +5,12 @@ import java.nio.ByteBuffer;
 
 public class Texture
 {
-    private int width;
-    private int height;
-    private ByteBuffer data;
-    private Image image;
+    private final int width;
+    private final int height;
+    private final ByteBuffer data;
+    public int textureUnit;
+    public int textureId;
+    public int vertexArrayId;
     public int getWidth(){
 	return this.width;
     }
@@ -18,12 +20,10 @@ public class Texture
     public ByteBuffer getData(){
 	return this.data;
     }
-    public Image getImage(){return this.image;}
 
-    public Texture(int width, int height,Image image, ByteBuffer data){
+    public Texture(int width, int height,ByteBuffer data){
         this.width = width;
         this.height = height;
         this.data = data;
-        this.image = image;
     }
 }

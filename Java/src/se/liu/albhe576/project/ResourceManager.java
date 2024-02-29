@@ -3,7 +3,6 @@ package se.liu.albhe576.project;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBufferByte;
@@ -12,17 +11,28 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import static java.lang.Byte.toUnsignedInt;
-
-public class GameData
+// Change name to resourceManager or something
+public class ResourceManager
 {
+	private void loadEntityData(){
+
+	}
+
+	public Player getPlayer(){
+		return null;
+	}
+	public Wave loadWave(){
+
+	}
+	// Load in every type of entity
+	// Get a "get player"
+	// Get a loadWaveFunction
 	public static ArrayList<Entity> loadEntities() throws IOException {
-		Player player = new Player(0, 0, 50, 50, 0, 0);
+		Player player = new Player(0, 0, 30, 30, 0, 0);
 
 		ArrayList<Entity> entities = new ArrayList<>();
-		ArrayList<Entity> waveData = GameData.getLevel1();
+		ArrayList<Entity> waveData = ResourceManager.getLevel1();
 		entities.add(player);
 		//entities.addAll(waveData);
 
@@ -90,7 +100,7 @@ public class GameData
 	}
 	buffer.flip();
 
-	return new Texture(image.getWidth(), image.getHeight(), image, buffer);
+	return new Texture(image.getWidth(), image.getHeight(), buffer);
 
     }
 
@@ -100,7 +110,7 @@ public class GameData
     private static final String[]FONT_INFO_LOCATIONS = new String[]{
 	    "./resources/fonts/font01.txt"
     };
-    private static final String []TEXTURE_LOCATIONS= new String[]{
+    public static final String []TEXTURE_LOCATIONS= new String[]{
 	"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 	"./resources/images/PNG/Default/enemy_B.png",
 	"./resources/images/PNG/Default/enemy_E.png",
@@ -171,10 +181,10 @@ public class GameData
     public static ArrayList<Entity> getLevel1() throws IOException {
 	// This can still be read from a binary file
 	ArrayList<Entity> entities = new ArrayList<>();
-	Texture enemyType0Texture = GameData.loadPNGFile(getTextureFileLocation(2));
-	Texture enemyType1Texture = GameData.loadPNGFile(getTextureFileLocation(3));
-	Texture enemyType2Texture = GameData.loadPNGFile(getTextureFileLocation(4));
-	Texture bossTexture = GameData.loadPNGFile(getTextureFileLocation(5));
+	Texture enemyType0Texture = ResourceManager.loadPNGFile(getTextureFileLocation(2));
+	Texture enemyType1Texture = ResourceManager.loadPNGFile(getTextureFileLocation(3));
+	Texture enemyType2Texture = ResourceManager.loadPNGFile(getTextureFileLocation(4));
+	Texture bossTexture = ResourceManager.loadPNGFile(getTextureFileLocation(5));
 	Texture[]textures = new Texture[]{
 		enemyType0Texture,
 		enemyType1Texture,

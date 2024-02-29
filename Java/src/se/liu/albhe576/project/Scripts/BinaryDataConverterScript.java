@@ -1,7 +1,7 @@
 package se.liu.albhe576.project.Scripts;
 
 import org.lwjgl.BufferUtils;
-import se.liu.albhe576.project.GameData;
+import se.liu.albhe576.project.ResourceManager;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -30,9 +30,9 @@ public class BinaryDataConverterScript
         final int totalSize = entityDataByteSize * textureIds.length;
 
         ByteBuffer byteBuffer = BufferUtils.createByteBuffer(totalSize);
-        for(int i = 0; i < GameData.GET_ENTITY_DATA.length; i++){
+        for(int i = 0; i < ResourceManager.GET_ENTITY_DATA.length; i++){
             int textureId = textureIds[i];
-            float[] entityData = GameData.GET_ENTITY_DATA[i];
+            float[] entityData = ResourceManager.GET_ENTITY_DATA[i];
 
 
             byte [] idBuffer = ByteBuffer.allocate(4).putInt(textureId).array();
@@ -64,7 +64,7 @@ public class BinaryDataConverterScript
 
     private static void writeWaveData(){
         final int id = 0;
-        final int waveSize = GameData.GET_WAVE1_ENEMY_DATA.length;
+        final int waveSize = ResourceManager.GET_WAVE1_ENEMY_DATA.length;
         final int waveEntitySize = 5 * 4;
         final int totalSize = waveEntitySize * waveSize;
 
@@ -84,9 +84,9 @@ public class BinaryDataConverterScript
         };
 
         ByteBuffer byteBuffer = BufferUtils.createByteBuffer(totalSize);
-        for(int i = 0; i < GameData.GET_WAVE1_ENEMY_DATA.length; i++){
+        for(int i = 0; i < ResourceManager.GET_WAVE1_ENEMY_DATA.length; i++){
             int waveEnemyType = waveEnemyTypes[i];
-            float[] waveData = GameData.GET_WAVE1_ENEMY_DATA[i];
+            float[] waveData = ResourceManager.GET_WAVE1_ENEMY_DATA[i];
 
 
             byte [] enemyType = ByteBuffer.allocate(4).putInt(waveEnemyType).array();

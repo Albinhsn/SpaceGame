@@ -1,5 +1,6 @@
 package se.liu.albhe576.project;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.BufferUtils;
 
@@ -13,124 +14,158 @@ import static org.lwjgl.opengl.GL40.*;
 
 public class Renderer
 {
-    private List<Integer> textures;
+    private List<Texture> textures;
     private List<Integer> programs;
     private long window;
     private List<Entity> entities;
-    private int textureId;
-    private int programId;
-    private int vertexArrayId;
+    private final int screenWidth;
+    private final int screenHeight;
 
-    public Renderer(long window) throws IOException {
-        this.window = window;
+    private void loadResources(){
+        String[] textureLocations = ResourceManager.TEXTURE_LOCATIONS;
+        int numberOfTextures = textureLocations.length;
+        this.textures = new ArrayList<>(numberOfTextures);
 
-        this.programId = glCreateProgram();
+        int []indices = new int[]{0,1,2,1,3,2};
+
+        for(int i = 0; i < numberOfTextures; i++){
+            String textureLocation = textureLocations[i];
+
+            try{
+                Texture texture = ResourceManager.loadPNGFile(textureLocation);
+
+                glActiveTexture(GL_TEXTURE0 + i);
+                texture.textureId = glGenTextures();
+                glBindTexture(GL_TEXTURE_2D, texture.textureId);
+
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.getData());
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+                glGenerateMipmap(GL_TEXTURE_2D);
+
+
+                float[] bufferData = new float[]{
+                        -1.0f,-1.0f,0.0f,1.0f, //
+                        1.0f,-1.0f,1.0f,1.0f, //
+                        -1.0f,1.0f,0.0f,0.0f, //
+                        1.0f,1.0f,1.0f,0.0f, //
+                };
+
+                texture.vertexArrayId = glGenVertexArrays();
+                glBindVertexArray(texture.vertexArrayId);
+
+                final int vertexBufferId = glGenBuffers();
+                glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+                glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW);
+
+                glEnableVertexAttribArray(0);
+                glEnableVertexAttribArray(1);
+
+                glVertexAttribPointer(0, 2, GL_FLOAT,false, 4* 4, 0);
+                glVertexAttribPointer(1, 2, GL_FLOAT,false, 4 * 4, 2* 4);
+
+                final int indexBufferId = glGenBuffers();
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+
+                this.textures.add(i, texture);
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        this.programs = new ArrayList<>(1);
+        final int programId = glCreateProgram();
         int vShader = createAndCompileShader("./shaders/texture.vs", GL_VERTEX_SHADER);
         int pShader = createAndCompileShader("./shaders/texture.ps", GL_FRAGMENT_SHADER);
 
-        glAttachShader(this.programId, vShader);
-        glAttachShader(this.programId, pShader);
+        glAttachShader(programId, vShader);
+        glAttachShader(programId, pShader);
 
-        glBindAttribLocation(this.programId, 0, "inputPosition");
-        glBindAttribLocation(this.programId, 1, "inputTexCoord");
+        glBindAttribLocation(programId, 0, "inputPosition");
+        glBindAttribLocation(programId, 1, "inputTexCoord");
 
-        glLinkProgram(this.programId);
+        glLinkProgram(programId);
         int []status = new int[1];
-        glGetProgramiv(this.programId,GL_LINK_STATUS, status);
+        glGetProgramiv(programId,GL_LINK_STATUS, status);
         if(status[0] != 1){
             System.out.println("Failed to link program");
             System.exit(1);
         }
+        this.programs.add(0, programId);
+    }
 
-        Texture texture = GameData.loadPNGFile(GameData.getTextureFileLocation(0));
-        glActiveTexture(GL_TEXTURE0);
-        this.textureId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, this.textureId);
+    public Renderer(long window, int screenWidth, int screenHeight) throws IOException {
+        this.window = window;
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.getData());
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        float min = -1, max = 1;
-
-        float[] bufferData = new float[]{
-            min,min,0.0f,1.0f, //
-            max,min,1.0f,1.0f, //
-            min,max,0.0f,0.0f, //
-            max,max,1.0f,0.0f, //
-        };
-
-        this.vertexArrayId = glGenVertexArrays();
-        glBindVertexArray(vertexArrayId);
-
-        int vertexBufferId = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-        glBufferData(GL_ARRAY_BUFFER, bufferData, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT,false, 4* 4, 0);
-        glVertexAttribPointer(1, 2, GL_FLOAT,false, 4 * 4, 2* 4);
-
-        int []indices = new int[]{0,1,2,1,3,2};
-        int indexBufferId = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+        this.loadResources();
 
     }
 
-    public float[] getTransformationMatrix(float x, float y, float rotation){
-        float [] rotationM = new float[]{
-                (float)Math.cos(rotation), (float)Math.sin(rotation), 0,
-                (float)-Math.sin(rotation), (float)Math.cos(rotation), 0,
-                0,0,1
-        };
-        float [] translationM = new float[]{
-                1,0,0,
-                0,1,0,
-                x,y,1
-        };
+    private float[] matMul(float [] m0, float[]m1){
         float [] res = new float[9];
 
         for(int i = 0; i < 3; i++){
             for(int j = 0; j < 3;j++){
                 for(int k = 0; k < 3; k++){
-                    res[i + j * 3] += translationM[i + k * 3] * rotationM[k + j * 3];
+                    res[i + j * 3] += m0[i + k * 3] * m1[k + j * 3];
                 }
             }
         }
-
-
         return res;
+    }
+
+    public float[] getTransformationMatrix(float x, float y, float width, float height, float rotation){
+        float [] rotationM = new float[]{
+                (float)Math.cos(rotation), (float)Math.sin(rotation), 0,
+                (float)-Math.sin(rotation), (float)Math.cos(rotation), 0,
+                0,0,1
+        };
+
+        float [] translationM = new float[]{
+                1,0,0,
+                0,1,0,
+                x,y,1
+        };
+        float [] scaleM = new float[]{
+                width / this.screenWidth, 0, 0,
+                0, height /screenHeight, 0,
+                0,  0,1
+        };
+
+        float [] m0 = this.matMul(scaleM, rotationM);
+
+        return this.matMul(m0, translationM);
+
+
     }
 
 
     // ToDo
     //  Find correct program per entity or atleast know what to call for it
     private void renderEntity(Entity entity){
-        glUseProgram(this.programId);
-        glBindVertexArray(this.vertexArrayId);
+        Texture texture = this.textures.get(entity.getTextureId());
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, this.textureId);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        int programId = this.programs.get(0);
+        glUseProgram(programId);
+        glBindVertexArray(texture.textureId);
 
-        float [] transMatrix = this.getTransformationMatrix(entity.x, entity.y, entity.getRotation());
+        float [] transMatrix = this.getTransformationMatrix(entity.x, entity.y,entity.width, entity.height, entity.getRotation());
 
-        //int loc = glGetUniformLocation(this.programId, "transMatrix");
-        //if(loc == -1){
-         //   System.out.println("Failed to get location of transMatrix");
-          //  glfwSetWindowShouldClose(this.window, true);
-            //System.exit(1);
-        //}
-        //glUniformMatrix3fv(loc, true, transMatrix);
+        int loc = glGetUniformLocation(programId, "transMatrix");
+        if(loc == -1){
+            System.out.println("Failed to get location of transMatrix");
+            glfwSetWindowShouldClose(this.window, true);
+            System.exit(1);
+        }
+        glUniformMatrix3fv(loc, true, transMatrix);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }

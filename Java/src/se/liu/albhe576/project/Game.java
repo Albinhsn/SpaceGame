@@ -5,7 +5,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.opengl.GL40.*;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -72,8 +71,8 @@ public class Game
 
     public Game() throws IOException {
         this.initGLFW();
-        this.entities = GameData.loadEntities();
-        this.renderer = new Renderer(this.window);
+        this.entities = ResourceManager.loadEntities();
+        this.renderer = new Renderer(this.window, SCREEN_WIDTH, SCREEN_WIDTH);
         this.inputState = new InputState(this.window);
     }
 
@@ -97,17 +96,37 @@ public class Game
             bullet.checkCollision(rest);
         }
     }
+    public void updatePlayer(){
+        Player player = this.getPlayer();
+        float yAcc = 0.0f, xAcc = 0.0f;
+        final float moveSpeed = 1.0f;
+        if(this.inputState.isWPressed()){
+            yAcc += moveSpeed;
+        }
+        if(this.inputState.isAPressed()){
+            xAcc -= moveSpeed;
+        }
+        if(this.inputState.isSPressed()){
+            yAcc -= moveSpeed;
+        }
+        if(this.inputState.isDPressed()){
+            xAcc += moveSpeed;
+        }
+        player.x += xAcc;
+        player.y += yAcc;
+
+    }
 
     public void runGame(){
 
         while(!glfwWindowShouldClose(window)){
             glfwPollEvents();
+            this.updatePlayer();
 
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
             this.renderer.renderEntities(this.entities);
+
             glfwSwapBuffers(window);
         }
         glfwFreeCallbacks(window);

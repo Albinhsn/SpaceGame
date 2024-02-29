@@ -1,5 +1,6 @@
 # Galaga? 
 
 ## ToDo
-* Render player
-* Actually read in data from file 
+* Figure out better way to store/read the data i need
+* Actually read in player data from file 
+* Load in more entities
