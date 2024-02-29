@@ -66,19 +66,18 @@ public class Game
     public static final int SCREEN_WIDTH = 620;
     public static final int SCREEN_HEIGHT = 480;
     private final InputState inputState;
-
-
+    private final ResourceManager resourceManager;
+    private final Player player;
 
     public Game() throws IOException {
         this.initGLFW();
-        this.entities = ResourceManager.loadEntities();
+        this.resourceManager = new ResourceManager();
+
+        this.player   = this.resourceManager.getPlayer();
+        this.entities = this.resourceManager.loadEntities();
+
         this.renderer = new Renderer(this.window, SCREEN_WIDTH, SCREEN_WIDTH);
         this.inputState = new InputState(this.window);
-    }
-
-
-    private Player getPlayer(){
-        return (Player) this.entities.get(0);
     }
 
 
@@ -97,7 +96,6 @@ public class Game
         }
     }
     public void updatePlayer(){
-        Player player = this.getPlayer();
         float yAcc = 0.0f, xAcc = 0.0f;
         final float moveSpeed = 1.0f;
         if(this.inputState.isWPressed()){
@@ -112,8 +110,8 @@ public class Game
         if(this.inputState.isDPressed()){
             xAcc += moveSpeed;
         }
-        player.x += xAcc;
-        player.y += yAcc;
+        this.player.x += xAcc;
+        this.player.y += yAcc;
 
     }
 
@@ -125,7 +123,7 @@ public class Game
 
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            this.renderer.renderEntities(this.entities);
+            this.renderer.renderEntity(this.player);
 
             glfwSwapBuffers(window);
         }

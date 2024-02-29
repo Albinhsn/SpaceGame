@@ -22,7 +22,8 @@ public class Renderer
     private final int screenHeight;
 
     private void loadResources(){
-        String[] textureLocations = ResourceManager.TEXTURE_LOCATIONS;
+        ResourceManager resourceManager = new ResourceManager();
+        String[] textureLocations = resourceManager.TEXTURE_LOCATIONS;
         int numberOfTextures = textureLocations.length;
         this.textures = new ArrayList<>(numberOfTextures);
 
@@ -32,7 +33,7 @@ public class Renderer
             String textureLocation = textureLocations[i];
 
             try{
-                Texture texture = ResourceManager.loadPNGFile(textureLocation);
+                Texture texture = resourceManager.loadPNGFile(textureLocation);
 
                 glActiveTexture(GL_TEXTURE0 + i);
                 texture.textureId = glGenTextures();
@@ -150,7 +151,7 @@ public class Renderer
 
     // ToDo
     //  Find correct program per entity or atleast know what to call for it
-    private void renderEntity(Entity entity){
+    public void renderEntity(Entity entity){
         Texture texture = this.textures.get(entity.getTextureId());
 
         int programId = this.programs.get(0);

@@ -7,16 +7,13 @@
 * 5
 ### Attributes
 * textureId 
-  * byte
+  * int 
 * boundsWidth
   * float 
-   
 * boundsHeight
     * float 
-
 * boundsXOffset
     * float 
-
 * boundsYOffset
     * float 
 * width

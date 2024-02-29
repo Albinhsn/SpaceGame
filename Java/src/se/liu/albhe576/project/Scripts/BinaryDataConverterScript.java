@@ -24,15 +24,16 @@ public class BinaryDataConverterScript
     }
 
     private static void writeEntityData(){
+        ResourceManager resourceManager = new ResourceManager();
 
         final int[] textureIds = new int[]{2,3,4,5,0};
         final int entityDataByteSize = 4 * 7;
         final int totalSize = entityDataByteSize * textureIds.length;
 
         ByteBuffer byteBuffer = BufferUtils.createByteBuffer(totalSize);
-        for(int i = 0; i < ResourceManager.GET_ENTITY_DATA.length; i++){
+        for(int i = 0; i < resourceManager.GET_ENTITY_DATA.length; i++){
             int textureId = textureIds[i];
-            float[] entityData = ResourceManager.GET_ENTITY_DATA[i];
+            float[] entityData = resourceManager.GET_ENTITY_DATA[i];
 
 
             byte [] idBuffer = ByteBuffer.allocate(4).putInt(textureId).array();
@@ -63,8 +64,9 @@ public class BinaryDataConverterScript
     }
 
     private static void writeWaveData(){
+        ResourceManager resourceManager = new ResourceManager();
         final int id = 0;
-        final int waveSize = ResourceManager.GET_WAVE1_ENEMY_DATA.length;
+        final int waveSize = resourceManager.GET_WAVE1_ENEMY_DATA.length;
         final int waveEntitySize = 5 * 4;
         final int totalSize = waveEntitySize * waveSize;
 
@@ -84,9 +86,9 @@ public class BinaryDataConverterScript
         };
 
         ByteBuffer byteBuffer = BufferUtils.createByteBuffer(totalSize);
-        for(int i = 0; i < ResourceManager.GET_WAVE1_ENEMY_DATA.length; i++){
+        for(int i = 0; i < resourceManager.GET_WAVE1_ENEMY_DATA.length; i++){
             int waveEnemyType = waveEnemyTypes[i];
-            float[] waveData = ResourceManager.GET_WAVE1_ENEMY_DATA[i];
+            float[] waveData = resourceManager.GET_WAVE1_ENEMY_DATA[i];
 
 
             byte [] enemyType = ByteBuffer.allocate(4).putInt(waveEnemyType).array();
