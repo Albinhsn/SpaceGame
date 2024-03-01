@@ -13,7 +13,6 @@
   * Actually hoist out to wave function
   * i.e the wave controls when shit spawns
 
-* Highscore
 * Menus
 
 ### Random

@@ -9,8 +9,8 @@ public class Enemy extends Entity
     private int pathId;
     private long lastUpdate;
     private long spawnTime;
-    private final float moveSpeed;
     private long lastShot;
+    private final float moveSpeed;
 
     public Enemy(final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
     {
@@ -19,7 +19,7 @@ public class Enemy extends Entity
 			this.lastUpdate     = 0;
             this.alive          = true;
             this.spawnTime      = spawnTime;
-            this.moveSpeed      = x > 0 ? -3 : 3;
+            this.moveSpeed      = x > 0 ? -1 : 1;
             this.lastShot       = 0;
     }
 
@@ -56,22 +56,29 @@ public class Enemy extends Entity
             switch(this.pathId){
                 case 0:{
                     this.y += (float) Math.sin((double) lastUpdate / 500) * 2;
-                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2);
+                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2) + this.moveSpeed * 2.0f;
                     break;
                 }
                 case 1:{
                     this.y += (float) Math.sin((double) lastUpdate / 1000) * 2;
+                    this.x += this.moveSpeed;
                     break;
                 } case 2:{
-                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2);
+                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2) + this.moveSpeed * 0.5f;
                    break;
+                }
+                case 4:{
+                    if(this.y >= Game.SCREEN_HEIGHT * 0.5f){
+                       this.y -= 2.0f;
+                    }
+                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2);
+                    break;
                 }
                 default:{
                     System.out.printf("How did this happen to me %d\n", this.pathId);
                     System.exit(1);
                 }
             }
-            this.x += moveSpeed;
 			lastUpdate          = tick;
 		}
     }

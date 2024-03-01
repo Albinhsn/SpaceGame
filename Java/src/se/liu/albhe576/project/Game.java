@@ -19,6 +19,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class Game
 {
     private long window;
+    private long score;
 
     private void initGLFW(){
 
@@ -75,6 +76,7 @@ public class Game
 
     public Game() {
         this.initGLFW();
+        this.score = 0;
         this.resourceManager = new ResourceManager();
 
         this.player   = this.resourceManager.getPlayer();
@@ -95,19 +97,19 @@ public class Game
     }
 
     private void checkCollision(){
-        boolean collided     = false;
 
         List<Entity> entities= this.wave.getEnemies();
         entities.add(this.player);
 
         for(Bullet bullet: this.bullets){
-            collided |= bullet.checkCollision(entities);
+            if(bullet.checkCollision(entities) && bullet.parent == this.player){
+                this.score += 100;
+                System.out.println(this.score);
+            }
         }
 
-        if(collided){
-            this.bullets.removeIf(entity -> !entity.alive);
-            this.wave.removeKilledEnemies();
-        }
+        this.bullets.removeIf(entity -> !entity.alive);
+        this.wave.removeKilledEnemies();
     }
     public void updatePlayer(){
         Bullet bullet = player.updatePlayer(this.inputState);
@@ -131,7 +133,7 @@ public class Game
 
             this.checkCollision();
             if(!this.player.alive){
-                System.out.println("Game Over!");
+                System.out.printf("Game Over!\nScore: %d\n", this.score);
                 System.exit(1);
             }
 

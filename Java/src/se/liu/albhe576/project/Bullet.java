@@ -6,8 +6,8 @@ import java.util.Objects;
 
 public class Bullet extends Entity
 {
-    private final Entity parent;
-    final float yAcc;
+    public final Entity parent;
+    private final float yAcc;
 
     public Bullet(
 	    float x,
