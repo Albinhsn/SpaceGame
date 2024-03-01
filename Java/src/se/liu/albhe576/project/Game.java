@@ -63,7 +63,8 @@ public class Game
 
         GL.createCapabilities();
     }
-    private final ArrayList<Entity> entities;
+    private ArrayList<Bullet> bullets;
+    private Wave wave;
     private final Renderer renderer;
     public static final int SCREEN_WIDTH = 620;
     public static final int SCREEN_HEIGHT = 480;
@@ -73,31 +74,39 @@ public class Game
 
     private final Background background;
 
-    public Game() throws IOException {
+    public Game() {
         this.initGLFW();
         this.resourceManager = new ResourceManager();
 
         this.player   = this.resourceManager.getPlayer();
-        this.entities = new ArrayList<>();
+        this.bullets = new ArrayList<>();
 
         this.renderer = new Renderer(this.window, SCREEN_WIDTH, SCREEN_HEIGHT, resourceManager);
         this.background = new Background();
         this.inputState = new InputState(this.window);
+        this.wave = this.resourceManager.getWave(0);
     }
 
 
+    // ToDo figure out if this always is just bullets
     private void updateEntities(long startTime){
-        for (Entity entity : entities) {
+        for (Entity entity : bullets) {
             entity.update(startTime);
         }
     }
 
     private void checkCollision(){
-        List<Entity> bullets =  this.entities.stream().filter(s -> s instanceof Bullet).toList();
-        List<Entity> rest = this.entities.stream().filter(s -> !(s instanceof Bullet)).toList();
-        for(Entity bulletEntity  : bullets){
-            Bullet bullet = (Bullet) bulletEntity;
-            bullet.checkCollision(rest);
+        boolean collided     = false;
+        List<Bullet> bullets =  this.bullets;
+        List<Entity> entities= this.wave.getEnemies();
+        entities.add(this.player);
+
+        for(Bullet bullet: bullets){
+            collided = bullet.checkCollision(entities);
+        }
+        if(collided){
+            this.bullets = (ArrayList<Bullet>) this.bullets.stream().filter(bullet -> bullet.alive).collect(Collectors.toList());
+            this.wave.removeKilledEnemies();
         }
     }
     public void updatePlayer(){
@@ -106,7 +115,7 @@ public class Game
         if(this.inputState.isSpacePressed()){
             boolean shot =  this.player.shoot();
             if(shot){
-                this.entities.add(resourceManager.createNewBullet(this.player));
+                this.bullets.add(resourceManager.createNewBullet(this.player));
             }
         }
     }
@@ -116,19 +125,33 @@ public class Game
         final long startTime = System.currentTimeMillis();
 
         while(!glfwWindowShouldClose(window)){
+            // Poll input events
             glfwPollEvents();
 
+            // Update entities
             this.updatePlayer();
             this.updateEntities(startTime);
-            this.background.updateBackground(startTime);
+            this.wave.updateWave(startTime);
+            this.checkCollision();
+            if(!this.player.alive){
+                System.out.println("Game Over!");
+                System.exit(1);
+            }
 
+            // Init new frame
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+            // Render entities
             this.renderer.renderEntity(this.player);
-            this.renderer.renderEntities(this.entities);
+            this.renderer.renderEntities(this.bullets);
+            this.renderer.renderEntities(this.wave.getEnemies());
+
+            // Update background :)
+            this.background.update(startTime);
             this.renderer.renderEntities(this.background.getMeteors());
 
-
+            // This is the actual draw call
             glfwSwapBuffers(window);
         }
         glfwFreeCallbacks(window);

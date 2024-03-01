@@ -2,10 +2,10 @@
 
 ## ToDo
 ### Data
-* Rewrite binaryDataConvertScript thingy
 * Load in rest of entities
-* Figure out better way to fetch bullet data
-
+* Rewrite binaryDataConvertScript thingy
+  * spawnTime to long
+  * Create Paths?
 
 * Create one large image and be able to parse it
 

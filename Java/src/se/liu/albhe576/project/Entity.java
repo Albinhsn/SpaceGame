@@ -9,22 +9,18 @@ public abstract class Entity
     public float y;
     public float width;
     public float height;
+    public boolean alive;
 
     private float rotation;
-
     private final int textureIdx;
-
     public int getTextureIdx(){
         return this.textureIdx;
     }
     public float getRotation(){
         return this.rotation;
     }
-
-    private float xAcceleration;
-
-    private float yAcceleration;
-
+    protected float xAcceleration;
+    protected float yAcceleration;
     public abstract void update(long startTime);
 
     protected Entity(float x, float y, float width, float height, int textureIdx){
@@ -35,5 +31,6 @@ public abstract class Entity
         this.textureIdx = textureIdx;
         this.xAcceleration = 0.0f;
         this.yAcceleration = 0.0f;
+        this.alive = true;
     }
 }

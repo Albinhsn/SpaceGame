@@ -4,27 +4,27 @@ import java.util.Objects;
 
 public class Enemy extends Entity
 {
-    private int type;
+    private int pathId;
     private long lastUpdate;
     private boolean isAlive;
-    private float spawnTime;
+    private long spawnTime;
 
-    public Enemy(final float x, final float y, final float width, final float height, int textureIdx, int type, float spawnTime)
+    public Enemy(final float x, final float y, final float width, final float height, int textureIdx, float spawnTime, int pathId)
     {
 		super(x, y, width, height, textureIdx);
-			this.type           = type;
+			this.pathId         = pathId;
 			this.lastUpdate     = 0;
-            this.isAlive        = false;
-            this.spawnTime = spawnTime;
+            this.isAlive        = true;
+            this.spawnTime      = (long)(spawnTime * 1000);
     }
 
     public boolean hasSpawned(long timeSinceWaveStarted){
-        return timeSinceWaveStarted >= this.spawnTime;
+        return System.currentTimeMillis() - timeSinceWaveStarted >= this.spawnTime;
     }
 
     @Override public void update(long startTime) {
-        if(this.isAlive && this.hasSpawned){
-            this.move(startTime);
+        if(this.isAlive && this.hasSpawned(startTime)){
+            this.move(System.currentTimeMillis());
         }
     }
 
@@ -33,7 +33,8 @@ public class Enemy extends Entity
 		if(lastUpdate + 10 <= tick){
 			final int moveSpeed = 3;
 			this.y             -= moveSpeed;
-			lastUpdate          = System.currentTimeMillis();
+			lastUpdate          = tick;
+            System.out.printf("Moved to %f %f\n", this.x, this.y);
 
 		}
     }

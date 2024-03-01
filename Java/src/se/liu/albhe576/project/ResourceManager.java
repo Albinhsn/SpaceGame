@@ -19,8 +19,6 @@ import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
@@ -43,6 +41,8 @@ public class ResourceManager
 {
 	public List<Texture> textures;
 	public List<Integer> programs;
+	private List<EntityData> entityData;
+	private List<Wave> waves;
 	static class EntityData{
 		@Override
 		public String toString() {
@@ -75,8 +75,8 @@ public class ResourceManager
 	}
 
 	private void generateVertexArrayAndVertexBuffer(Texture texture){
-		int []indices = new int[]{0,1,2,1,3,2};
-		float[] bufferData = new float[]{
+		final int []indices = new int[]{0,1,2,1,3,2};
+		final float[] bufferData = new float[]{
 				-1.0f, -1.0f, 0.0f, 1.0f, //
 				1.0f, -1.0f, 1.0f, 1.0f, //
 				-1.0f, 1.0f, 0.0f, 0.0f, //
@@ -84,6 +84,8 @@ public class ResourceManager
 		};
 
 		texture.vertexArrayId = glGenVertexArrays();
+
+
 		glBindVertexArray(texture.vertexArrayId);
 
 		final int vertexBufferId = glGenBuffers();
@@ -103,8 +105,8 @@ public class ResourceManager
 	}
 
 	private void compileTextureShader(){
-		this.programs = new ArrayList<>(1);
 		final int programId = glCreateProgram();
+
 		int vShader = createAndCompileShader("./shaders/texture.vs", GL_VERTEX_SHADER);
 		int pShader = createAndCompileShader("./shaders/texture.ps", GL_FRAGMENT_SHADER);
 
@@ -123,7 +125,7 @@ public class ResourceManager
 		}
 		this.programs.add(0, programId);
 	}
-	private void loadResources(){
+	private void loadTextures(){
         this.textures = new ArrayList<>();
 
         for (String textureLocation : this.TEXTURE_LOCATIONS) {
@@ -143,11 +145,12 @@ public class ResourceManager
 		this.compileTextureShader();
 	}
 	public ResourceManager(){
-		this.loadResources();
+		this.programs = new ArrayList<>(1);
+		this.loadTextures();
 		this.loadEntityData();
+		this.loadWaveData();
 	}
 
-	private List<EntityData> entityData;
 
 	private int parseIntFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getInt();
@@ -156,11 +159,43 @@ public class ResourceManager
 	private float parseFloatFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getFloat();
 	}
+	public Wave getWave(int index){
+		return this.waves.get(index);
+	}
 
-	private Wave loadWaveData(){
-		Wave wave = new Wave();
+	private void loadWaveData(){
+		this.waves = new ArrayList<>();
+		for(String waveFileLocation : this.WAVE_LOCATIONS){
+			ArrayList<Enemy> enemies = new ArrayList<>();
+			final byte[] fileData;
+			try{
+				fileData = Files.readAllBytes(Path.of(waveFileLocation));
+			}catch(IOException e){
+				e.printStackTrace();
+				continue;
+			}
+			for(int fileIndex = 0; fileIndex < fileData.length;){
+				final int enemyType 	   = this.parseIntFromByteArray(fileData, fileIndex + 0);
+				final float spawnTime	   = this.parseFloatFromByteArray(fileData, fileIndex + 4);
+				final float spawnPositionX = this.parseFloatFromByteArray(fileData, fileIndex + 8);
+				final float spawnPositionY = this.parseFloatFromByteArray(fileData, fileIndex + 12);
+				final int pathId 		   = this.parseIntFromByteArray(fileData, fileIndex + 16);
+				fileIndex += 20;
 
-		return wave;
+				EntityData enemyEntityData = this.entityData.get(enemyType);
+				enemies.add(new Enemy(
+						0,
+						-Game.SCREEN_HEIGHT * spawnPositionY,
+						Game.SCREEN_WIDTH * enemyEntityData.width,
+						Game.SCREEN_HEIGHT * enemyEntityData.height,
+						0,
+						spawnTime,
+						pathId
+				));
+				break;
+			}
+			this.waves.add(new Wave(enemies));
+		}
 	}
 
 	private void loadEntityData(){
@@ -286,11 +321,16 @@ public class ResourceManager
 		return new Texture(image.getWidth(), image.getHeight(), buffer);
 
     }
+	// No reason not to have this in a text file
     private final String []TEXTURE_LOCATIONS= new String[]{
 			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
 			"./resources/images/PNG/Default/meteor_detailedLarge.png",
     };
+	// No reason not to have this in a text file
+	private final String []WAVE_LOCATIONS= new String[]{
+			"./resources/binaryData/wave02024-01-29 09:17:16.757.bin",
+	};
 
 	private String getShaderSource(String fileLocation) throws IOException {
 		return Files.readString(Paths.get(fileLocation));

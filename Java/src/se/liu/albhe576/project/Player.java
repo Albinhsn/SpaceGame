@@ -6,11 +6,8 @@ import java.io.IOException;
 public class Player  extends Entity{
 
     private long canShoot;
-	private float xAcc;
-	private float yAcc;
     public Player(float x, float y, float width, float height, int textureIdx){
 		super(x, y, width, height, textureIdx);
-			this.lastUpdate = 0;
 			this.canShoot = 0;
     }
     @Override public void update(long startTime){
@@ -19,26 +16,25 @@ public class Player  extends Entity{
 	public void updatePlayerAcceleration(InputState inputState){
 
 		final float moveSpeed = 5.0f;
-		this.xAcc = 0;
-		this.yAcc = 0;
+		this.xAcceleration = 0;
+		this.yAcceleration = 0;
 		if(inputState.isWPressed()){
-			this.yAcc += moveSpeed;
+			this.yAcceleration += moveSpeed;
 		}
 		if(inputState.isAPressed()){
-			this.xAcc -= moveSpeed;
+			this.xAcceleration -= moveSpeed;
 		}
 		if(inputState.isSPressed()){
-			this.yAcc -= moveSpeed;
+			this.yAcceleration -= moveSpeed;
 		}
 		if(inputState.isDPressed()){
-			this.xAcc += moveSpeed;
+			this.xAcceleration += moveSpeed;
 		}
-		this.x += xAcc;
-		this.y += yAcc;
+		this.x += xAcceleration;
+		this.y += yAcceleration;
 		if(isOutOfBounds()){
-			this.x -= xAcc;
-			this.y -= yAcc;
-			System.out.println(this.x + " " + this.y);
+			this.x -= xAcceleration;
+			this.y -= yAcceleration;
 		}
 
 	}
@@ -52,9 +48,6 @@ public class Player  extends Entity{
 		this.canShoot = timer + gcd;
 		return true;
     }
-
-    private  long lastUpdate;
-
 
     private boolean isOutOfBounds(){
 		final int x = (int) (Game.SCREEN_WIDTH - this.width / 2);

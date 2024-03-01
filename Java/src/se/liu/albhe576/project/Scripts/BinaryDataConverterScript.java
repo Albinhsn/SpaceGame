@@ -20,7 +20,10 @@ public class BinaryDataConverterScript
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
+    private static void createWaveData(){
+        ResourceManager r = new ResourceManager();
     }
 
     public static void main(String[] args) {
