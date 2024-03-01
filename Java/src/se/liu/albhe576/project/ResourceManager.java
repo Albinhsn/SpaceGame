@@ -162,7 +162,6 @@ public class ResourceManager
 	private int parseIntFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getInt();
 	}
-
 	private long parseLongFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 8).getLong();
 	}
