@@ -6,12 +6,12 @@ import java.util.Objects;
 
 public abstract class Entity
 {
+    public int hp;
     public float x;
     public float y;
     public float width;
     public float height;
     public boolean alive;
-
     private float rotation;
     private final int textureIdx;
     public int getTextureIdx(){
@@ -22,7 +22,8 @@ public abstract class Entity
     }
     protected float xAcceleration;
     protected float yAcceleration;
-    protected Entity(float x, float y, float width, float height, int textureIdx, float rotation){
+    protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation){
+        this.hp = hp;
         this.x = x;
         this.y = y;
         this.width = width;

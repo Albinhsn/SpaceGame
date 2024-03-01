@@ -20,6 +20,10 @@
     * float 
 * height 
     * float
+* bulletTextureIdx
+* bulletSpeed
+* bulletWidth
+* bulletHeight
 ## Wave data
 
 ### Location
@@ -27,7 +31,7 @@
 ### Count
 * 24
 ### Attributes
-* textureIdx 
+* enemyType 
   * int
 * spawnTime
     * This should be a long

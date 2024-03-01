@@ -6,7 +6,7 @@ public class Meteor extends Entity{
 
     private float yAcceleration;
     public Meteor(float x, float y, float width, float height, int textureIdx, float yAcceleration) {
-        super(x, y, width, height, textureIdx, (float) (Math.random() / 360.0f));
+        super(0, x, y, width, height, textureIdx, (float) (Math.random() / 360.0f));
         this.yAcceleration = yAcceleration;
     }
 

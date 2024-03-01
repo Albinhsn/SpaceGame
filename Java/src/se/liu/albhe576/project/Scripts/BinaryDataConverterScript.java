@@ -16,8 +16,7 @@ public class BinaryDataConverterScript
             stream.write(bytes);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) { throw new RuntimeException(e);
         }
     }
 
@@ -92,7 +91,64 @@ public class BinaryDataConverterScript
 
     }
 
+    static class EntityData{
+        public static final int size = 8 * 4;
+        int hp;
+        int textureIdx;
+        float width;
+        float height;
+        int bulletTextureIdx;
+        float bulletSpeed;
+        float bulletWidth;
+        float bulletHeight;
+        public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh){
+            this.hp = hp;
+            this.textureIdx = ti;
+            this.width = w;
+            this.height = h;
+            this.bulletTextureIdx = bti;
+            this.bulletSpeed = bs;
+            this.bulletWidth = bw;
+            this.bulletHeight = bh;
+        }
+        byte[] entityDataToBytes(){
+            ByteBuffer buffer = ByteBuffer.allocate(EntityData.size);
+            buffer.putInt(0, this.hp);
+            buffer.putInt(4, this.textureIdx);
+            buffer.putFloat(8,this.width);
+            buffer.putFloat(12, this.height);
+            buffer.putInt(16, this.bulletTextureIdx);
+            buffer.putFloat(20, this.bulletSpeed);
+            buffer.putFloat(24, this.bulletWidth);
+            buffer.putFloat(28, this.bulletHeight);
+
+            byte[] out = new byte[EntityData.size];
+            buffer.get(0, out);
+
+            return out;
+        }
+    }
+    public static void createEntityData(){
+       EntityData[] data = new EntityData[]{
+               new EntityData(1,2, 0.03f, 0.06f, 6, 3.0f, 8.0f, 16.0f),
+               new EntityData(1,3, 0.03f, 0.06f, 7, 10.0f, 7.0f, 20.0f),
+               new EntityData(1,4, 0.03f, 0.06f, 8, 5.0f, 7.0f, 21.0f),
+               new EntityData(10, 5, 0.3f, 0.2f, 9, 8.0f, 20.0f, 20.0f),
+               new EntityData(3,0, 0.05f, 0.1f, 1, 5.0f, 10.0f, 10.0f),
+       };
+       final int size = 5;
+        ByteBuffer buffer = ByteBuffer.allocate(EntityData.size * size);
+        for(int idx = 0; idx < size; idx++){
+            buffer.put(EntityData.size * idx,  data[idx].entityDataToBytes());
+        }
+        final int id = 1;
+
+        byte[] out = new byte[EntityData.size * size];
+        buffer.get(0, out);
+        BinaryDataConverterScript.writeBytesToFile("./resources/binaryData/entity" + id + new Timestamp(System.currentTimeMillis()) + ".bin", out);
+    }
+
     public static void main(String[] args) {
-        BinaryDataConverterScript.createWaveData();
+        BinaryDataConverterScript.createEntityData();
     }
 }

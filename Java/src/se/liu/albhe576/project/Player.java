@@ -4,12 +4,12 @@ public class Player  extends Entity{
 
     public long lastShot;
 
-    public Player(float x, float y, float width, float height, int textureIdx){
-		super(x, y, width, height, textureIdx, 0.0f);
+    public Player(int hp, float x, float y, float width, float height, int textureIdx){
+		super(hp, x, y, width, height, textureIdx, 0.0f);
 			this.lastShot = 0;
     }
 
-	public Bullet updatePlayer(InputState inputState){
+	public boolean updatePlayer(InputState inputState){
 		final float moveSpeed = 5.0f;
 		this.xAcceleration = 0;
 		this.yAcceleration = 0;
@@ -32,14 +32,11 @@ public class Player  extends Entity{
 			this.y -= yAcceleration;
 		}
 
-		if(inputState.isSpacePressed() && this.canShoot()){
-			return ResourceManager.createNewBullet(this, 1);
-		}
-		return null;
+		return inputState.isSpacePressed() && this.canShoot();
 	}
 
     public boolean canShoot(){
-		final long gcd = 300;
+		final long gcd = 500;
 		long timer = System.currentTimeMillis();
 		if(lastShot > timer){
 			return false;

@@ -11,10 +11,12 @@ public class Enemy extends Entity
     private long spawnTime;
     private long lastShot;
     private final float moveSpeed;
+    public final int type;
 
-    public Enemy(final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
+    public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
     {
-		super(x, y, width, height, textureIdx, 0.0f);
+		super(hp, x, y, width, height, textureIdx, 0.0f);
+            this.type = enemyType;
 			this.pathId         = pathId;
 			this.lastUpdate     = 0;
             this.alive          = true;
@@ -40,14 +42,14 @@ public class Enemy extends Entity
 
     }
 
-    public Bullet update() {
+    public boolean update() {
         if(this.alive){
             this.move(System.currentTimeMillis());
             if(this.willShoot()){{
-                return ResourceManager.createNewBullet(this, -1);
+                return true;
             }}
         }
-        return null;
+        return false;
     }
 
 

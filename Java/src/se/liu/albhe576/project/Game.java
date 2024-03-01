@@ -112,8 +112,8 @@ public class Game
         this.wave.removeKilledEnemies();
     }
     public void updatePlayer(){
-        Bullet bullet = player.updatePlayer(this.inputState);
-        if(bullet != null){
+        if(player.updatePlayer(this.inputState)){
+            Bullet bullet = this.resourceManager.createNewBullet(this.player);
             this.bullets.add(bullet);
         }
     }
@@ -129,7 +129,7 @@ public class Game
             // Update entities
             this.updatePlayer();
             this.updateBullets();
-            this.bullets.addAll(this.wave.updateWave(startTime));
+            this.bullets.addAll(this.wave.updateWave(startTime, this.resourceManager));
 
             this.checkCollision();
             if(!this.player.alive){

@@ -19,10 +19,10 @@ public class Background {
         return rng.nextFloat(-Game.SCREEN_WIDTH, Game.SCREEN_WIDTH);
     }
     private float getRandomMeteorWidth(){
-        return rng.nextFloat(1.5f, 7.5f);
+        return rng.nextFloat(1.5f, 4f);
     }
     private float getRandomMeteorHeight(){
-        return rng.nextFloat(1.5f, 7.5f);
+        return rng.nextFloat(1.5f, 4f);
     }
     private float getRandomMeteorAcceleration(){
         return rng.nextFloat(1.0f, 8.0f);
@@ -38,7 +38,7 @@ public class Background {
     }
     private void initMeteors(){
         final int numberOfMeteors = 15;
-        final int textureIdx = 6;
+        final int textureIdx = 10;
         for(int i = 0; i < numberOfMeteors; i++){
             float x = this.getRandomMeteorX();
             float y = this.getRandomMeteorY();

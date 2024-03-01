@@ -44,19 +44,26 @@ public class ResourceManager
 	private List<EntityData> entityData;
 	private List<Wave> waves;
 	static class EntityData{
-		@Override
-		public String toString() {
-			return String.format("%d %f %f %f %f %f %f", textureId, boundsWidth, boundsHeight, boundsXOffset, boundsYOffset, width, height);
-		}
-
-		int textureId;
-		float boundsWidth;
-		float boundsHeight;
-		float boundsXOffset;
-		float boundsYOffset;
+		public static final int size = 8 * 4;
+		int hp;
+		int textureIdx;
 		float width;
-		float height ;
-	};
+		float height;
+		int bulletTextureIdx;
+		float bulletSpeed;
+		float bulletWidth;
+		float bulletHeight;
+		public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh){
+			this.hp = hp;
+			this.textureIdx = ti;
+			this.width = w;
+			this.height = h;
+			this.bulletTextureIdx = bti;
+			this.bulletSpeed = bs;
+			this.bulletWidth = bw;
+			this.bulletHeight = bh;
+		}
+	}
 
 	private void generateTexture(Texture texture){
 
@@ -190,11 +197,13 @@ public class ResourceManager
 
 				EntityData enemyEntityData = this.entityData.get(enemyType);
 				enemies.add(new Enemy(
+						enemyEntityData.hp,
+						enemyType,
 						Game.SCREEN_WIDTH * spawnPositionX,
 						-Game.SCREEN_HEIGHT * spawnPositionY,
 						Game.SCREEN_WIDTH * enemyEntityData.width,
 						Game.SCREEN_HEIGHT * enemyEntityData.height,
-						enemyEntityData.textureId,
+						enemyEntityData.textureIdx,
 						spawnTime,
 						pathId
 				));
@@ -214,19 +223,18 @@ public class ResourceManager
 			byte[] binaryData = Files.readAllBytes(Path.of(data.get(1)));
 			int idx = 0;
 
-			assert(binaryData.length / count == 6 * 4 + 4);
-
 			for(int i = 0; i < count; i++){
-				EntityData entityData = new EntityData();
-
-				entityData.textureId 		= this.parseIntFromByteArray(binaryData, idx);
-				entityData.boundsWidth  	= this.parseFloatFromByteArray(binaryData, idx + 4);
-				entityData.boundsHeight 	= this.parseFloatFromByteArray(binaryData, idx + 8);
-				entityData.boundsXOffset	= this.parseFloatFromByteArray(binaryData, idx + 12);
-				entityData.boundsYOffset	= this.parseFloatFromByteArray(binaryData, idx + 16);
-				entityData.width			= this.parseFloatFromByteArray(binaryData, idx + 20);
-				entityData.height 			= this.parseFloatFromByteArray(binaryData, idx + 24);
-				idx += 28;
+				EntityData entityData = new EntityData(
+					this.parseIntFromByteArray(binaryData, idx),
+					this.parseIntFromByteArray(binaryData, idx + 4),
+					this.parseFloatFromByteArray(binaryData, idx + 8),
+					this.parseFloatFromByteArray(binaryData, idx + 12),
+					this.parseIntFromByteArray(binaryData, idx + 16),
+					this.parseFloatFromByteArray(binaryData, idx + 20),
+					this.parseFloatFromByteArray(binaryData, idx + 24),
+					this.parseFloatFromByteArray(binaryData, idx + 28)
+				);
+				idx += EntityData.size;
 
 				this.entityData.add(i, entityData);
 
@@ -240,25 +248,28 @@ public class ResourceManager
 	}
 
 	public Player getPlayer(){
-		EntityData playerData = this.entityData.get(0);
+		EntityData playerData = this.entityData.get(4);
 		float width = playerData.width * Game.SCREEN_WIDTH;
 		float height = playerData.height * Game.SCREEN_HEIGHT;
-		return new Player(0,0, width, height, 0);
+		return new Player(playerData.hp, 0,0, width, height, playerData.textureIdx);
 	}
 
-	public static Bullet createNewBullet(Entity parent, int dir){
-		final float height = 10.0f;
-		final float width = 10.0f;
-		final float yOffset = (parent.height + height) * 0.5f;
+	public Bullet createNewBullet(Entity parent){
+		int enemyType = parent instanceof Enemy ? ((Enemy)parent).type : 4;
+		int dir = enemyType == 4 ? 1 : -1;
+
+		EntityData data = this.entityData.get(enemyType);
+		final float yOffset = (parent.height + data.bulletHeight * dir) * 0.5f;
+
 		return new Bullet(
 			parent.x,
 			parent.y + yOffset,
-			width,
-			height,
-			1,
+			data.bulletWidth,
+			data.bulletHeight,
+			data.bulletTextureIdx,
 			parent,
-			5.0f * dir,
-				dir == 1 ? 0.0f : 180.0f
+		data.bulletSpeed * dir,
+			dir == 1 ? 0.0f : 180.0f
 		);
 	}
 
@@ -334,6 +345,10 @@ public class ResourceManager
 			"./resources/images/PNG/Default/enemy_E.png",
 			"./resources/images/PNG/Default/enemy_C.png",
 			"./resources/images/PNG/Default/satellite_C.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_026.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_040.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_001.png",
 			"./resources/images/PNG/Default/meteor_detailedLarge.png",
     };
 	// No reason not to have this in a text file
