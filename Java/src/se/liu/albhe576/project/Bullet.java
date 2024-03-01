@@ -36,21 +36,17 @@ public class Bullet extends Entity
 
     private boolean collided(Entity entity){
         // ToDo hoist this out
-        final float halvedEntityHeight = entity.height / 2.0f;
-        final float halvedEntityWidth = entity.width / 2.0f;
-        final float minEntityX = entity.x - halvedEntityWidth;
-        final float minEntityY = entity.y - halvedEntityHeight;
+        float[] entityBoundingBox = entity.getBoundingBox();
+        final float minEntityX = entityBoundingBox[0];
+        final float maxEntityX = entityBoundingBox[1];
+        final float minEntityY = entityBoundingBox[2];
+        final float maxEntityY = entityBoundingBox[3];
 
-        final float maxEntityX = entity.x + halvedEntityWidth;
-        final float maxEntityY = entity.y + halvedEntityHeight;
 
-        final float halvedBulletHeight = this.height / 2.0f;
-        final float halvedBulletWidth = this.width / 2.0f;
-        final float minBulletX = this.x - halvedBulletWidth;
-        final float minBulletY = this.y - halvedBulletHeight;
-
-        final float maxBulletX = this.x + halvedBulletWidth;
-        final float maxBulletY = this.y + halvedBulletHeight;
+        final float minBulletX = entityBoundingBox[0];
+        final float maxBulletX = entityBoundingBox[1];
+        final float minBulletY = entityBoundingBox[2];
+        final float maxBulletY = entityBoundingBox[3];
 
         if(minEntityX > maxBulletX || maxEntityX < minBulletX){
             return false;

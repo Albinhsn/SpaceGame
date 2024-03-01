@@ -53,6 +53,23 @@ public class Enemy extends Entity
 
     private void move(long tick){
 		if(lastUpdate + 10 <= tick){
+            switch(this.pathId){
+                case 0:{
+
+                    break;
+                }
+                case 1:{
+
+                    break;
+                } case 2:{
+
+                   break;
+                }
+                default:{
+                    System.out.printf("How did this happen to me %d\n", this.pathId);
+                    System.exit(1);
+                }
+            }
 			this.x             += moveSpeed;
 			lastUpdate          = tick;
 		}

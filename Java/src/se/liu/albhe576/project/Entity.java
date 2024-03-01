@@ -33,4 +33,16 @@ public abstract class Entity
         this.alive = true;
         this.rotation = rotation;
     }
+
+    public float[] getBoundingBox(){
+        final float halvedEntityHeight = this.height / 2.0f;
+        final float halvedEntityWidth = this.width / 2.0f;
+        final float minEntityX = this.x - halvedEntityWidth;
+        final float minEntityY = this.y - halvedEntityHeight;
+
+        final float maxEntityX = this.x + halvedEntityWidth;
+        final float maxEntityY = this.y + halvedEntityHeight;
+
+        return new float[]{minEntityX, maxEntityX, minEntityY, maxEntityY};
+    }
 }

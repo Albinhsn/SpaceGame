@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 public class Wave {
     private long startTime;
     private List<Enemy> enemies;
+    private List<Path> paths;
     public Wave(List<Enemy> enemies){
         this.enemies = enemies;
     }
