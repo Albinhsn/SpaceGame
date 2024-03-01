@@ -8,7 +8,7 @@
 * Create paths
 * Wave logic
   * Actually hoist out to wave function
-* Enemies actually shoot
+  * i.e the wave controls when shit spawns
 * Highscore
 * Menues
 

@@ -194,7 +194,7 @@ public class ResourceManager
 						-Game.SCREEN_HEIGHT * spawnPositionY,
 						Game.SCREEN_WIDTH * enemyEntityData.width,
 						Game.SCREEN_HEIGHT * enemyEntityData.height,
-						0,
+						enemyEntityData.textureId,
 						spawnTime,
 						pathId
 				));
@@ -246,18 +246,19 @@ public class ResourceManager
 		return new Player(0,0, width, height, 0);
 	}
 
-	public Bullet createNewBullet(Player player){
+	public static Bullet createNewBullet(Entity parent, int dir){
 		final float height = 10.0f;
 		final float width = 10.0f;
-		final float yOffset = (player.height + height) * 0.5f;
+		final float yOffset = (parent.height + height) * 0.5f;
 		return new Bullet(
-		player.x,
-		player.y + yOffset,
-		width,
-		height,
-		1,
-		player,
-				5.0f
+			parent.x,
+			parent.y + yOffset,
+			width,
+			height,
+			1,
+			parent,
+			5.0f * dir,
+				dir == 1 ? 0.0f : 180.0f
 		);
 	}
 
@@ -292,7 +293,6 @@ public class ResourceManager
 			for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
 				byte a = bytes[i];
 				byte val = (byte)(a * 4);
-				val = val > 80 ? val : 0;
 				buffer.put(idx + 0, val);
 				buffer.put(idx + 1, val);
 				buffer.put(idx + 2, val);

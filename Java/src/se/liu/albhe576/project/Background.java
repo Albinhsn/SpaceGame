@@ -59,12 +59,12 @@ public class Background {
         return entity.y - entity.height - 2.0f < -Game.SCREEN_HEIGHT;
     }
 
-    public void update(long startTime){
+    public void update(){
         for(Meteor meteor : this.meteors){
             if(this.entityIsOutOfBounds(meteor)){
                 this.updateMeteor(meteor);
             }
-            meteor.update(startTime);
+            meteor.update();
         }
 
     }

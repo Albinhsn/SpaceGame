@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -63,7 +62,7 @@ public class Game
 
         GL.createCapabilities();
     }
-    private ArrayList<Bullet> bullets;
+    private List<Bullet> bullets;
     private Wave wave;
     private final Renderer renderer;
     public static final int SCREEN_WIDTH = 620;
@@ -89,34 +88,31 @@ public class Game
 
 
     // ToDo figure out if this always is just bullets
-    private void updateEntities(long startTime){
-        for (Entity entity : bullets) {
-            entity.update(startTime);
+    private void updateBullets(){
+        for (Bullet bullet : bullets) {
+            bullet.update();
         }
     }
 
     private void checkCollision(){
         boolean collided     = false;
-        List<Bullet> bullets =  this.bullets;
+
         List<Entity> entities= this.wave.getEnemies();
         entities.add(this.player);
 
-        for(Bullet bullet: bullets){
+        for(Bullet bullet: this.bullets){
             collided |= bullet.checkCollision(entities);
         }
+
         if(collided){
-            this.bullets = (ArrayList<Bullet>) this.bullets.stream().filter(bullet -> bullet.alive).collect(Collectors.toList());
+            this.bullets.removeIf(entity -> !entity.alive);
             this.wave.removeKilledEnemies();
         }
     }
     public void updatePlayer(){
-        player.updatePlayerAcceleration(this.inputState);
-
-        if(this.inputState.isSpacePressed()){
-            boolean shot =  this.player.shoot();
-            if(shot){
-                this.bullets.add(resourceManager.createNewBullet(this.player));
-            }
+        Bullet bullet = player.updatePlayer(this.inputState);
+        if(bullet != null){
+            this.bullets.add(bullet);
         }
     }
 
@@ -130,8 +126,9 @@ public class Game
 
             // Update entities
             this.updatePlayer();
-            this.updateEntities(startTime);
-            this.wave.updateWave(startTime);
+            this.updateBullets();
+            this.bullets.addAll(this.wave.updateWave(startTime));
+
             this.checkCollision();
             if(!this.player.alive){
                 System.out.println("Game Over!");
@@ -148,7 +145,7 @@ public class Game
             this.renderer.renderEntities(this.wave.getEnemies());
 
             // Update background :)
-            this.background.update(startTime);
+            this.background.update();
             this.renderer.renderEntities(this.background.getMeteors());
 
             // This is the actual draw call

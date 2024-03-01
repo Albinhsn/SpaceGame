@@ -16,17 +16,18 @@ public class Bullet extends Entity
         float height,
         int textureIdx,
 	    Entity shooter,
-        float yAcc
+        float yAcc,
+        float rotation
     )
     {
-		super(x, y, width, height, textureIdx);
+		super(x, y, width, height, textureIdx, rotation);
 		this.parent = shooter;
         this.lastUpdate = System.currentTimeMillis();
         this.yAcc = yAcc;
     }
     private long lastUpdate;
 
-    @Override public void update(long startTime) {
+    public void update() {
 		if(lastUpdate + 10 <= System.currentTimeMillis()){
 			lastUpdate = System.currentTimeMillis();
 			this.y += this.yAcc;
@@ -62,7 +63,7 @@ public class Bullet extends Entity
 
     public boolean checkCollision(List<Entity> entities){
         for(Entity entity : entities){
-            if(this.collided(entity) && this.parent != entity){
+            if(this.collided(entity) && (this.parent.getClass() != entity.getClass())){
                 this.alive = false;
                 entity.alive = false;
                 return true;

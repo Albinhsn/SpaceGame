@@ -1,6 +1,7 @@
 package se.liu.albhe576.project;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class Entity
@@ -21,9 +22,7 @@ public abstract class Entity
     }
     protected float xAcceleration;
     protected float yAcceleration;
-    public abstract void update(long startTime);
-
-    protected Entity(float x, float y, float width, float height, int textureIdx){
+    protected Entity(float x, float y, float width, float height, int textureIdx, float rotation){
         this.x = x;
         this.y = y;
         this.width = width;
@@ -32,5 +31,6 @@ public abstract class Entity
         this.xAcceleration = 0.0f;
         this.yAcceleration = 0.0f;
         this.alive = true;
+        this.rotation = rotation;
     }
 }
