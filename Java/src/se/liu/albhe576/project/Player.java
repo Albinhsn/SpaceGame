@@ -9,7 +9,7 @@ public class Player  extends Entity{
 			this.lastShot = 0;
     }
 
-	public boolean updatePlayer(InputState inputState){
+	public boolean updatePlayer(InputState inputState, long lastTick){
 		final float moveSpeed = 5.0f;
 		this.xAcceleration = 0;
 		this.yAcceleration = 0;
@@ -32,16 +32,15 @@ public class Player  extends Entity{
 			this.y -= yAcceleration;
 		}
 
-		return inputState.isSpacePressed() && this.canShoot();
+		return inputState.isSpacePressed() && this.canShoot(lastTick);
 	}
 
-    public boolean canShoot(){
+    public boolean canShoot(long lastTick){
 		final long gcd = 500;
-		long timer = System.currentTimeMillis();
-		if(lastShot > timer){
+		if(lastShot > lastTick){
 			return false;
 		}
-		this.lastShot = timer + gcd;
+		this.lastShot = lastTick + gcd;
 		return true;
     }
 

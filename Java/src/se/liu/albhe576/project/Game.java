@@ -20,7 +20,113 @@ public class Game
 {
     private long window;
     private long score;
+    private Timer timer;
+    private long lastUpdated;
 
+    private final List<Bullet> bullets;
+    private final Wave wave;
+    private final Renderer renderer;
+    public static final int SCREEN_WIDTH = 620;
+    public static final int SCREEN_HEIGHT = 480;
+    private final InputState inputState;
+    private final ResourceManager resourceManager;
+    private final Player player;
+    private final Background background;
+
+    private void updateBullets(){
+        for (Bullet bullet : bullets) {
+            bullet.update(this.timer.getLastTick());
+        }
+    }
+
+    private void checkCollision(){
+
+        List<Entity> entities= this.wave.getEnemies();
+        entities.add(this.player);
+
+        for(Bullet bullet: this.bullets){
+            if(bullet.checkCollision(entities) && bullet.parent == this.player){
+                this.score += 100;
+                System.out.println(this.score);
+            }
+        }
+
+        this.bullets.removeIf(entity -> !entity.alive);
+        this.wave.removeKilledEnemies();
+    }
+    public void updatePlayer(){
+        if(player.updatePlayer(this.inputState, this.timer.getLastTick())){
+            this.bullets.add(this.resourceManager.createNewBullet(this.player));
+        }
+    }
+
+    private boolean shouldHandleUpdates(){
+        long lastTick = this.timer.getLastTick();
+        // 16 ms = 60fps
+        if(lastTick >= this.lastUpdated + 16){
+            this.lastUpdated = lastTick;
+            return true;
+        }
+        return false;
+    }
+
+    private void gameLoop(){
+        // Update entities
+        this.timer.updateTimer();
+
+
+        if(this.shouldHandleUpdates()){
+            // We just poll the events when we want to handle updates
+            glfwPollEvents();
+            this.updatePlayer();
+            this.bullets.addAll(this.wave.updateWave(this.timer.getLastTick(), this.resourceManager));
+            this.updateBullets();
+            this.checkCollision();
+            if(!this.player.alive){
+                System.out.printf("Game Over!\nScore: %d\n", this.score);
+                System.exit(1);
+            }
+
+            this.background.update();
+        }
+
+        // Init new frame
+        this.initNewFrame();
+
+        // Render entities
+        this.renderEverything();
+
+    }
+    private void renderEverything(){
+        List<Entity> entities = this.wave.getEnemies();
+        entities.add(this.player);
+        entities.addAll(this.bullets);
+        entities.addAll(this.background.getMeteors());
+
+        this.renderer.renderEntities(entities);
+    }
+
+    private void initNewFrame() {
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    }
+
+    public void runGame(){
+
+        this.timer.startTimer();
+        while(!glfwWindowShouldClose(window)){
+            // Poll input events
+
+            this.gameLoop();
+
+            // This is the actual draw call
+            glfwSwapBuffers(window);
+        }
+        glfwFreeCallbacks(window);
+        glfwDestroyWindow(window);
+
+        glfwTerminate();
+    }
     private void initGLFW(){
 
         final String title ="Jalaga";
@@ -57,26 +163,17 @@ public class Game
         }
 
         glfwMakeContextCurrent(window);
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
 
         glfwShowWindow(window);
 
         GL.createCapabilities();
     }
-    private List<Bullet> bullets;
-    private Wave wave;
-    private final Renderer renderer;
-    public static final int SCREEN_WIDTH = 620;
-    public static final int SCREEN_HEIGHT = 480;
-    private final InputState inputState;
-    private final ResourceManager resourceManager;
-    private final Player player;
-
-    private final Background background;
-
     public Game() {
         this.initGLFW();
+        this.timer = new Timer();
         this.score = 0;
+        this.lastUpdated = 0;
         this.resourceManager = new ResourceManager();
 
         this.player   = this.resourceManager.getPlayer();
@@ -86,77 +183,6 @@ public class Game
         this.background = new Background();
         this.inputState = new InputState(this.window);
         this.wave = this.resourceManager.getWave(0);
-    }
-
-
-    // ToDo figure out if this always is just bullets
-    private void updateBullets(){
-        for (Bullet bullet : bullets) {
-            bullet.update();
-        }
-    }
-
-    private void checkCollision(){
-
-        List<Entity> entities= this.wave.getEnemies();
-        entities.add(this.player);
-
-        for(Bullet bullet: this.bullets){
-            if(bullet.checkCollision(entities) && bullet.parent == this.player){
-                this.score += 100;
-                System.out.println(this.score);
-            }
-        }
-
-        this.bullets.removeIf(entity -> !entity.alive);
-        this.wave.removeKilledEnemies();
-    }
-    public void updatePlayer(){
-        if(player.updatePlayer(this.inputState)){
-            Bullet bullet = this.resourceManager.createNewBullet(this.player);
-            this.bullets.add(bullet);
-        }
-    }
-
-    public void runGame(){
-
-        final long startTime = System.currentTimeMillis();
-
-        while(!glfwWindowShouldClose(window)){
-            // Poll input events
-            glfwPollEvents();
-
-            // Update entities
-            this.updatePlayer();
-            this.updateBullets();
-            this.bullets.addAll(this.wave.updateWave(startTime, this.resourceManager));
-
-            this.checkCollision();
-            if(!this.player.alive){
-                System.out.printf("Game Over!\nScore: %d\n", this.score);
-                System.exit(1);
-            }
-
-            // Init new frame
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-            // Render entities
-            this.renderer.renderEntity(this.player);
-            this.renderer.renderEntities(this.bullets);
-            this.renderer.renderEntities(this.wave.getEnemies());
-
-            // Update background :)
-            this.background.update();
-            this.renderer.renderEntities(this.background.getMeteors());
-
-            // This is the actual draw call
-            glfwSwapBuffers(window);
-        }
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
-
-        glfwTerminate();
     }
 
     public static void main(String[] args) throws IOException {

@@ -8,12 +8,9 @@
 * Create proper paths
   * interpolate between two positions, enemyType also have some sort of function to modify the path
 
-
-
 ### Random
 * Fix images
   * just make them tga images and send y own parser
-* Create a commandbuffer or something to avoid async issues
 * Wave logic
   * Actually hoist out to wave function
   * i.e the wave controls when shit spawns
@@ -23,5 +20,10 @@
   * Main Menu
   * Settings/Pause Menu
   * Game over menu
+
+### Cleanup
+* Some sort of GC/Check that collision is done within screen bounds and stuff
+  * think we did collision check?
+  * don't think GC is neccessary atm with only 1 wave
 
 ### Then editor?

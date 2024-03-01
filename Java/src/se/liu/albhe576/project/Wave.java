@@ -20,11 +20,10 @@ public class Wave {
     public void setStartTime(long startTime){
         this.startTime = startTime;
     }
-    public List<Bullet> updateWave(long startTime, ResourceManager resourceManager){
-        // Check if they have spawned or not
+    public List<Bullet> updateWave(long lastTick, ResourceManager resourceManager){
         List<Bullet> bullets = new ArrayList<>();
-        for(Enemy enemy : enemies.stream().filter(e -> e.hasSpawned(startTime)).toList()){
-           if(enemy.update()){
+        for(Enemy enemy : enemies.stream().filter(e -> e.hasSpawned(lastTick)).toList()){
+           if(enemy.update(lastTick)){
                Bullet bullet = resourceManager.createNewBullet(enemy);
                bullets.add(bullet);
            }

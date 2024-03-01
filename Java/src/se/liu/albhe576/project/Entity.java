@@ -35,6 +35,16 @@ public abstract class Entity
         this.rotation = rotation;
     }
 
+    public boolean isWithinBounds(){
+        float[] bb = this.getBoundingBox();
+        final float minEntityX = bb[0];
+        final float minEntityY = bb[2];
+
+        final float maxEntityX = bb[1];
+        final float maxEntityY = bb[3];
+        return !(minEntityX < -Game.SCREEN_WIDTH || maxEntityX > Game.SCREEN_WIDTH || minEntityY < -Game.SCREEN_HEIGHT || maxEntityY > Game.SCREEN_HEIGHT);
+    }
+
     public float[] getBoundingBox(){
         final float halvedEntityHeight = this.height / 2.0f;
         final float halvedEntityWidth = this.width / 2.0f;

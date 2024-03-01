@@ -25,29 +25,26 @@ public class Enemy extends Entity
             this.lastShot       = 0;
     }
 
-    public boolean hasSpawned(long timeSinceWaveStarted){
-        return System.currentTimeMillis() - timeSinceWaveStarted >= this.spawnTime;
+    public boolean hasSpawned(long lastTick){
+        return lastTick >= this.spawnTime;
     }
 
     final Random rng = new Random();
 
-    public boolean willShoot(){
+    public boolean willShoot(long lastTick){
         final long gcd = rng.nextLong(400, 1000);
-        long timer = System.currentTimeMillis();
-        if(this.lastShot <= timer - gcd){
-            this.lastShot = timer + gcd;
+        if(this.lastShot <= lastTick - gcd){
+            this.lastShot = lastTick + gcd;
             return true;
         }
         return false;
 
     }
 
-    public boolean update() {
+    public boolean update(long lastTick) {
         if(this.alive){
-            this.move(System.currentTimeMillis());
-            if(this.willShoot()){{
-                return true;
-            }}
+            this.move(lastTick);
+            return this.willShoot(lastTick);
         }
         return false;
     }

@@ -4,51 +4,35 @@ import org.lwjgl.BufferUtils;
 
 import java.awt.*;
 import java.nio.DoubleBuffer;
+import java.util.Arrays;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
 public class InputState
 {
+
+    private final byte KEY_W  =(byte)'W';
+    private final byte KEY_A  =(byte)'A';
+    private final byte KEY_S  =(byte)'S';
+    private final byte KEY_D  =(byte)'D';
+    private final byte KEY_SPACE  =(byte)32;
     public InputState(long window){
-        this.k_w = false;
-        this.k_a = false;
-        this.k_s = false;
-        this.k_d = false;
-        this.k_space = false;
         this.k_mouse_1 = false;
         this.k_mouse_2 = false;
         this.mouseX = 0;
         this.mouseY = 0;
         this.window = window;
         this.initInputHandling();
+        Arrays.fill(this.keyboardState, false);
     }
-    private boolean k_w;
-    private boolean k_a;
-    private boolean k_s;
-    private boolean k_d;
-    private boolean k_space;
+    private final boolean[] keyboardState = new boolean[256];
     private boolean k_mouse_1;
     private boolean k_mouse_2;
     private int mouseX;
     private int mouseY;
     private final long window;
 
-    public void setSpace(boolean val){
-	this.k_space = val;
-    }
-    public void setW(boolean val){
-	this.k_w = val;
-    }
-    public void setA(boolean val){
-	this.k_a = val;
-    }
-    public void setS(boolean val){
-	this.k_s = val;
-    }
-    public void setD(boolean val){
-	this.k_d = val;
-    }
     public void setMouse1(boolean val){
 	this.k_mouse_1 = val;
     }
@@ -57,8 +41,8 @@ public class InputState
     }
 
     public void setMousePosition(int mouseX, int mouseY){
-	this.mouseX = mouseX;
-	this.mouseY = mouseY;
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
     }
 
     // Java please :(
@@ -69,31 +53,29 @@ public class InputState
     @Override public String toString() {
 	return String.format(
 		"W:%d, A:%d, S:%d, D:%d SB:%d mouse:(%d,%d), mouse_1:%d, mouse_2:%d",
-		bts(this.k_w),
-		bts(this.k_a),
-		bts(this.k_s),
-		bts(this.k_d),
-		bts(this.k_space),
+		bts(this.keyboardState[this.KEY_W]),
+		bts(this.keyboardState[this.KEY_A]),
+		bts(this.keyboardState[this.KEY_S]),
+		bts(this.keyboardState[this.KEY_D]),
+		bts(this.keyboardState[this.KEY_SPACE]),
 		this.mouseX, this.mouseY,
 		bts(this.k_mouse_1),
 		bts(this.k_mouse_2)
 	);
     }
 
-    public boolean isWPressed(){
-	return this.k_w;
-    }
+    public boolean isWPressed(){ return this.keyboardState[this.KEY_W]; }
     public boolean isAPressed(){
-	return this.k_a;
+        return this.keyboardState[this.KEY_A];
     }
     public boolean isSPressed(){
-	return this.k_s;
+        return this.keyboardState[this.KEY_S];
     }
     public boolean isDPressed(){
-	return this.k_d;
+        return this.keyboardState[this.KEY_D];
     }
     public boolean isSpacePressed(){
-	return this.k_space;
+        return this.keyboardState[this.KEY_SPACE];
     }
     public Point getMousePosition(){return new Point(this.mouseX, this.mouseY);}
     public boolean isMouse1Pressed(){
@@ -128,31 +110,10 @@ public class InputState
                 glfwSetWindowShouldClose(window, true);
             }
             else if(action == GLFW_PRESS || action == GLFW_RELEASE){
-                boolean pressed = action == GLFW_PRESS;
-                switch(key){
-                    case GLFW_KEY_W:{
-                        this.setW(pressed);
-                        break;
-                    }
-                    case GLFW_KEY_A:{
-                        this.setA(pressed);
-                        break;
-                    }
-                    case GLFW_KEY_S:{
-                        this.setS(pressed);
-                        break;
-                    }
-                    case GLFW_KEY_D:{
-                        this.setD(pressed);
-                        break;
-                    }
-                    case GLFW_KEY_SPACE:{
-                        this.setSpace(pressed);
-                        break;
-                    }
-                    default:{
-                        break;
-                    }
+                if(key <= 255){
+                    this.keyboardState[key] = action == GLFW_PRESS;
+                }else{
+                    System.out.printf("Unknown key %d\n", key);
                 }
             }
         });

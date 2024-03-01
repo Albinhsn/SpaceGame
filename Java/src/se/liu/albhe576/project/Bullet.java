@@ -22,14 +22,14 @@ public class Bullet extends Entity
     {
 		super(0, x, y, width, height, textureIdx, rotation);
 		this.parent = shooter;
-        this.lastUpdate = System.currentTimeMillis();
+        this.lastUpdate = 0;
         this.yAcc = yAcc;
     }
     private long lastUpdate;
 
-    public void update() {
-		if(lastUpdate + 10 <= System.currentTimeMillis()){
-			lastUpdate = System.currentTimeMillis();
+    public void update(long lastTick) {
+		if(lastUpdate + 10 <= lastTick){
+			lastUpdate = lastTick;
 			this.y += this.yAcc;
 		}
     }
@@ -60,12 +60,14 @@ public class Bullet extends Entity
 
     public boolean checkCollision(List<Entity> entities){
         for(Entity entity : entities){
-            if(this.collided(entity) && (this.parent.getClass() != entity.getClass())){
+            if(this.isWithinBounds() && this.collided(entity) && (this.parent.getClass() != entity.getClass())){
                 this.alive = false;
+
                 entity.hp -= 1;
                 if(entity instanceof Player){
                     System.out.printf("Player has %d lives!\n", entity.hp);
                 }
+
                 if(entity.hp <= 0){
                     entity.alive = false;
                 }
