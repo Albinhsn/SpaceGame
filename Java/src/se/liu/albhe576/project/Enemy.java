@@ -55,14 +55,15 @@ public class Enemy extends Entity
 		if(lastUpdate + 10 <= tick){
             switch(this.pathId){
                 case 0:{
-
+                    this.y += (float) Math.sin((double) lastUpdate / 500) * 2;
+                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2);
                     break;
                 }
                 case 1:{
-
+                    this.y += (float) Math.sin((double) lastUpdate / 1000) * 2;
                     break;
                 } case 2:{
-
+                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2);
                    break;
                 }
                 default:{
@@ -70,7 +71,7 @@ public class Enemy extends Entity
                     System.exit(1);
                 }
             }
-			this.x             += moveSpeed;
+            this.x += moveSpeed;
 			lastUpdate          = tick;
 		}
     }

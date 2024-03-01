@@ -40,9 +40,10 @@ public class Renderer
     }
 
     public float[] getTransformationMatrix(float x, float y, float width, float height, float rotation){
+        float r = (float) (rotation * Math.PI / 180.0f);
         float [] rotationM = new float[]{
-                (float)Math.cos(rotation), (float)Math.sin(rotation), 0,
-                (float)-Math.sin(rotation), (float)Math.cos(rotation), 0,
+                (float)Math.cos(r), (float)Math.sin(r), 0,
+                (float)-Math.sin(r), (float)Math.cos(r), 0,
                 0,0,1
         };
 

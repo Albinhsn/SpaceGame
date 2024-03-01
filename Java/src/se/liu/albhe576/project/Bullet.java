@@ -43,10 +43,11 @@ public class Bullet extends Entity
         final float maxEntityY = entityBoundingBox[3];
 
 
-        final float minBulletX = entityBoundingBox[0];
-        final float maxBulletX = entityBoundingBox[1];
-        final float minBulletY = entityBoundingBox[2];
-        final float maxBulletY = entityBoundingBox[3];
+        float[] bulletBoundingBox = this.getBoundingBox();
+        final float minBulletX = bulletBoundingBox[0];
+        final float maxBulletX = bulletBoundingBox[1];
+        final float minBulletY = bulletBoundingBox[2];
+        final float maxBulletY = bulletBoundingBox[3];
 
         if(minEntityX > maxBulletX || maxEntityX < minBulletX){
             return false;
