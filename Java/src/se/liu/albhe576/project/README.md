@@ -2,16 +2,15 @@
 
 ## ToDo
 ### Data
-* Load in rest of entities
-* Rewrite binaryDataConvertScript thingy
-  * spawnTime to long
-  * Create Paths?
-
 * Create one large image and be able to parse it
 
 ### Game things
-* Projectile collision
+* Create paths
 * Wave logic
+  * Actually hoist out to wave function
+* Enemies actually shoot
+* Highscore
+* Menues
 
 ### Random
 

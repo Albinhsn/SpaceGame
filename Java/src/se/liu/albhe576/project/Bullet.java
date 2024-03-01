@@ -23,7 +23,6 @@ public class Bullet extends Entity
 		this.parent = shooter;
         this.lastUpdate = System.currentTimeMillis();
         this.yAcc = yAcc;
-        this.alive = true;
     }
     private long lastUpdate;
 
@@ -55,7 +54,10 @@ public class Bullet extends Entity
         if(minEntityX > maxBulletX || maxEntityX < minBulletX){
             return false;
         }
-        return !(minEntityY > maxBulletY || maxEntityY < minBulletY);
+        if(minEntityY > maxBulletY || maxEntityY < minBulletY){
+            return false;
+        }
+        return true;
     }
 
     public boolean checkCollision(List<Entity> entities){

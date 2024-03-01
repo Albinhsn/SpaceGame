@@ -102,7 +102,7 @@ public class Game
         entities.add(this.player);
 
         for(Bullet bullet: bullets){
-            collided = bullet.checkCollision(entities);
+            collided |= bullet.checkCollision(entities);
         }
         if(collided){
             this.bullets = (ArrayList<Bullet>) this.bullets.stream().filter(bullet -> bullet.alive).collect(Collectors.toList());

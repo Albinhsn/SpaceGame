@@ -8,14 +8,16 @@ public class Enemy extends Entity
     private long lastUpdate;
     private boolean isAlive;
     private long spawnTime;
+    private final float moveSpeed;
 
-    public Enemy(final float x, final float y, final float width, final float height, int textureIdx, float spawnTime, int pathId)
+    public Enemy(final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
     {
 		super(x, y, width, height, textureIdx);
 			this.pathId         = pathId;
 			this.lastUpdate     = 0;
             this.isAlive        = true;
-            this.spawnTime      = (long)(spawnTime * 1000);
+            this.spawnTime      = spawnTime;
+            this.moveSpeed = x > 0 ? -3 : 3;
     }
 
     public boolean hasSpawned(long timeSinceWaveStarted){
@@ -31,11 +33,8 @@ public class Enemy extends Entity
 
     private void move(long tick){
 		if(lastUpdate + 10 <= tick){
-			final int moveSpeed = 3;
-			this.y             -= moveSpeed;
+			this.x             += moveSpeed;
 			lastUpdate          = tick;
-            System.out.printf("Moved to %f %f\n", this.x, this.y);
-
 		}
     }
 }

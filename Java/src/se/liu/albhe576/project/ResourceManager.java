@@ -156,6 +156,9 @@ public class ResourceManager
 		return ByteBuffer.wrap(data, idx, 4).getInt();
 	}
 
+	private long parseLongFromByteArray(byte [] data, int idx){
+		return ByteBuffer.wrap(data, idx, 8).getLong();
+	}
 	private float parseFloatFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getFloat();
 	}
@@ -165,26 +168,29 @@ public class ResourceManager
 
 	private void loadWaveData(){
 		this.waves = new ArrayList<>();
+
 		for(String waveFileLocation : this.WAVE_LOCATIONS){
 			ArrayList<Enemy> enemies = new ArrayList<>();
 			final byte[] fileData;
+
 			try{
 				fileData = Files.readAllBytes(Path.of(waveFileLocation));
 			}catch(IOException e){
 				e.printStackTrace();
 				continue;
 			}
+
 			for(int fileIndex = 0; fileIndex < fileData.length;){
 				final int enemyType 	   = this.parseIntFromByteArray(fileData, fileIndex + 0);
-				final float spawnTime	   = this.parseFloatFromByteArray(fileData, fileIndex + 4);
-				final float spawnPositionX = this.parseFloatFromByteArray(fileData, fileIndex + 8);
-				final float spawnPositionY = this.parseFloatFromByteArray(fileData, fileIndex + 12);
-				final int pathId 		   = this.parseIntFromByteArray(fileData, fileIndex + 16);
-				fileIndex += 20;
+				final long spawnTime	   = this.parseLongFromByteArray(fileData, fileIndex + 4);
+				final float spawnPositionX = this.parseFloatFromByteArray(fileData, fileIndex + 12);
+				final float spawnPositionY = this.parseFloatFromByteArray(fileData, fileIndex + 16);
+				final int pathId 		   = this.parseIntFromByteArray(fileData, fileIndex + 20);
+				fileIndex += 24;
 
 				EntityData enemyEntityData = this.entityData.get(enemyType);
 				enemies.add(new Enemy(
-						0,
+						Game.SCREEN_WIDTH * spawnPositionX,
 						-Game.SCREEN_HEIGHT * spawnPositionY,
 						Game.SCREEN_WIDTH * enemyEntityData.width,
 						Game.SCREEN_HEIGHT * enemyEntityData.height,
@@ -192,7 +198,6 @@ public class ResourceManager
 						spawnTime,
 						pathId
 				));
-				break;
 			}
 			this.waves.add(new Wave(enemies));
 		}
@@ -325,11 +330,15 @@ public class ResourceManager
     private final String []TEXTURE_LOCATIONS= new String[]{
 			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
+			"./resources/images/PNG/Default/enemy_B.png",
+			"./resources/images/PNG/Default/enemy_E.png",
+			"./resources/images/PNG/Default/enemy_C.png",
+			"./resources/images/PNG/Default/satellite_C.png",
 			"./resources/images/PNG/Default/meteor_detailedLarge.png",
     };
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{
-			"./resources/binaryData/wave02024-01-29 09:17:16.757.bin",
+			"./resources/binaryData/wave12024-03-01 10:28:47.53.bin",
 	};
 
 	private String getShaderSource(String fileLocation) throws IOException {

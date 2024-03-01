@@ -27,10 +27,9 @@
 ### Count
 * 24
 ### Attributes
-* enemyType
+* textureIdx 
   * int
 * spawnTime
-  * float 
     * This should be a long
 * spawnPositionX
   * float 

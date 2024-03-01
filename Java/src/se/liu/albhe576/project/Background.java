@@ -38,6 +38,7 @@ public class Background {
     }
     private void initMeteors(){
         final int numberOfMeteors = 15;
+        final int textureIdx = 6;
         for(int i = 0; i < numberOfMeteors; i++){
             float x = this.getRandomMeteorX();
             float y = this.getRandomMeteorY();
@@ -45,7 +46,7 @@ public class Background {
             float width = height;
             float yAcceleration = this.getRandomMeteorAcceleration();
 
-            this.meteors.add(new Meteor(x,y,width ,height , 2, yAcceleration));
+            this.meteors.add(new Meteor(x,y,width ,height , textureIdx, yAcceleration));
         }
 
     }
