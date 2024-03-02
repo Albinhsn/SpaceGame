@@ -32,61 +32,71 @@ public class TrueType {
         System.out.println(trueType.tableDirectory);
 
         trueType.records = new TableRecord[trueType.tableDirectory.numTables];
+
+        TableRecord locaRecord = null;
+        TableRecord hmtxRecord = null;
+
         for(int i = 0; i < trueType.tableDirectory.numTables; i++, idx += TableRecord.size){
             trueType.records[i] = new TableRecord(fileData, idx);
             System.out.println(trueType.records[i]);
-        }
-        for(TableRecord record : trueType.records){
+
+            TableRecord record = trueType.records[i];
+            Table table;
             switch(record.tag){
                 case "cmap":{
-                    trueType.tables.put(record.tag, new TableCMAP(fileData, record));
+                    table =  new TableCMAP(fileData, record);
                     break;
                 }
                 case "OS/2":{
-                    trueType.tables.put(record.tag, new TableOSSlash2(fileData, record));
+                    table =  new TableOSSlash2(fileData, record);
                     break;
                 }
                 case "hhea":{
-                    trueType.tables.put(record.tag, new TableHHEA(fileData, record));
+                    table =  new TableHHEA(fileData, record);
                     break;
                 }
                 case "glyf":{
-                    trueType.tables.put(record.tag, new TableGLYF(fileData, record));
+                    table = new TableGLYF(fileData, record);
                     break;
                 }
                 case "head":{
-                    trueType.tables.put(record.tag, new TableHEAD(fileData, record));
+                    table = new TableHEAD(fileData, record);
                     break;
                 }
                 case "hmtx":{
-                    trueType.tables.put(record.tag, new TableHMTX(fileData, record));
-                    break;
+                    hmtxRecord = record;
+                    continue;
                 }
                 case "loca":{
-                    trueType.tables.put(record.tag, new TableLOCA(fileData, record));
-                    break;
+                    locaRecord = record;
+                    continue;
                 }
                 case "maxp":{
-                    trueType.tables.put(record.tag, new TableMAXP(fileData, record));
+                    table = new TableMAXP(fileData, record);
                     break;
                 }
                 case "name":{
-                    trueType.tables.put(record.tag, new TableNAME(fileData, record));
+                    table = new TableNAME(fileData, record);
                     break;
                 }
                 case "post":{
-                    trueType.tables.put(record.tag, new TablePOST(fileData, record));
+                    table = new TablePOST(fileData, record);
                     break;
                 }
                 default:{
                     System.out.printf("Unknown record '%s'\n", record.tag);
+                    continue;
                 }
-
             }
-        }
-        for(Table table : trueType.tables.values()){
             System.out.println(table);
+            trueType.tables.put(record.tag, table);
         }
+        assert(locaRecord != null);
+        assert(hmtxRecord != null);
+        trueType.tables.put("loca", new TableLOCA(fileData, locaRecord, trueType));
+        trueType.tables.put("hmtx", new TableHMTX(fileData, locaRecord, trueType));
+        System.out.println(trueType.tables.get("loca"));
+        System.out.println(trueType.tables.get("hmtx"));
 
         return trueType;
     }
@@ -155,8 +165,27 @@ public class TrueType {
     static class TablePOST extends Table{
         @Override
         public String toString() {
-            // ToDo :)
-            return "TablePOST:";
+            StringBuilder builder = new StringBuilder();
+            builder.append("TablePOST:");
+            builder.append(String.format("\n\tversion:0x%x", this.version));
+            builder.append(String.format("\n\titalicAngle:%d", this.italicAngle));
+            builder.append(String.format("\n\tunderlinePosition:%d", this.underlinePosition));
+            builder.append(String.format("\n\tunderlineThickness:%d", this.underlineThickness));
+            builder.append(String.format("\n\tisFixedPitch:%d", this.isFixedPitch));
+            builder.append(String.format("\n\tminMemType42:%d", this.minMemType42));
+            builder.append(String.format("\n\tmaxMemType42:%d", this.maxMemType42));
+            builder.append(String.format("\n\tminMemType1:%d", this.minMemType1));
+            builder.append(String.format("\n\tmaxMemType1:%d", this.maxMemType1));
+            if(this.version == 0x00020000 || this.version == 0x00025000){
+                builder.append(String.format("\n\tnumGlyphs:%d", this.numGlyphs));
+                builder.append("\n\tglyphNameIndex:");
+                for(int i = 0; i < this.numGlyphs;i++){
+                    builder.append(String.format("\n\t\t%d", this.glyphNameIndex[i]));
+                }
+
+            }
+
+            return builder.toString();
         }
 
         int version;
@@ -170,8 +199,34 @@ public class TrueType {
         int minMemType1;
         int maxMemType1;
 
-        public TablePOST(byte [] data, TableRecord record){
+        // Only in 2.0 and 2.5
+        short numGlyphs;
+        short []glyphNameIndex;
+        byte []stringData;
 
+
+        public TablePOST(byte [] data, TableRecord record){
+            int offset = record.offset;
+            this.version            = parseIntFromByteArray(data, offset + 0);
+            this.italicAngle        = parseIntFromByteArray(data, offset + 4);
+            this.underlinePosition  = parseShortFromByteArray(data, offset + 8);
+            this.underlineThickness = parseShortFromByteArray(data, offset + 10);
+            this.isFixedPitch       = parseIntFromByteArray(data, offset + 12);
+            this.minMemType42       = parseIntFromByteArray(data, offset + 16);
+            this.maxMemType42       = parseIntFromByteArray(data, offset + 20);
+            this.minMemType1        = parseIntFromByteArray(data, offset + 24);
+            this.maxMemType1        = parseIntFromByteArray(data, offset + 28);
+
+            if(this.version == 0x00020000 || this.version == 0x00025000){
+                this.numGlyphs = parseShortFromByteArray(data, offset + 28);
+                this.glyphNameIndex = new short[this.numGlyphs];
+                for(int i = 0; i < this.numGlyphs; i++){
+                    this.glyphNameIndex[i] = parseShortFromByteArray(data, offset + 30 + i  * 4);
+                }
+                // Variable?
+
+
+            }
         }
     }
     static class TableNAME extends Table{
@@ -279,20 +334,51 @@ public class TrueType {
     static class TableLOCA extends Table{
         @Override
         public String toString() {
-            return "TableLOCA:";
+            StringBuilder builder = new StringBuilder();
+            builder.append("TableLOCA:");
+            if(this.shortVersion){
+                builder.append(String.format("\n\tOffsets:%d", this.offsetUint16.length));
+            }else{
+                builder.append(String.format("\n\t\tOffset:%d", this.offsetUint32.length));
+            }
+            return builder.toString();
         }
 
+        boolean shortVersion;
         short []offsetUint16;
         int []offsetUint32;
-        public TableLOCA(byte [] data, TableRecord record){
-            // ToDo :)
+        public TableLOCA(byte [] data, TableRecord record, TrueType trueType){
+            TableHEAD head = (TableHEAD) trueType.tables.get("head");
+            TableMAXP maxp = (TableMAXP) trueType.tables.get("maxp");
 
+            int n = maxp.numGlyphs;
+            int offset = record.offset;
+            if(head.indexToLocFormat == 0){
+                shortVersion = true;
+                this.offsetUint16 = new short[n];
+                for(int i = 0; i < n; i++){
+                    this.offsetUint16[i] = parseShortFromByteArray(data, offset + i * 2);
+                }
+
+            }else{
+                assert(head.indexToLocFormat == 1);
+                this.offsetUint32 = new int[n];
+                shortVersion = false;
+                for(int i = 0; i < n; i++){
+                    this.offsetUint32[i] = parseIntFromByteArray(data, offset + i * 4);
+                }
+            }
         }
     }
     static class TableHMTX extends Table{
         @Override
         public String toString() {
-            return "TableHMTX:";
+            StringBuilder builder = new StringBuilder();
+            builder.append("TableHMTX");
+            builder.append(String.format("\n\thMetrics:%d", this.hMetrics.length));
+            builder.append(String.format("\n\tleftSideBearings:%d", this.leftSideBearings.length));
+
+            return builder.toString();
         }
 
         // depends on numberOfHMetrics
@@ -300,6 +386,11 @@ public class TrueType {
         // depends on (numGlyphs - numberOfHMetrics)
         short []leftSideBearings;
         static class LongHOrMetric{
+            @Override
+            public String toString() {
+                return String.format("%d %d", this.advanceWidth, this.lsb);
+            }
+
             short advanceWidth;
             short lsb;
             public LongHOrMetric(short aw, short l){
@@ -308,8 +399,27 @@ public class TrueType {
             }
 
         }
-        public TableHMTX(byte [] data, TableRecord record){
-            // ToDo :)
+        public TableHMTX(byte [] data, TableRecord record, TrueType trueType){
+            TableHHEA hhea = (TableHHEA) trueType.tables.get("hhea");
+            TableMAXP maxp = (TableMAXP) trueType.tables.get("maxp");
+
+            int numberOfHMetrics = hhea.numberOfHMetrics;
+            int numGlyphs = maxp.numGlyphs;
+
+            int offset = record.offset;
+
+            this.hMetrics = new LongHOrMetric[numberOfHMetrics];
+            for(int i = 0; i < numberOfHMetrics; i++){
+                short advanceWidth = parseShortFromByteArray(data, offset + i * 4);
+                short lsb = parseShortFromByteArray(data, offset + i * 4 + 2);
+                this.hMetrics[i] = new LongHOrMetric(advanceWidth, lsb);
+            }
+
+            offset += numberOfHMetrics * 4;
+            this.leftSideBearings = new short[numGlyphs - numberOfHMetrics];
+            for(int i = 0; i < numGlyphs - numberOfHMetrics; i++){
+                this.leftSideBearings[i] = parseShortFromByteArray(data, offset + i * 2);
+            }
         }
     }
     static class TableHHEA extends Table{
