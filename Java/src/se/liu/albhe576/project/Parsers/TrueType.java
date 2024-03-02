@@ -9,7 +9,7 @@ import java.util.*;
 public class TrueType {
     private TableDirectory tableDirectory;
     private TableRecord[] records;
-    HashMap<String, Table> tables;
+    private final HashMap<String, Table> tables;
     private static int parseIntFromByteArray(byte [] data, int idx){
         return ByteBuffer.wrap(data, idx, 4).getInt();
     }
@@ -35,6 +35,7 @@ public class TrueType {
 
         TableRecord locaRecord = null;
         TableRecord hmtxRecord = null;
+        TableRecord glyfRecord = null;
 
         for(int i = 0; i < trueType.tableDirectory.numTables; i++, idx += TableRecord.size){
             trueType.records[i] = new TableRecord(fileData, idx);
@@ -56,8 +57,8 @@ public class TrueType {
                     break;
                 }
                 case "glyf":{
-                    table = new TableGLYF(fileData, record);
-                    break;
+                    glyfRecord = record;
+                    continue;
                 }
                 case "head":{
                     table = new TableHEAD(fileData, record);
@@ -93,6 +94,8 @@ public class TrueType {
         }
         assert(locaRecord != null);
         assert(hmtxRecord != null);
+        assert(glyfRecord != null);
+        trueType.tables.put("glyf", new TableGLYF(fileData, glyfRecord, trueType));
         trueType.tables.put("loca", new TableLOCA(fileData, locaRecord, trueType));
         trueType.tables.put("hmtx", new TableHMTX(fileData, locaRecord, trueType));
         System.out.println(trueType.tables.get("loca"));
@@ -224,24 +227,78 @@ public class TrueType {
                     this.glyphNameIndex[i] = parseShortFromByteArray(data, offset + 30 + i  * 4);
                 }
                 // Variable?
-
-
             }
         }
     }
     static class TableNAME extends Table{
-        @Override
-        public String toString() {
-            // ToDo :)
-            return "TableNAME:";
-        }
 
         static class NameRecord{
+            @Override
+            public String toString() {
+                StringBuilder builder = new StringBuilder();
+                builder.append(String.format("\n\t\tplatformID:%d", this.platformID));
+                builder.append(String.format("\n\t\tencodingID:%d", this.encodingID));
+                builder.append(String.format("\n\t\tlanguageID:%d, 0x%x", this.languageID, this.languageID));
+                builder.append(String.format("\n\t\tnameID:%d", this.nameID));
+                builder.append(String.format("\n\t\tlength:%d", this.length));
+                builder.append(String.format("\n\t\tstringOffset:%d", this.stringOffset));
 
+                return builder.toString();
+            }
+
+            public static final int size = 12;
+            short platformID;
+            short encodingID;
+            short languageID;
+            short nameID;
+            short length;
+            short stringOffset;
+            public NameRecord(byte [] data, int offset){
+                this.platformID     = parseShortFromByteArray(data, offset);
+                this.encodingID     = parseShortFromByteArray(data, offset + 2);
+                this.languageID     = parseShortFromByteArray(data, offset + 4);
+                this.nameID         = parseShortFromByteArray(data, offset + 6);
+                this.length         = parseShortFromByteArray(data, offset + 8);
+                this.stringOffset   = parseShortFromByteArray(data, offset + 10);
+            }
         }
         static class LangTagRecord{
+            @Override
+            public String toString() {
+                StringBuilder builder = new StringBuilder();
+                builder.append(String.format("\n\t\tlength:%d", this.length));
+                builder.append(String.format("\n\t\tlangTagOffset:%d", this.langTagOffset));
+
+                return builder.toString();
+            }
+
             short length;
             short langTagOffset;
+            public LangTagRecord(short length, short langTagOffset){
+                this.length = length;
+                this.langTagOffset = langTagOffset;
+            }
+        }
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("TableNAME:");
+            builder.append(String.format("\n\tversion:%d", this.version));
+            builder.append(String.format("\n\tcount:%d", this.count));
+            builder.append(String.format("\n\tstorageOffset:%d", this.storageOffset));
+            builder.append("\n\tnameRecords:");
+            for(int i = 0; i < this.count; i++){
+                builder.append(String.format("\n\t%d:", i));
+                builder.append(this.nameRecords[i]);
+            }
+            builder.append(String.format("\n\tlangTagCount:%d", this.langTagCount));
+            builder.append("\n\tlangTagRecord:");
+            for(int i = 0; i < this.langTagCount; i++){
+                builder.append(String.format("\n\t%d:", i));
+                builder.append(this.langTagRecord[i]);
+            }
+
+            return builder.toString();
         }
         short version;
         short count;
@@ -257,9 +314,21 @@ public class TrueType {
             this.storageOffset = parseShortFromByteArray(data, offset + 4);
             this.nameRecords = new NameRecord[this.count];
 
+            offset += 6;
+            for(int i = 0; i < this.count; i++, offset += NameRecord.size){
+                this.nameRecords[i] = new NameRecord(data, offset);
+            }
+
             if(this.version == 1){
-                this.langTagCount = parseShortFromByteArray(data, offset + 6);
+                this.langTagCount = parseShortFromByteArray(data, offset + 2);
                 this.langTagRecord = new LangTagRecord[this.langTagCount];
+
+                offset += 2;
+                for(int i = 0; i < this.langTagCount; i++, offset += 4){
+                    short l = parseShortFromByteArray(data, offset);
+                    short lto = parseShortFromByteArray(data, offset + 2);
+                    this.langTagRecord[i] = new LangTagRecord(l, lto);
+                }
 
             }else{
                 assert(this.version == 0);
@@ -570,6 +639,15 @@ public class TrueType {
             builder.append(String.format("\n\tyMin:%d", this.yMin));
             builder.append(String.format("\n\txMax:%d", this.xMax));
             builder.append(String.format("\n\tyMax:%d", this.yMax));
+            builder.append("\n\tendPtsOfContours:");
+            for(int i = 0; i < this.numberOfContours; i++){
+                builder.append(String.format("\n\t\t%d:%d", i, this.endPtsOfContours[i]));
+            }
+            builder.append("\n\tinstructions:");
+            for(int i = 0; i < this.instructionLength; i++){
+                builder.append(String.format("\n\t\t%d:%d", i, this.instructions[i]));
+            }
+
 
             return builder.toString();
         }
@@ -579,13 +657,60 @@ public class TrueType {
         short yMin;
         short xMax;
         short yMax;
-        public TableGLYF(byte [] data, TableRecord record){
+        short []endPtsOfContours;
+        short instructionLength;
+        byte [] instructions;
+        byte[] flags;
+        byte[] xCoordinates;
+        byte[] yCoordinates;
+
+        public TableGLYF(byte [] data, TableRecord record, TrueType trueType){
             int offset = record.offset;
             this.numberOfContours   = parseShortFromByteArray(data, offset + 0);
             this.xMin               = parseShortFromByteArray(data, offset + 2);
             this.yMin               = parseShortFromByteArray(data, offset + 4);
             this.xMax               = parseShortFromByteArray(data, offset + 6);
             this.yMax               = parseShortFromByteArray(data, offset + 8);
+
+            if(this.numberOfContours >= 0){
+                // Simple Glyph Table
+                this.endPtsOfContours = new short[this.numberOfContours];
+                offset += 10;
+                for(int i = 0; i < this.numberOfContours; i++, offset += 2){
+                    this.endPtsOfContours[i] = parseShortFromByteArray(data, offset);
+                }
+
+                this.instructionLength = parseShortFromByteArray(data, offset);
+                offset += 2;
+
+                TableHEAD head = (TableHEAD) trueType.tables.get("head");
+                int unitsPerEm = head.unitsPerEm;
+                System.out.println(unitsPerEm);
+
+                this.instructions = new byte[this.instructionLength];
+                for(int i = 0; i < this.instructionLength; i++, offset += 1){
+                   this.instructions[i] = data[offset];
+                }
+
+                int repeatsFor = this.endPtsOfContours[this.numberOfContours - 1];
+
+                this.flags = new byte[repeatsFor];
+                for(int i = 0; i < repeatsFor; i++, offset += 1){
+                    this.flags[i] = data[offset];
+                }
+
+                this.xCoordinates = new byte[repeatsFor];
+                for(int i = 0; i < repeatsFor; i++, offset += 1){
+                    this.xCoordinates[i] = data[offset];
+                }
+
+                this.yCoordinates = new byte[repeatsFor];
+                for(int i = 0; i < repeatsFor; i++, offset += 1){
+                    this.yCoordinates[i] = data[offset];
+                    System.out.println(this.flags[i] + "->" + this.xCoordinates[i] + "," + this.yCoordinates[i]);
+                }
+                System.exit(1);
+            }
         }
     }
     static class TableOSSlash2 extends Table{
