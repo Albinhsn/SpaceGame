@@ -65,12 +65,11 @@ public class ResourceManager
 		}
 	}
 
-	private void generateTexture(Texture texture){
+	public void generateTexture(int textureId, int width, int height, ByteBuffer data){
 
-		texture.textureId = glGenTextures();
-		glBindTexture(GL_TEXTURE_2D, texture.textureId);
+		glBindTexture(GL_TEXTURE_2D, textureId);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.getData());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -144,7 +143,8 @@ public class ResourceManager
 				continue;
 			}
 
-			this.generateTexture(texture);
+			texture.textureId = glGenTextures();
+			this.generateTexture(texture.textureId, texture.getWidth(), texture.getHeight(), texture.getData());
 			this.generateVertexArrayAndVertexBuffer(texture);
 			this.textures.add(texture);
 		}

@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.opengl.GL40.*;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -104,6 +105,7 @@ public class Game
         entities.addAll(this.background.getMeteors());
 
         this.renderer.renderEntities(entities);
+        this.renderer.renderText("Hello World", 0, 0, 15, Color.WHITE);
     }
 
     private void initNewFrame() {
@@ -168,6 +170,9 @@ public class Game
         glfwShowWindow(window);
 
         GL.createCapabilities();
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
     public Game() {
         this.initGLFW();

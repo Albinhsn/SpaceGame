@@ -661,8 +661,8 @@ public class TrueType {
         short instructionLength;
         byte [] instructions;
         byte[] flags;
-        byte[] xCoordinates;
-        byte[] yCoordinates;
+        short [] xCoordinates;
+        short [] yCoordinates;
 
         public TableGLYF(byte [] data, TableRecord record, TrueType trueType){
             int offset = record.offset;
@@ -685,7 +685,6 @@ public class TrueType {
 
                 TableHEAD head = (TableHEAD) trueType.tables.get("head");
                 int unitsPerEm = head.unitsPerEm;
-                System.out.println(unitsPerEm);
 
                 this.instructions = new byte[this.instructionLength];
                 for(int i = 0; i < this.instructionLength; i++, offset += 1){
@@ -699,17 +698,24 @@ public class TrueType {
                     this.flags[i] = data[offset];
                 }
 
-                this.xCoordinates = new byte[repeatsFor];
-                for(int i = 0; i < repeatsFor; i++, offset += 1){
-                    this.xCoordinates[i] = data[offset];
+                this.xCoordinates = new short[repeatsFor];
+                for(int i = 0; i < repeatsFor;  offset += 1 + this.flags[i], i++){
+                    if(this.flags[i] == 1){
+                        this.xCoordinates[i] = (short)((data[offset + 1] << 8)  | data[offset]);
+                    }else{
+
+                        this.xCoordinates[i] = data[offset];
+                    }
                 }
 
-                this.yCoordinates = new byte[repeatsFor];
-                for(int i = 0; i < repeatsFor; i++, offset += 1){
-                    this.yCoordinates[i] = data[offset];
-                    System.out.println(this.flags[i] + "->" + this.xCoordinates[i] + "," + this.yCoordinates[i]);
+                this.yCoordinates = new short[repeatsFor];
+                for(int i = 0; i < repeatsFor; offset += 1 + this.flags[i] == 2 ? 1 : 0, i++){
+                    if(this.flags[i] == 2) {
+                        this.yCoordinates[i] = (short)((data[offset + 1] >> 8) + data[offset]);
+                    }else{
+                        this.yCoordinates[i] = data[offset];
+                    }
                 }
-                System.exit(1);
             }
         }
     }
