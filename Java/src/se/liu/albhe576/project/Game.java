@@ -80,7 +80,7 @@ public class Game
         this.timer.updateTimer();
 
         if(this.shouldHandleUpdates()){
-            glfwPollEvents();
+            this.queryInput();
             if(this.inputState.isPPressed()){
                 this.updateUIState(UIState.PAUSE_MENU);
             }
@@ -91,21 +91,11 @@ public class Game
             this.updateBullets();
             this.checkCollision();
 
-            if(!this.player.alive){
-                System.out.printf("Game Over!\nScore: %d\n", this.score);
-                System.exit(1);
-            }
-
             this.background.update();
         }
 
         // Render entities
         this.renderEverything();
-    }
-
-    private void updateAndRenderBackground(){
-        this.background.update();
-        this.renderer.renderEntities(this.background.getMeteors());
     }
 
     private void renderEverything(){
@@ -130,9 +120,13 @@ public class Game
     private void updateUIState(UIState newState){
         if(this.uiState == UIState.GAME_RUNNING && newState != UIState.GAME_RUNNING){
             this.timer.stopTimer();
-        }else if(newState == UIState.GAME_RUNNING && this.uiState != UIState.GAME_RUNNING){
+        }else if(this.uiState != UIState.GAME_RUNNING && newState == UIState.GAME_RUNNING){
             this.timer.startTimer();
+        }else if(this.uiState != UIState.SETTINGS_MENU && newState == UIState.SETTINGS_MENU){
+            SettingsMenuUI settingsUI = (SettingsMenuUI)  this.uiMap.get(UIState.SETTINGS_MENU);
+            settingsUI.setParentState(this.uiState);
         }
+
         this.uiState = newState;
     }
 
@@ -145,9 +139,13 @@ public class Game
 
             if (this.uiState == UIState.GAME_RUNNING) {
                 this.gameLoop();
+                if(!this.player.alive){
+                    this.uiState = UIState.GAME_OVER_MENU;
+                }
             }else{
                 this.queryInput();
             }
+
 
            updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer));
 
@@ -226,8 +224,8 @@ public class Game
                 this.uiMap.put(UIState.MAIN_MENU, new MainMenuUI(this.window));
                 this.uiMap.put(UIState.GAME_RUNNING, new GameRunningUI());
                 this.uiMap.put(UIState.GAME_OVER_MENU, new GameOverUI());
-                this.uiMap.put(UIState.PAUSE_MENU, new PauseMenuUI(this.window));
-                this.uiMap.put(UIState.SETTINGS_MENU , new SettingsUI());
+                this.uiMap.put(UIState.PAUSE_MENU, new PauseMenuUI());
+                this.uiMap.put(UIState.SETTINGS_MENU , new SettingsMenuUI());
     }
 
     public static void main(String[] args) throws IOException {

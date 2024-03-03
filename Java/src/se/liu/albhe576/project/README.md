@@ -20,10 +20,6 @@
     * vsync
     * audio?
     * screen size
-  * Game over menu
-    * Restart Game
-    * Main Menu
-  
 
 ### Cleanup
 * Some sort of GC/Check that collision is done within screen bounds and stuff
