@@ -5,20 +5,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Wave {
-    private long startTime;
     private List<Enemy> enemies;
-    private List<Path> paths;
     public Wave(List<Enemy> enemies){
         this.enemies = enemies;
     }
     public void removeKilledEnemies(){
         this.enemies.removeIf(enemy -> !enemy.alive);
     }
-    public List<Entity> getEnemies(){
-        return this.enemies.stream().map(enemy -> (Entity)enemy).collect(Collectors.toList());
+    public void removeOutOfBoundsEnemies(){
+        this.enemies.removeIf(enemy -> enemy.isOutOfBounds());
     }
-    public void setStartTime(long startTime){
-        this.startTime = startTime;
+    public List<Enemy> getEnemies(){
+        return this.enemies;
+    }
+    public List<Entity> getEnemiesAsEntities(){
+        return this.enemies.stream().map(enemy -> (Entity)enemy).collect(Collectors.toList());
     }
     public List<Bullet> updateWave(long lastTick, ResourceManager resourceManager){
         List<Bullet> bullets = new ArrayList<>();

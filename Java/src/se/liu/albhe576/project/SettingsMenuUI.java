@@ -18,7 +18,7 @@ public class SettingsMenuUI extends UI {
         this.parentState = uiState;
     }
 
-    public UIState render(InputState inputState, Renderer renderer, long window){
+    public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(returnButton);
         if(returnButton.isReleased(inputState)){
@@ -26,7 +26,7 @@ public class SettingsMenuUI extends UI {
             return this.parentState;
         }
 
-        renderer.renderText("Vsync", -120, 0, 20, Color.WHITE);
+        renderer.renderTextCentered("Vsync", -120, 0, 20, Color.WHITE);
         renderer.renderCheckbox(this.vsyncCheckbox);
         if(vsyncCheckbox.isReleased(inputState)){
             vsyncCheckbox.toggled = !vsyncCheckbox.toggled;

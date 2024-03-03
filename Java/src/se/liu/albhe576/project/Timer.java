@@ -9,6 +9,11 @@ public class Timer {
         return this.lastTick;
     }
 
+    public void reset(){
+        this.running = false;
+        this.serverTicks = 0;
+        this.lastTick = 0;
+    }
     public Timer(){
         this.running = false;
         this.serverTicks = 0;

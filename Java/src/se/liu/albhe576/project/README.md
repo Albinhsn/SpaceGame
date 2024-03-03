@@ -13,9 +13,8 @@
   * Actually hoist out to wave function
   * i.e the wave controls when shit spawns
   * i.e not need for an enemy class?
-* Boss bullets should be bigger and shoot more often
 
-* Win Game etc if no enemies left?
+* Figure out how we parse UI data from file
 
 ### Cleanup
 * Some sort of GC/Check that collision is done within screen bounds and stuff

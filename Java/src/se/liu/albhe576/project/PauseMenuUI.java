@@ -6,7 +6,7 @@ public class PauseMenuUI extends UI {
     private final ButtonUI playButton;
     private final ButtonUI mainMenuButton;
     private final ButtonUI settingsButton;
-    public UIState render(InputState inputState, Renderer renderer, long window) {
+    public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp) {
 
         renderer.renderButton(playButton);
         if(playButton.isReleased(inputState)){

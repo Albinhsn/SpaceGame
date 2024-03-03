@@ -60,7 +60,7 @@ public class Bullet extends Entity
 
     public boolean checkCollision(List<Entity> entities){
         for(Entity entity : entities){
-            if(this.isWithinBounds() && this.collided(entity) && (this.parent.getClass() != entity.getClass())){
+            if(this.collided(entity) && (this.parent.getClass() != entity.getClass())){
                 this.alive = false;
 
                 entity.hp -= 1;

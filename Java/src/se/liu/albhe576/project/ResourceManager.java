@@ -174,7 +174,22 @@ public class ResourceManager
 		return ByteBuffer.wrap(data, idx, 4).getFloat();
 	}
 	public Wave getWave(int index){
-		return this.waves.get(index);
+		ArrayList<Enemy> enemies = new ArrayList<>();
+		Wave wave = this.waves.get(index);
+		for(Enemy enemy : wave.getEnemies()){
+			enemies.add(new Enemy(
+				enemy.hp,
+				enemy.type,
+				enemy.x,
+				enemy.y,
+				enemy.width,
+				enemy.height,
+				enemy.getTextureIdx(),
+				enemy.spawnTime,
+				enemy.pathId
+			));
+		}
+		return new Wave(enemies);
 	}
 
 	private void loadWaveData(){

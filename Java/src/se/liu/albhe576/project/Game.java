@@ -20,12 +20,12 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class Game
 {
     private long window;
-    private long score;
+    private int score;
     private final Timer timer;
     private long lastUpdated;
 
     private final List<Bullet> bullets;
-    private final Wave wave;
+    private Wave wave;
     private final Renderer renderer;
     public static int SCREEN_WIDTH = 1024;
     public static int SCREEN_HEIGHT = 768;
@@ -33,7 +33,6 @@ public class Game
     private final ResourceManager resourceManager;
     private final Player player;
     private final Background background;
-    private UI ui;
     private Map<UIState, UI> uiMap;
     private UIState uiState;
 
@@ -45,7 +44,7 @@ public class Game
 
     private void checkCollision(){
 
-        List<Entity> entities= this.wave.getEnemies();
+        List<Entity> entities= this.wave.getEnemiesAsEntities();
         entities.add(this.player);
 
         for(Bullet bullet: this.bullets){
@@ -96,16 +95,16 @@ public class Game
 
         // Render entities
         this.renderEverything();
+
+        this.wave.removeOutOfBoundsEnemies();
     }
 
     private void renderEverything(){
-        List<Entity> entities = this.wave.getEnemies();
+        List<Entity> entities = this.wave.getEnemiesAsEntities();
         entities.add(this.player);
         entities.addAll(this.bullets);
 
         this.renderer.renderEntities(entities);
-        this.renderer.renderText(String.format("Score: %d", this.score), -Game.SCREEN_WIDTH, SCREEN_HEIGHT - 15, 15, Color.WHITE);
-        this.renderer.renderHealth(this.player.hp);
     }
 
     private void initNewFrame() {
@@ -117,14 +116,31 @@ public class Game
         glfwPollEvents();
         this.inputState.handleMouseInput();
     }
+    private void resetGame(){
+        this.wave = this.resourceManager.getWave(0);
+        this.bullets.clear();
+        this.player.reset();
+        this.timer.reset();
+        this.score = 0;
+        this.lastUpdated = 0;
+    }
     private void updateUIState(UIState newState){
         if(this.uiState == UIState.GAME_RUNNING && newState != UIState.GAME_RUNNING){
             this.timer.stopTimer();
-        }else if(this.uiState != UIState.GAME_RUNNING && newState == UIState.GAME_RUNNING){
-            this.timer.startTimer();
+
         }else if(this.uiState != UIState.SETTINGS_MENU && newState == UIState.SETTINGS_MENU){
             SettingsMenuUI settingsUI = (SettingsMenuUI)  this.uiMap.get(UIState.SETTINGS_MENU);
             settingsUI.setParentState(this.uiState);
+
+        }else if(this.uiState == UIState.GAME_OVER_MENU && newState != UIState.GAME_OVER_MENU){
+            this.resetGame();
+
+            if(newState == UIState.GAME_RUNNING){
+               this.timer.startTimer();
+            }
+        }else if(this.uiState != UIState.GAME_RUNNING && newState == UIState.GAME_RUNNING){
+            this.timer.startTimer();
+
         }
 
         this.uiState = newState;
@@ -139,15 +155,23 @@ public class Game
 
             if (this.uiState == UIState.GAME_RUNNING) {
                 this.gameLoop();
+
                 if(!this.player.alive){
                     this.uiState = UIState.GAME_OVER_MENU;
+                    ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = true;
+
+                }else if(this.wave.getEnemies().isEmpty()){
+                    this.uiState = UIState.GAME_OVER_MENU;
+                    ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = false;
+
                 }
+
             }else{
                 this.queryInput();
             }
 
 
-           updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window));
+           updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.hp));
 
             glfwSwapBuffers(window);
             this.inputState.resetState();

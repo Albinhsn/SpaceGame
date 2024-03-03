@@ -135,7 +135,7 @@ public class BinaryDataConverterScript
                new EntityData(1,2, 0.03f, 0.06f, 6, 3.0f / origScreenHeight, 8.0f / origScreenWidth, 16.0f / origScreenHeight),
                new EntityData(1,3, 0.03f, 0.06f, 7, 10.0f / origScreenHeight, 7.0f / origScreenWidth, 20.0f / origScreenHeight),
                new EntityData(1,4, 0.03f, 0.06f, 8, 5.0f / origScreenHeight, 7.0f / origScreenWidth, 21.0f / origScreenHeight),
-               new EntityData(10, 5, 0.3f, 0.2f, 9, 8.0f / origScreenHeight, 20.0f / origScreenWidth, 20.0f / origScreenHeight),
+               new EntityData(10, 5, 0.3f, 0.2f, 9, 15.0f / origScreenHeight, 30.0f / origScreenWidth, 30.0f / origScreenHeight),
                new EntityData(3,0, 0.05f, 0.1f, 1, 5.0f / origScreenHeight, 10.0f / origScreenWidth, 10.0f / origScreenHeight),
        };
        final int size = 5;

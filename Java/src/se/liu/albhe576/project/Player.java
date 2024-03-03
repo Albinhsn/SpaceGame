@@ -3,27 +3,37 @@ package se.liu.albhe576.project;
 public class Player  extends Entity{
 
     public long lastShot;
+	private final int initialHp;
 
     public Player(int hp, float x, float y, float width, float height, int textureIdx){
 		super(hp, x, y, width, height, textureIdx, 0.0f);
 			this.lastShot = 0;
+			this.initialHp = hp;
     }
+
+	public void reset(){
+		this.alive = true;
+		this.hp = initialHp;
+		this.x = 0;
+		this.y = 0;
+		this.lastShot = 0;
+	}
 
 	public boolean updatePlayer(InputState inputState, long lastTick){
 		final float moveSpeed = 5.0f;
-		this.xAcceleration = 0;
-		this.yAcceleration = 0;
+		float xAcceleration = 0;
+		float yAcceleration = 0;
 		if(inputState.isWPressed()){
-			this.yAcceleration += moveSpeed;
+			yAcceleration += moveSpeed;
 		}
 		if(inputState.isAPressed()){
-			this.xAcceleration -= moveSpeed;
+			xAcceleration -= moveSpeed;
 		}
 		if(inputState.isSPressed()){
-			this.yAcceleration -= moveSpeed;
+			yAcceleration -= moveSpeed;
 		}
 		if(inputState.isDPressed()){
-			this.xAcceleration += moveSpeed;
+			xAcceleration += moveSpeed;
 		}
 		this.x += xAcceleration;
 		this.y += yAcceleration;

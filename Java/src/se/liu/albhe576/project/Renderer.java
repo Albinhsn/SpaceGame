@@ -49,38 +49,25 @@ public class Renderer
         return g.getFontMetrics();
     }
     public void renderButton(ButtonUI button){
-
-        float [] transMatrix = this.getTransformationMatrix(button.x, button.y, button.width, button.height, 0);
-        glBindTexture(GL_TEXTURE_2D, button.textureId);
-        this.renderTexture(transMatrix);
-
-        this.renderText(button.text, button.x, button.y, button.fontSize, button.textColor);
+        renderUIComponent(button.textureId, button.x, button.y, button.width, button.height);
+        this.renderTextCentered(button.text, button.x, button.y, button.fontSize, button.textColor);
     }
 
     public void renderCheckbox(CheckboxUI checkbox){
-
-        float [] transMatrix = this.getTransformationMatrix(checkbox.x, checkbox.y, checkbox.width, checkbox.height, 0);
-        glBindTexture(GL_TEXTURE_2D, checkbox.textureId);
-        this.renderTexture(transMatrix);
-
+        renderUIComponent(checkbox.textureId, checkbox.x, checkbox.y, checkbox.width, checkbox.height);
         if(checkbox.toggled){
-            transMatrix = this.getTransformationMatrix(checkbox.x, checkbox.y, checkbox.checkmarkWidth, checkbox.checkmarkHeight, 0);
-            glBindTexture(GL_TEXTURE_2D, checkbox.checkmarkTextureId);
-            this.renderTexture(transMatrix);
+            renderUIComponent(checkbox.checkmarkTextureId, checkbox.x, checkbox.y, checkbox.checkmarkWidth, checkbox.checkmarkHeight);
         }
     }
+    public void renderUIComponent(int textureId, float x, float y, float width, float height){
+        float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        this.renderTexture(transMatrix);
+    }
     public void renderSlider(SliderUI slider){
-        float [] transMatrix = this.getTransformationMatrix(slider.x, slider.y, slider.width, slider.height, 0);
-        glBindTexture(GL_TEXTURE_2D, slider.textureId);
-        this.renderTexture(transMatrix);
-
-        transMatrix = this.getTransformationMatrix(slider.x, slider.y, slider.width - 10, slider.height / 10, 0);
-        glBindTexture(GL_TEXTURE_2D, 17);
-        this.renderTexture(transMatrix);
-
-         transMatrix = this.getTransformationMatrix(slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight, 0);
-        glBindTexture(GL_TEXTURE_2D, slider.sliderTextureId);
-        this.renderTexture(transMatrix);
+        renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
+        renderUIComponent(17, slider.x, slider.y, slider.width - 10, slider.height / 10);
+        renderUIComponent(slider.sliderTextureId, slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight);
     }
 
     public void renderDropdown(ButtonUI dropdownButton, boolean toggled, List<ButtonUI> dropdownItems){
@@ -91,8 +78,31 @@ public class Renderer
             }
         }
     }
+    public void renderTextStartAt(String text, float x, float y, float fontSize, Color color){
 
-    public void renderText(String text, float x, float y, float fontSize, Color color){
+        Font textFont = this.font.deriveFont(fontSize);
+        FontMetrics fontMetrics = createFontMetrics(textFont);
+
+        int width = fontMetrics.stringWidth(text);
+        int height = fontMetrics.getHeight();
+        BufferedImage image = new BufferedImage(width,height, BufferedImage.TYPE_4BYTE_ABGR);
+
+        Graphics2D g2d = image.createGraphics();
+        g2d.setFont(textFont);
+        g2d.setColor(color);
+        g2d.drawString(text, 0, height - fontMetrics.getDescent());
+
+        byte[] data = ((DataBufferByte) image.getData().getDataBuffer()).getData();
+        ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
+        buffer.put(data);
+        buffer.flip();
+
+        this.resourceManager.generateTexture(this.fontTextureId, image.getWidth(), image.getHeight(), buffer);
+        float [] transMatrix = this.getTransformationMatrix(x + width, y, width, height, 0);
+        this.renderTexture(transMatrix);
+    }
+
+    public void renderTextCentered(String text, float x, float y, float fontSize, Color color){
 
         Font textFont = this.font.deriveFont(fontSize);
         FontMetrics fontMetrics = createFontMetrics(textFont);

@@ -6,12 +6,22 @@ import java.util.Random;
 
 public class Enemy extends Entity
 {
-    private int pathId;
+    public final int pathId;
     private long lastUpdate;
-    private long spawnTime;
+    public final long spawnTime;
     private long lastShot;
     private final float moveSpeed;
     public final int type;
+
+    public boolean isOutOfBounds(){
+        float[] bb = this.getBoundingBox();
+        final float minEntityX = bb[0];
+        final float minEntityY = bb[2];
+
+        final float maxEntityX = bb[1];
+        final float maxEntityY = bb[3];
+        return (minEntityX < -Game.SCREEN_WIDTH * 1.4f || maxEntityX > Game.SCREEN_WIDTH * 1.4f|| minEntityY < -Game.SCREEN_HEIGHT * 1.4f || maxEntityY > Game.SCREEN_HEIGHT * 1.4f);
+    }
 
     public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
     {
