@@ -27,8 +27,8 @@ public class Game
     private final List<Bullet> bullets;
     private final Wave wave;
     private final Renderer renderer;
-    public static final int SCREEN_WIDTH = 620;
-    public static final int SCREEN_HEIGHT = 480;
+    public static final int SCREEN_WIDTH = 1024;
+    public static final int SCREEN_HEIGHT = 768;
     private final InputState inputState;
     private final ResourceManager resourceManager;
     private final Player player;

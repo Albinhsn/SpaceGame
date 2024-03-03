@@ -19,13 +19,20 @@ public class Background {
         return rng.nextFloat(-Game.SCREEN_WIDTH, Game.SCREEN_WIDTH);
     }
     private float getRandomMeteorWidth(){
-        return rng.nextFloat(1.5f, 4f);
+        final float lowerBound = 1.5f / 620.0f * Game.SCREEN_WIDTH;
+        final float upperBound = 4.0f / 620.0f * Game.SCREEN_WIDTH;
+        return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorHeight(){
-        return rng.nextFloat(1.5f, 4f);
+        final float lowerBound = 1.5f / 480.0f * Game.SCREEN_WIDTH;
+        final float upperBound = 4.0f / 480.0f * Game.SCREEN_WIDTH;
+        return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorAcceleration(){
-        return rng.nextFloat(1.0f, 8.0f);
+        final float lowerBound = 1.0f / 480.0f * Game.SCREEN_WIDTH;
+        final float upperBound = 8.0f / 480.0f * Game.SCREEN_WIDTH;
+
+        return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorY(){
         return rng.nextFloat(Game.SCREEN_HEIGHT, Game.SCREEN_HEIGHT * 1.1f);

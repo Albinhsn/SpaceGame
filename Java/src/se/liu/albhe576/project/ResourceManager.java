@@ -268,11 +268,11 @@ public class ResourceManager
 		return new Bullet(
 			parent.x,
 			parent.y + yOffset,
-			data.bulletWidth,
-			data.bulletHeight,
+			data.bulletWidth * Game.SCREEN_WIDTH,
+			data.bulletHeight * Game.SCREEN_HEIGHT,
 			data.bulletTextureIdx,
 			parent,
-		data.bulletSpeed * dir,
+		data.bulletSpeed * dir * Game.SCREEN_HEIGHT,
 			dir == 1 ? 0.0f : 180.0f
 		);
 	}
@@ -346,15 +346,15 @@ public class ResourceManager
     private final String []TEXTURE_LOCATIONS= new String[]{
 			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
-			"./resources/images/PNG/Default/enemy_B.png",
-			"./resources/images/PNG/Default/enemy_E.png",
-			"./resources/images/PNG/Default/enemy_C.png",
-			"./resources/images/PNG/Default/satellite_C.png",
+			"./resources/images/PNG/Default/enemy_B.tga",
+			"./resources/images/PNG/Default/enemy_E.tga",
+			"./resources/images/PNG/Default/enemy_C.tga",
+			"./resources/images/PNG/Default/satellite_C.tga",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_026.png",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_040.png",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_001.png",
-			"./resources/images/PNG/Default/meteor_detailedLarge.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+			"./resources/images/PNG/Default/meteor_detailedLarge.tga",
 			"./resources/images/PNG/Default/tile_0044.tga"
     };
 	// No reason not to have this in a text file

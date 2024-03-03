@@ -79,13 +79,13 @@ public class Renderer
         final int height    = 30;
         final int y         = Game.SCREEN_HEIGHT - height;
         final int width     = 30;
-        int x               = Game.SCREEN_WIDTH / 2 - hp * (width + 10) / 2;
+        int x               = -hp * width / 2;
 
         Texture texture = this.resourceManager.textures.get(11);
         glBindTexture(GL_TEXTURE_2D, texture.textureId);
         glBindVertexArray(texture.vertexArrayId);
 
-        for(int i = 0; i < hp; i++, x += width + 10){
+        for(int i = 0; i < hp; i++, x += width + 20){
             float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
             this.renderTexture(transMatrix);
         }

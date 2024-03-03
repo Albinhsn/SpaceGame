@@ -9,16 +9,19 @@
   * interpolate between two positions, enemyType also have some sort of function to modify the path
 
 ### Random
-* Fix images
-  * just make them tga images and send y own parser
 * Wave logic
   * Actually hoist out to wave function
   * i.e the wave controls when shit spawns
   * i.e not need for an enemy class?
+* Boss bullets should be bigger and shoot more often
 
 * Menus
   * Main Menu
-  * Settings/Pause Menu
+  * Settings
+    * vsync
+    * audio?
+    * screen size
+  * Menu
   * Game over menu
 
 ### Cleanup
