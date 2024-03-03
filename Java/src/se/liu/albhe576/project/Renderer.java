@@ -57,6 +57,41 @@ public class Renderer
         this.renderText(button.text, button.x, button.y, button.fontSize, button.textColor);
     }
 
+    public void renderCheckbox(CheckboxUI checkbox){
+
+        float [] transMatrix = this.getTransformationMatrix(checkbox.x, checkbox.y, checkbox.width, checkbox.height, 0);
+        glBindTexture(GL_TEXTURE_2D, checkbox.textureId);
+        this.renderTexture(transMatrix);
+
+        if(checkbox.toggled){
+            transMatrix = this.getTransformationMatrix(checkbox.x, checkbox.y, checkbox.checkmarkWidth, checkbox.checkmarkHeight, 0);
+            glBindTexture(GL_TEXTURE_2D, checkbox.checkmarkTextureId);
+            this.renderTexture(transMatrix);
+        }
+    }
+    public void renderSlider(SliderUI slider){
+        float [] transMatrix = this.getTransformationMatrix(slider.x, slider.y, slider.width, slider.height, 0);
+        glBindTexture(GL_TEXTURE_2D, slider.textureId);
+        this.renderTexture(transMatrix);
+
+        transMatrix = this.getTransformationMatrix(slider.x, slider.y, slider.width - 10, slider.height / 10, 0);
+        glBindTexture(GL_TEXTURE_2D, 17);
+        this.renderTexture(transMatrix);
+
+         transMatrix = this.getTransformationMatrix(slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight, 0);
+        glBindTexture(GL_TEXTURE_2D, slider.sliderTextureId);
+        this.renderTexture(transMatrix);
+    }
+
+    public void renderDropdown(ButtonUI dropdownButton, boolean toggled, List<ButtonUI> dropdownItems){
+        this.renderButton(dropdownButton);
+        if(toggled){
+            for(ButtonUI item :  dropdownItems){
+                this.renderButton(item);
+            }
+        }
+    }
+
     public void renderText(String text, float x, float y, float fontSize, Color color){
 
         Font textFont = this.font.deriveFont(fontSize);

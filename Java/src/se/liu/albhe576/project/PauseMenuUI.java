@@ -6,21 +6,21 @@ public class PauseMenuUI extends UI {
     private final ButtonUI playButton;
     private final ButtonUI mainMenuButton;
     private final ButtonUI settingsButton;
-    public UIState render(InputState inputState, Renderer renderer) {
+    public UIState render(InputState inputState, Renderer renderer, long window) {
 
         renderer.renderButton(playButton);
-        if(playButton.isPressed(inputState)){
+        if(playButton.isReleased(inputState)){
             System.out.println("Play!");
             return UIState.GAME_RUNNING;
         }
 
         renderer.renderButton(mainMenuButton);
-        if(mainMenuButton.isPressed(inputState)){
+        if(mainMenuButton.isReleased(inputState)){
             return UIState.MAIN_MENU;
         }
 
         renderer.renderButton(settingsButton);
-        if(settingsButton.isPressed(inputState)){
+        if(settingsButton.isReleased(inputState)){
             System.out.println("Settings!");
             return UIState.SETTINGS_MENU;
         }

@@ -11,23 +11,23 @@ public class MainMenuUI extends UI{
     private final ButtonUI exitButton;
     private final ButtonUI settingsButton;
 
-    public UIState render(InputState inputState, Renderer renderer){
+    public UIState render(InputState inputState, Renderer renderer, long window){
 
         renderer.renderButton(playButton);
-        if(playButton.isPressed(inputState)){
+        if(playButton.isReleased(inputState)){
             System.out.println("Play!");
             return UIState.GAME_RUNNING;
         }
 
         renderer.renderButton(exitButton);
-        if(exitButton.isPressed(inputState)){
+        if(exitButton.isReleased(inputState)){
             System.out.println("Exiting!");
             glfwSetWindowShouldClose(this.window, true);
             return UIState.MAIN_MENU;
         }
 
         renderer.renderButton(settingsButton);
-        if(settingsButton.isPressed(inputState)){
+        if(settingsButton.isReleased(inputState)){
             System.out.println("Settings!");
             return UIState.SETTINGS_MENU;
         }

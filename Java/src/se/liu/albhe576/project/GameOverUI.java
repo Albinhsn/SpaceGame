@@ -6,21 +6,19 @@ public class GameOverUI extends UI {
 
     private final ButtonUI restartButton;
     private final ButtonUI mainMenuButton;
-    public UIState render(InputState inputState, Renderer renderer) {
+    public UIState render(InputState inputState, Renderer renderer, long window) {
 
         renderer.renderText("GAME OVER", 0, 200, 40, Color.WHITE);
 
         renderer.renderButton(restartButton);
-        if(restartButton.isPressed(inputState)){
-            System.out.println("Play!");
+        if(restartButton.isReleased(inputState)){
             return UIState.GAME_RUNNING;
         }
 
         renderer.renderButton(mainMenuButton);
-        if(mainMenuButton.isPressed(inputState)){
+        if(mainMenuButton.isReleased(inputState)){
             return UIState.MAIN_MENU;
         }
-
 
         return UIState.GAME_OVER_MENU;
 

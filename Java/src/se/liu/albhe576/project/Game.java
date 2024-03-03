@@ -21,14 +21,14 @@ public class Game
 {
     private long window;
     private long score;
-    private Timer timer;
+    private final Timer timer;
     private long lastUpdated;
 
     private final List<Bullet> bullets;
     private final Wave wave;
     private final Renderer renderer;
-    public static final int SCREEN_WIDTH = 1024;
-    public static final int SCREEN_HEIGHT = 768;
+    public static int SCREEN_WIDTH = 1024;
+    public static int SCREEN_HEIGHT = 768;
     private final InputState inputState;
     private final ResourceManager resourceManager;
     private final Player player;
@@ -147,7 +147,7 @@ public class Game
             }
 
 
-           updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer));
+           updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window));
 
             glfwSwapBuffers(window);
             this.inputState.resetState();

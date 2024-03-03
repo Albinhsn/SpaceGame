@@ -11,13 +11,16 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
 public class InputState
 {
-
-    private final byte KEY_P  =(byte)'P';
-    private final byte KEY_W  =(byte)'W';
-    private final byte KEY_A  =(byte)'A';
-    private final byte KEY_S  =(byte)'S';
-    private final byte KEY_D  =(byte)'D';
-    private final byte KEY_SPACE  =(byte)32;
+    private final boolean[] keyboardStatePressed  = new boolean[256];
+    private final boolean[] keyboardStateReleased = new boolean[256];
+    private boolean Mouse_1_Pressed;
+    private boolean Mouse_2_Pressed;
+    private boolean Mouse_1_Released;
+    private boolean Mouse_2_Released;
+    private int mouseX;
+    private int mouseY;
+    private int mouseXDelta;
+    private final long window;
 
     public void resetState(){
         this.Mouse_1_Released = false;
@@ -29,6 +32,7 @@ public class InputState
         this.Mouse_1_Released = false;
         this.Mouse_2_Pressed= false;
         this.Mouse_2_Released = false;
+        this.mouseXDelta = 0;
         this.mouseX = 0;
         this.mouseY = 0;
         this.window = window;
@@ -36,15 +40,6 @@ public class InputState
         Arrays.fill(this.keyboardStatePressed, false);
         Arrays.fill(this.keyboardStateReleased, false);
     }
-    private final boolean[] keyboardStatePressed  = new boolean[256];
-    private final boolean[] keyboardStateReleased = new boolean[256];
-    private boolean Mouse_1_Pressed;
-    private boolean Mouse_2_Pressed;
-    private boolean Mouse_1_Released;
-    private boolean Mouse_2_Released;
-    private int mouseX;
-    private int mouseY;
-    private final long window;
 
     public void setMouse_1_Pressed(boolean val){
         this.Mouse_1_Pressed = val;
@@ -64,22 +59,28 @@ public class InputState
         this.mouseY = mouseY;
     }
 
-    public boolean isWPressed(){ return this.keyboardStatePressed[this.KEY_W]; }
+    public boolean isWPressed(){
+        byte KEY_W = (byte) 'W';
+        return this.keyboardStatePressed[KEY_W]; }
     public boolean isAPressed(){
-        return this.keyboardStatePressed[this.KEY_A];
+        byte KEY_A = (byte) 'A';
+        return this.keyboardStatePressed[KEY_A];
     }
     public boolean isSPressed(){
-        return this.keyboardStatePressed[this.KEY_S];
+        byte KEY_S = (byte) 'S';
+        return this.keyboardStatePressed[KEY_S];
     }
     public boolean isDPressed(){
-        return this.keyboardStatePressed[this.KEY_D];
+        byte KEY_D = (byte) 'D';
+        return this.keyboardStatePressed[KEY_D];
     }
     public boolean isSpacePressed(){
-        return this.keyboardStatePressed[this.KEY_SPACE];
+        byte KEY_SPACE = (byte) 32;
+        return this.keyboardStatePressed[KEY_SPACE];
     }
     public Point getMousePosition(){return new Point(this.mouseX, this.mouseY);}
     public boolean isMouse1Pressed(){
-	return this.Mouse_1_Pressed;
+        return this.Mouse_1_Pressed;
     }
     public boolean isMouse2Pressed(){
 	return this.Mouse_2_Pressed;
@@ -90,8 +91,12 @@ public class InputState
     public boolean isMouse2Released(){
         return this.Mouse_2_Released;
     }
+    public int getMouseXDelta(){
+        return this.mouseXDelta;
+    }
     public boolean isPPressed(){
-       return this.keyboardStatePressed[this.KEY_P];
+        byte KEY_P = (byte) 'P';
+        return this.keyboardStatePressed[KEY_P];
     }
     public void initInputHandling(){
         glfwSetMouseButtonCallback(this.window,(window2, button, action, mods) -> {
@@ -102,6 +107,7 @@ public class InputState
                             this.setMouse_1_Pressed(true);
                         }else{
                             this.setMouse_1_Released(true);
+                            this.setMouse_1_Pressed(false);
                         }
                         break;
                     }
@@ -110,6 +116,7 @@ public class InputState
                             this.setMouse_2_Pressed(true);
                         }else{
                             this.setMouse_2_Released(true);
+                            this.setMouse_2_Pressed(false);
                         }
                         break;
                     }
@@ -147,6 +154,7 @@ public class InputState
         int posX = (int) posBufferX.get(0);
         int posY = (int) posBufferY.get(0);
 
+        this.mouseXDelta = this.mouseX - posX;
         this.setMousePosition(posX, posY);
     }
 }

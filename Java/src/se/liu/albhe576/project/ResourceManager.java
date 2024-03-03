@@ -356,7 +356,11 @@ public class ResourceManager
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
 			"./resources/images/PNG/Default/meteor_detailedLarge.tga",
 			"./resources/images/PNG/Default/tile_0044.tga",
-			"./resources/UI/grey_button02.png"
+			"./resources/UI/grey_button02.png",
+			"./resources/UI/grey_box.png",
+			"./resources/UI/grey_checkmarkGrey.png",
+			"./resources/UI/grey_sliderUp.png",
+			"./resources/UI/grey_sliderHorizontal.png",
     };
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{

@@ -15,11 +15,7 @@
   * i.e not need for an enemy class?
 * Boss bullets should be bigger and shoot more often
 
-* Menus
-  * Settings
-    * vsync
-    * audio?
-    * screen size
+* Win Game etc if no enemies left?
 
 ### Cleanup
 * Some sort of GC/Check that collision is done within screen bounds and stuff
