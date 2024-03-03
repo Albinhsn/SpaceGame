@@ -105,7 +105,6 @@ public class Game
         entities.addAll(this.background.getMeteors());
 
         this.renderer.renderEntities(entities);
-        this.renderer.renderText("Hello World", 0, 0, 15, Color.WHITE);
     }
 
     private void initNewFrame() {
