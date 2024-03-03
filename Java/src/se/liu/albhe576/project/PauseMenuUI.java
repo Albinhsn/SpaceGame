@@ -29,8 +29,8 @@ public class PauseMenuUI extends UI {
 
     }
     public PauseMenuUI(){
-        this.playButton     = new ButtonUI(0.0f, 100.0f, 200.0f, 50.0f, "Play", 13, 20.0f, Color.ORANGE);
-        this.mainMenuButton     = new ButtonUI(0.0f, -100.0f, 200.0f, 50.0f, "Main Menu", 13, 20.0f, Color.ORANGE);
-        this.settingsButton     = new ButtonUI(0.0f, 0.0f, 200.0f, 50.0f, "Settings", 13, 20.0f, Color.ORANGE);
+        this.playButton     = new ButtonUI(0.0f, 100.0f, 200.0f, 50.0f, "Play", Texture.GREY_BOX, 20.0f, Color.ORANGE);
+        this.mainMenuButton     = new ButtonUI(0.0f, -100.0f, 200.0f, 50.0f, "Main Menu", Texture.GREY_BOX, 20.0f, Color.ORANGE);
+        this.settingsButton     = new ButtonUI(0.0f, 0.0f, 200.0f, 50.0f, "Settings", Texture.GREY_BOX, 20.0f, Color.ORANGE);
     }
 }

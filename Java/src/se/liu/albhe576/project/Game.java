@@ -236,7 +236,7 @@ public class Game
         this.player   = this.resourceManager.getPlayer();
         this.bullets = new ArrayList<>();
 
-        this.renderer = new Renderer(this.window, SCREEN_WIDTH, SCREEN_HEIGHT, resourceManager);
+        this.renderer = new Renderer(this.window, resourceManager);
         this.background = new Background();
         this.inputState = new InputState(this.window);
         this.wave = this.resourceManager.getWave(0);

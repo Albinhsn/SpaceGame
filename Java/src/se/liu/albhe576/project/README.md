@@ -3,10 +3,12 @@
 ## ToDo
 ### Data
 * Create one large image and be able to parse it
+* Figure out how we parse UI data from file
 
 ### Game things
 * Create proper paths
   * interpolate between two positions, enemyType also have some sort of function to modify the path
+
 
 ### Random
 * Wave logic
@@ -14,11 +16,6 @@
   * i.e the wave controls when shit spawns
   * i.e not need for an enemy class?
 
-* Figure out how we parse UI data from file
-
-### Cleanup
-* Some sort of GC/Check that collision is done within screen bounds and stuff
-  * think we did collision check?
-  * don't think GC is neccessary atm with only 1 wave
-
-### Then editor?
+* global variables for textureids
+    * just make it an enum
+* Fix so you're able to change screen resolution

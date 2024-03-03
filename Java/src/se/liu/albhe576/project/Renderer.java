@@ -18,16 +18,12 @@ import static org.lwjgl.opengl.GL40.*;
 public class Renderer
 {
     private final long window;
-    private final int screenWidth;
-    private final int screenHeight;
     private final ResourceManager resourceManager;
     private final Font font;
     private final int fontTextureId;
 
-    public Renderer(long window, int screenWidth, int screenHeight, ResourceManager resourceManager) {
+    public Renderer(long window, ResourceManager resourceManager) {
         this.window = window;
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
         this.resourceManager = resourceManager;
         this.fontTextureId = glGenTextures();
 
@@ -80,6 +76,29 @@ public class Renderer
     }
     public void renderTextStartAt(String text, float x, float y, float fontSize, Color color){
 
+        TextImageData data = this.getTextImage(text, fontSize, color);
+        this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
+        float [] transMatrix = this.getTransformationMatrix(x + data.stringWidth, y, data.stringWidth, data.fontHeight, 0);
+        this.renderTexture(transMatrix);
+
+    }
+
+    static class TextImageData{
+        int stringWidth;
+        int fontHeight;
+        ByteBuffer buffer;
+        int imageWidth;
+        int imageHeight;
+        public TextImageData(int fontImageWidth, int fontImageHeight, int imageWidth, int imageHeight, ByteBuffer buffer){
+            this.stringWidth= fontImageWidth;
+            this.fontHeight    = fontImageHeight;
+            this.imageWidth         = imageWidth;
+            this.imageHeight        = imageHeight;
+            this.buffer             = buffer;
+        }
+    }
+
+    private TextImageData getTextImage(String text, float fontSize, Color color){
         Font textFont = this.font.deriveFont(fontSize);
         FontMetrics fontMetrics = createFontMetrics(textFont);
 
@@ -93,36 +112,28 @@ public class Renderer
         g2d.drawString(text, 0, height - fontMetrics.getDescent());
 
         byte[] data = ((DataBufferByte) image.getData().getDataBuffer()).getData();
+        for(int i = 0; i < data.length; i+=4){
+            byte tmp = data[i + 0];
+            data[i  + 0] = data[i + 3];
+            data[i + 3] = tmp;
+
+            tmp = data[i + 1];
+            data[i + 1] = data[i + 2];
+            data[i + 2] = tmp;
+
+        }
         ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
         buffer.put(data);
         buffer.flip();
 
-        this.resourceManager.generateTexture(this.fontTextureId, image.getWidth(), image.getHeight(), buffer);
-        float [] transMatrix = this.getTransformationMatrix(x + width, y, width, height, 0);
-        this.renderTexture(transMatrix);
+        return new TextImageData(width, height, image.getWidth(), image.getHeight(), buffer);
+
     }
 
     public void renderTextCentered(String text, float x, float y, float fontSize, Color color){
-
-        Font textFont = this.font.deriveFont(fontSize);
-        FontMetrics fontMetrics = createFontMetrics(textFont);
-
-        int width = fontMetrics.stringWidth(text);
-        int height = fontMetrics.getHeight();
-        BufferedImage image = new BufferedImage(width,height, BufferedImage.TYPE_4BYTE_ABGR);
-
-        Graphics2D g2d = image.createGraphics();
-        g2d.setFont(textFont);
-        g2d.setColor(color);
-        g2d.drawString(text, 0, height - fontMetrics.getDescent());
-
-        byte[] data = ((DataBufferByte) image.getData().getDataBuffer()).getData();
-        ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
-        buffer.put(data);
-        buffer.flip();
-
-        this.resourceManager.generateTexture(this.fontTextureId, image.getWidth(), image.getHeight(), buffer);
-        float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
+        TextImageData data = this.getTextImage(text, fontSize, color);
+        this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
+        float [] transMatrix = this.getTransformationMatrix(x, y, data.stringWidth, data.fontHeight, 0);
         this.renderTexture(transMatrix);
     }
     public void renderHealth(int hp){
@@ -131,7 +142,7 @@ public class Renderer
         final int width     = 30;
         int x               = -hp * width / 2;
 
-        Texture texture = this.resourceManager.textures.get(11);
+        Texture texture = this.resourceManager.textureIdMap.get(Texture.HP_HEART);
         glBindTexture(GL_TEXTURE_2D, texture.textureId);
         glBindVertexArray(texture.vertexArrayId);
 
@@ -179,16 +190,16 @@ public class Renderer
         };
 
 
-        float transformX = ((x + this.screenWidth) / (float)this.screenWidth) - 1.0f;
-        float transformY = ((y + this.screenHeight) / (float)this.screenHeight) - 1.0f;
+        float transformX = ((x + Game.SCREEN_WIDTH) / (float)Game.SCREEN_WIDTH) - 1.0f;
+        float transformY = ((y + Game.SCREEN_HEIGHT) / (float)Game.SCREEN_HEIGHT) - 1.0f;
         float [] translationM = new float[]{
                 1,0,0,
                 0,1,0,
                 transformX, transformY, 1
         };
 
-        float scaleX = ((width + this.screenWidth) / (float)this.screenWidth) - 1.0f;
-        float scaleY = ((height + this.screenHeight) / (float)this.screenHeight) - 1.0f;
+        float scaleX = ((width + Game.SCREEN_WIDTH) / (float)Game.SCREEN_WIDTH) - 1.0f;
+        float scaleY = ((height + Game.SCREEN_HEIGHT) / (float)Game.SCREEN_HEIGHT) - 1.0f;
 
         float [] scaleM = new float[]{
              scaleX, 0, 0,
@@ -202,7 +213,7 @@ public class Renderer
 
 
     public void renderEntity(Entity entity){
-        Texture texture = this.resourceManager.textures.get(entity.getTextureIdx());
+        Texture texture = this.resourceManager.textureIdMap.get(entity.getTextureIdx());
 
         int programId = this.resourceManager.programs.get(0);
         glUseProgram(programId);

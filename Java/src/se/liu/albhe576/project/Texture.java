@@ -5,6 +5,23 @@ import java.nio.ByteBuffer;
 
 public class Texture
 {
+    public static final int PLAYER_MODEL = 0;
+    public static final int PLAYER_BULLET = 1;
+    public static final int ENEMY_MODEL_1 = 2;
+    public static final int ENEMY_MODEL_2 = 3;
+    public static final int ENEMY_MODEL_3 = 4;
+    public static final int BOSS_MODEL_1 = 5;
+    public static final int ENEMY_BULLET_1 = 6;
+    public static final int ENEMY_BULLET_2 = 7;
+    public static final int ENEMY_BULLET_3 = 8;
+    public static final int ENEMY_BULLET_4 = 9;
+    public static final int BACKGROUND_METEOR = 10;
+    public static final int HP_HEART = 11;
+    public static final int GREY_BUTTON_02 = 12;
+    public static final int GREY_BOX = 13;
+    public static final int GREY_CHECKMARK_GREY = 14;
+    public static final int GREY_SLIDER_UP = 15;
+    public static final int GREY_SLIDER_HORIZONTAL = 16;
     private final int width;
     private final int height;
     private final ByteBuffer data;

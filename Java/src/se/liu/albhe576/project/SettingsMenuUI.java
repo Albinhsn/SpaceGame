@@ -61,19 +61,19 @@ public class SettingsMenuUI extends UI {
         return UIState.SETTINGS_MENU;
     }
     public SettingsMenuUI(){
-        this.returnButton       = new ButtonUI(0.0f, -200.0f, 200.0f, 50.0f, "Return", 13, 20.0f, Color.ORANGE);
-        this.vsyncCheckbox      = new CheckboxUI(14, 0, 0, 40, 40, 15, 30, 30);
+        this.returnButton       = new ButtonUI(0.0f, -200.0f, 200.0f, 50.0f, "Return", Texture.GREY_BOX, 20.0f, Color.ORANGE);
+        this.vsyncCheckbox      = new CheckboxUI(Texture.GREY_CHECKMARK_GREY, 0, 0, 40, 40, Texture.GREY_SLIDER_UP, 30, 30);
 
-        ButtonUI dropdownButton = new ButtonUI(400, 100, 200, 30, "Screen size", 13, 20.0f, Color.ORANGE);
+        ButtonUI dropdownButton = new ButtonUI(400, 100, 200, 30, "Screen size", Texture.GREY_BOX, 20.0f, Color.ORANGE);
         ArrayList<ButtonUI> dropdownItems = new ArrayList<>();
-        dropdownItems.add(new ButtonUI(400, 50, 200, 30, "1920x1080", 13, 20.0f, Color.ORANGE));
-        dropdownItems.add(new ButtonUI(400, 0, 200, 30, "1024x768", 13, 20.0f, Color.ORANGE));
-        dropdownItems.add(new ButtonUI(400, -50, 200, 30, "620x480", 13, 20.0f, Color.ORANGE));
+        dropdownItems.add(new ButtonUI(400, 50, 200, 30, "1920x1080", Texture.GREY_BOX, 20.0f, Color.ORANGE));
+        dropdownItems.add(new ButtonUI(400, 0, 200, 30, "1024x768", Texture.GREY_BOX, 20.0f, Color.ORANGE));
+        dropdownItems.add(new ButtonUI(400, -50, 200, 30, "620x480", Texture.GREY_BOX, 20.0f, Color.ORANGE));
         Point[] dropdownData = new Point[]{new Point(1920, 1080), new Point(1024, 768), new Point(620, 480)};
         this.screenSizeDropdown = new DropdownUI<Point>(dropdownButton, dropdownItems, dropdownData);
 
 
         //int textureId, float x, float y, float width, float height, int sliderTextureId, float sliderX, float sliderY, float sliderWidth, float sliderHeight
-        this.audioSlider = new SliderUI(13, 0, 300, 400, 40, 16, 0, 300, 30, 30, 1, 100);
+        this.audioSlider = new SliderUI(Texture.GREY_BOX, 0, 300, 400, 40, Texture.GREY_SLIDER_HORIZONTAL, 0, 300, 30, 30, 1, 100);
     }
 }

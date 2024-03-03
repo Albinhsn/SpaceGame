@@ -15,7 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
@@ -39,7 +41,6 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class ResourceManager
 {
-	public List<Texture> textures;
 	public List<Integer> programs;
 	private List<EntityData> entityData;
 	private List<Wave> waves;
@@ -131,10 +132,14 @@ public class ResourceManager
 		}
 		this.programs.add(0, programId);
 	}
+	public Map<Integer, Texture> textureIdMap;
 	private void loadTextures(){
-        this.textures = new ArrayList<>();
+		this.textureIdMap = new HashMap<>();
 
-        for (String textureLocation : this.TEXTURE_LOCATIONS) {
+        for (Map.Entry<Integer, String> entry : this.TEXTURE_LOCATIONS.entrySet()) {
+			Integer key = entry.getKey();
+			String textureLocation = entry.getValue();
+
 			Texture texture;
 			try {
 				if(textureLocation.contains("png")){
@@ -149,9 +154,10 @@ public class ResourceManager
 			}
 
 			texture.textureId = glGenTextures();
+
 			this.generateTexture(texture.textureId, texture.getWidth(), texture.getHeight(), texture.getData());
 			this.generateVertexArrayAndVertexBuffer(texture);
-			this.textures.add(texture);
+			this.textureIdMap.put(key, texture);
 		}
 
 		this.compileTextureShader();
@@ -358,24 +364,27 @@ public class ResourceManager
     }
 	// No reason not to have this in a text file
 	// Also make variables for each texture
-    private final String []TEXTURE_LOCATIONS= new String[]{
-			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
-			"./resources/images/PNG/Default/enemy_B.tga",
-			"./resources/images/PNG/Default/enemy_E.tga",
-			"./resources/images/PNG/Default/enemy_C.tga",
-			"./resources/images/PNG/Default/satellite_C.tga",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-			"./resources/images/PNG/Default/meteor_detailedLarge.tga",
-			"./resources/images/PNG/Default/tile_0044.tga",
-			"./resources/UI/grey_button02.png",
-			"./resources/UI/grey_box.png",
-			"./resources/UI/grey_checkmarkGrey.png",
-			"./resources/UI/grey_sliderUp.png",
-			"./resources/UI/grey_sliderHorizontal.png",
+    private final Map<Integer, String> TEXTURE_LOCATIONS= new HashMap<Integer, String>()
+	{
+		{
+			put(Texture.PLAYER_MODEL,"./resources/images/PNG/Sprites/Ships/spaceShips_001.png");
+			put(Texture.PLAYER_BULLET,"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png");
+			put(Texture.ENEMY_MODEL_1, "./resources/images/PNG/Default/enemy_B.tga");
+			put(Texture.ENEMY_MODEL_2,"./resources/images/PNG/Default/enemy_E.tga");
+			put(Texture.ENEMY_MODEL_3, "./resources/images/PNG/Default/enemy_C.tga");
+			put(Texture.BOSS_MODEL_1, "./resources/images/PNG/Default/satellite_C.tga");
+			put(Texture.ENEMY_BULLET_1, "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png");
+			put(Texture.ENEMY_BULLET_2, "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png");
+			put(Texture.ENEMY_BULLET_3, "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png");
+			put(Texture.ENEMY_BULLET_4, "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png");
+			put(Texture.BACKGROUND_METEOR, "./resources/images/PNG/Default/meteor_detailedLarge.tga");
+			put(Texture.HP_HEART, "./resources/images/PNG/Default/tile_0044.tga");
+			put(Texture.GREY_BUTTON_02,"./resources/UI/grey_button02.png");
+			put(Texture.GREY_BOX, "./resources/UI/grey_box.png");
+			put(Texture.GREY_CHECKMARK_GREY, "./resources/UI/grey_checkmarkGrey.png");
+			put(Texture.GREY_SLIDER_UP, "./resources/UI/grey_sliderUp.png");
+			put(Texture.GREY_SLIDER_HORIZONTAL, "./resources/UI/grey_sliderHorizontal.png");
+		}
     };
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{

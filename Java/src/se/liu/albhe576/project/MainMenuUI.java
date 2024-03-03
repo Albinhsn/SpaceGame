@@ -36,9 +36,9 @@ public class MainMenuUI extends UI{
     }
     public MainMenuUI(long window){
         this.window         = window;
-        this.playButton     = new ButtonUI(0.0f, 100.0f, 200.0f, 50.0f, "Play", 13, 20.0f, Color.ORANGE);
-        this.exitButton     = new ButtonUI(0.0f, -100.0f, 200.0f, 50.0f, "Exit", 13, 20.0f, Color.ORANGE);
-        this.settingsButton     = new ButtonUI(0.0f, 0.0f, 200.0f, 50.0f, "Settings", 13, 20.0f, Color.ORANGE);
+        this.playButton     = new ButtonUI(0.0f, 100.0f, 200.0f, 50.0f, "Play", Texture.GREY_BOX, 20.0f, Color.RED);
+        this.exitButton     = new ButtonUI(0.0f, -100.0f, 200.0f, 50.0f, "Exit", Texture.GREY_BOX, 20.0f, Color.RED);
+        this.settingsButton     = new ButtonUI(0.0f, 0.0f, 200.0f, 50.0f, "Settings", Texture.GREY_BOX, 20.0f, Color.RED);
 
     }
 }
