@@ -17,12 +17,21 @@
 
 * Menus
   * Main Menu
+    * play
+    * settings
+    * exit
   * Settings
     * vsync
     * audio?
     * screen size
-  * Menu
+  * Pause Menu
+    * Exit Game
+    * Settings
+    * Resume Game
   * Game over menu
+    * Restart Game
+    * Main Menu
+  
 
 ### Cleanup
 * Some sort of GC/Check that collision is done within screen bounds and stuff
