@@ -105,6 +105,8 @@ public class Game
         entities.addAll(this.background.getMeteors());
 
         this.renderer.renderEntities(entities);
+        this.renderer.renderText(String.format("Score: %d", this.score), -Game.SCREEN_WIDTH, SCREEN_HEIGHT - 15, 15, Color.WHITE);
+        this.renderer.renderHealth(this.player.hp);
     }
 
     private void initNewFrame() {

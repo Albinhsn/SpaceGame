@@ -137,7 +137,12 @@ public class ResourceManager
         for (String textureLocation : this.TEXTURE_LOCATIONS) {
 			Texture texture;
 			try {
-				texture = this.loadPNGFile(textureLocation);
+				if(textureLocation.contains("png")){
+					texture = this.loadPNGFile(textureLocation);
+				}else{
+					assert(textureLocation.contains("tga"));
+					texture = TGAImage.decodeTGAImageFromFile(textureLocation);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				continue;
@@ -337,6 +342,7 @@ public class ResourceManager
 
     }
 	// No reason not to have this in a text file
+	// Also make variables for each texture
     private final String []TEXTURE_LOCATIONS= new String[]{
 			"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
@@ -349,6 +355,7 @@ public class ResourceManager
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_040.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_001.png",
 			"./resources/images/PNG/Default/meteor_detailedLarge.png",
+			"./resources/images/PNG/Default/tile_0044.tga"
     };
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{
