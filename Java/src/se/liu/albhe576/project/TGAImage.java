@@ -100,15 +100,13 @@ public class TGAImage
     }
 
     private TGAImage(String filePath) throws IOException {
-	this.fileBytes = Files.readAllBytes(Path.of(filePath));
-	this.index = 0;
-	this.targaHeader = new TargaHeader(this.fileBytes);
-
+		this.fileBytes = Files.readAllBytes(Path.of(filePath));
+		this.index = 0;
+		this.targaHeader = new TargaHeader(this.fileBytes);
     }
     private ByteBuffer allocateImageBuffer(){
-	int imageSize = getImageSizeInBytes();
-	System.out.println("Allocating imagebuffer with size " + imageSize);
-	return BufferUtils.createByteBuffer(imageSize);
+		int imageSize = getImageSizeInBytes();
+		return BufferUtils.createByteBuffer(imageSize);
     }
     private byte[] parseColor(){
 	byte[] color = new byte[]{

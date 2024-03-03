@@ -5,10 +5,8 @@ import org.lwjgl.BufferUtils;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 
 import java.io.IOException;
@@ -50,10 +48,18 @@ public class Renderer
         g.setFont(font);
         return g.getFontMetrics();
     }
+    public void renderButton(ButtonUI button){
 
-    public void renderText(String text, float x, float y, int fontSize, Color color){
+        float [] transMatrix = this.getTransformationMatrix(button.x, button.y, button.width, button.height, 0);
+        glBindTexture(GL_TEXTURE_2D, button.textureId);
+        this.renderTexture(transMatrix);
 
-        Font textFont = this.font.deriveFont((float)fontSize);
+        this.renderText(button.text, button.x, button.y, button.fontSize, button.textColor);
+    }
+
+    public void renderText(String text, float x, float y, float fontSize, Color color){
+
+        Font textFont = this.font.deriveFont(fontSize);
         FontMetrics fontMetrics = createFontMetrics(textFont);
 
         int width = fontMetrics.stringWidth(text);
@@ -71,8 +77,7 @@ public class Renderer
         buffer.flip();
 
         this.resourceManager.generateTexture(this.fontTextureId, image.getWidth(), image.getHeight(), buffer);
-
-        float [] transMatrix = this.getTransformationMatrix(x + width, y, width, height, 0);
+        float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
         this.renderTexture(transMatrix);
     }
     public void renderHealth(int hp){

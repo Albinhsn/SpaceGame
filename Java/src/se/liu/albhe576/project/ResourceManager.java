@@ -263,11 +263,11 @@ public class ResourceManager
 		int dir = enemyType == 4 ? 1 : -1;
 
 		EntityData data = this.entityData.get(enemyType);
-		final float yOffset = (parent.height + data.bulletHeight * dir) * 0.5f;
+		final float yOffset = (parent.height + data.bulletHeight) * 0.5f;
 
 		return new Bullet(
 			parent.x,
-			parent.y + yOffset,
+			parent.y + yOffset * dir,
 			data.bulletWidth * Game.SCREEN_WIDTH,
 			data.bulletHeight * Game.SCREEN_HEIGHT,
 			data.bulletTextureIdx,
@@ -355,7 +355,8 @@ public class ResourceManager
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
 			"./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
 			"./resources/images/PNG/Default/meteor_detailedLarge.tga",
-			"./resources/images/PNG/Default/tile_0044.tga"
+			"./resources/images/PNG/Default/tile_0044.tga",
+			"./resources/UI/grey_button02.png"
     };
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{

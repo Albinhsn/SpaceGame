@@ -16,18 +16,10 @@
 * Boss bullets should be bigger and shoot more often
 
 * Menus
-  * Main Menu
-    * play
-    * settings
-    * exit
   * Settings
     * vsync
     * audio?
     * screen size
-  * Pause Menu
-    * Exit Game
-    * Settings
-    * Resume Game
   * Game over menu
     * Restart Game
     * Main Menu

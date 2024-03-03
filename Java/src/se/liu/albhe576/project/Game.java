@@ -8,7 +8,7 @@ import static org.lwjgl.opengl.GL40.*;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -33,6 +33,9 @@ public class Game
     private final ResourceManager resourceManager;
     private final Player player;
     private final Background background;
+    private UI ui;
+    private Map<UIState, UI> uiMap;
+    private UIState uiState;
 
     private void updateBullets(){
         for (Bullet bullet : bullets) {
@@ -72,17 +75,22 @@ public class Game
     }
 
     private void gameLoop(){
+
         // Update entities
         this.timer.updateTimer();
 
-
         if(this.shouldHandleUpdates()){
-            // We just poll the events when we want to handle updates
             glfwPollEvents();
+            if(this.inputState.isPPressed()){
+                this.updateUIState(UIState.PAUSE_MENU);
+            }
+
+            // Handle updates
             this.updatePlayer();
             this.bullets.addAll(this.wave.updateWave(this.timer.getLastTick(), this.resourceManager));
             this.updateBullets();
             this.checkCollision();
+
             if(!this.player.alive){
                 System.out.printf("Game Over!\nScore: %d\n", this.score);
                 System.exit(1);
@@ -91,18 +99,19 @@ public class Game
             this.background.update();
         }
 
-        // Init new frame
-        this.initNewFrame();
-
         // Render entities
         this.renderEverything();
-
     }
+
+    private void updateAndRenderBackground(){
+        this.background.update();
+        this.renderer.renderEntities(this.background.getMeteors());
+    }
+
     private void renderEverything(){
         List<Entity> entities = this.wave.getEnemies();
         entities.add(this.player);
         entities.addAll(this.bullets);
-        entities.addAll(this.background.getMeteors());
 
         this.renderer.renderEntities(entities);
         this.renderer.renderText(String.format("Score: %d", this.score), -Game.SCREEN_WIDTH, SCREEN_HEIGHT - 15, 15, Color.WHITE);
@@ -114,16 +123,36 @@ public class Game
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     }
 
+    private void queryInput(){
+        glfwPollEvents();
+        this.inputState.handleMouseInput();
+    }
+    private void updateUIState(UIState newState){
+        if(this.uiState == UIState.GAME_RUNNING && newState != UIState.GAME_RUNNING){
+            this.timer.stopTimer();
+        }else if(newState == UIState.GAME_RUNNING && this.uiState != UIState.GAME_RUNNING){
+            this.timer.startTimer();
+        }
+        this.uiState = newState;
+    }
+
     public void runGame(){
 
-        this.timer.startTimer();
         while(!glfwWindowShouldClose(window)){
-            // Poll input events
+            // Init new frame
+            this.initNewFrame();
+            this.background.updateAndRender(this.renderer);
 
-            this.gameLoop();
+            if (this.uiState == UIState.GAME_RUNNING) {
+                this.gameLoop();
+            }else{
+                this.queryInput();
+            }
 
-            // This is the actual draw call
+           updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer));
+
             glfwSwapBuffers(window);
+            this.inputState.resetState();
         }
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);
@@ -189,6 +218,16 @@ public class Game
         this.background = new Background();
         this.inputState = new InputState(this.window);
         this.wave = this.resourceManager.getWave(0);
+        this.uiState = UIState.MAIN_MENU;
+        this.initUIMap();
+    }
+    private void initUIMap(){
+        this.uiMap = new HashMap<>();
+                this.uiMap.put(UIState.MAIN_MENU, new MainMenuUI(this.window));
+                this.uiMap.put(UIState.GAME_RUNNING, new GameRunningUI());
+                this.uiMap.put(UIState.GAME_OVER_MENU, new GameOverUI());
+                this.uiMap.put(UIState.PAUSE_MENU, new PauseMenuUI(this.window));
+                this.uiMap.put(UIState.SETTINGS_MENU , new SettingsUI());
     }
 
     public static void main(String[] args) throws IOException {

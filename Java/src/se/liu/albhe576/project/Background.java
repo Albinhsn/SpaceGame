@@ -8,6 +8,18 @@ import java.util.stream.Collectors;
 public class Background {
 
     private final List<Meteor> meteors;
+    private final Timer timer;
+    private long lastUpdate;
+    public void updateAndRender(Renderer renderer){
+        this.timer.updateTimer();
+        long tick = this.timer.getLastTick();
+
+        if(this.lastUpdate + 16 <= tick){
+            this.update();
+            this.lastUpdate = tick;
+        }
+        renderer.renderEntities(this.meteors);
+    }
 
     public List<Entity> getMeteors(){
         return this.meteors.stream().map(meteor -> (Entity)meteor).collect(Collectors.toList());
@@ -60,6 +72,9 @@ public class Background {
     public Background(){
         this.meteors = new ArrayList<>();
         this.initMeteors();
+        this.timer = new Timer();
+        this.timer.startTimer();
+        this.lastUpdate = 0;
     }
 
     private boolean entityIsOutOfBounds(Entity entity){
