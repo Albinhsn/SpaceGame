@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.opengl.GL40.*;
 
+import java.awt.*;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.List;
@@ -71,8 +72,11 @@ public class Game
         return false;
     }
 
+    long prevTick;
+
     private void gameLoop(){
         // Update entities
+
         this.timer.updateTimer();
 
         if(this.shouldHandleUpdates()) {
@@ -165,6 +169,11 @@ public class Game
             }else{
                 this.queryInput();
             }
+            long ms = System.currentTimeMillis()  - this.prevTick;
+            this.renderer.renderTextStartAt(String.format("ms: %d\n", ms), -100.0f, 60.0f, 3.0f, Color.WHITE);
+            this.renderer.renderTextStartAt(String.format("fps: %d\n", (int)(1000.0f/(float)ms)), -100.0f, 50.0f, 3.0f, Color.WHITE);
+            this.prevTick = System.currentTimeMillis();
+
 
 
 
@@ -229,6 +238,7 @@ public class Game
         this.initGLFW();
         this.timer = new Timer();
         this.score = 0;
+        this.prevTick = 0;
         this.lastUpdated = 0;
         this.resourceManager = new ResourceManager();
 

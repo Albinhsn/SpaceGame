@@ -7,9 +7,15 @@
 ### Random
 * Fix so you're able to change screen resolution
   * fix so it actually renders in the same size
+
 * General refactor thingies
   * animations?
   * rename ui stuff
+
+### Animation class thingy?
+* Able to render lists of element
+* Implicit rendering of element
+* Layout
 
 
 ### Data

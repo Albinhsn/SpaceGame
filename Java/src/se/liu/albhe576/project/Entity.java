@@ -48,8 +48,8 @@ public abstract class Entity
         return new float[]{minEntityX, maxEntityX, minEntityY, maxEntityY};
     }
     public boolean isWithinBounds(){
-        final int x = (int) (Game.SCREEN_WIDTH - this.width / 2);
-        final int y = (int) (Game.SCREEN_HEIGHT - this.height / 2);
+        final int x = (int) (100.0f - this.width / 2);
+        final int y = (int) (100.0f - this.height / 2);
         return !(this.x <= -x || this.x >= x || this.y <= -y || this.y >= y);
     }
 }

@@ -21,7 +21,7 @@ public class Enemy extends Entity
         final float maxEntityX = bb[1];
         final float maxEntityY = bb[3];
         // This should be given from the wave data or something
-        return (minEntityX < -Game.SCREEN_WIDTH * 1.6f || maxEntityX > Game.SCREEN_WIDTH * 1.6f|| minEntityY < -Game.SCREEN_HEIGHT * 1.6f || maxEntityY > Game.SCREEN_HEIGHT * 1.6f);
+        return (minEntityX < -160.0f || maxEntityX > 160.0f|| minEntityY < -160.0f || maxEntityY > 160.0f);
     }
 
     public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
@@ -32,7 +32,7 @@ public class Enemy extends Entity
 			this.lastUpdate     = 0;
             this.alive          = true;
             this.spawnTime      = spawnTime;
-            this.moveSpeed      = x > 0 ? -1 : 1;
+            this.moveSpeed      = x > 0 ? -0.2f : 0.2f;
             this.lastShot       = 0;
     }
 
@@ -65,23 +65,23 @@ public class Enemy extends Entity
 		if(lastUpdate + 10 <= tick){
             switch(this.pathId){
                 case 0:{
-                    this.y += (float) Math.sin((double) lastUpdate / 500) * 2;
-                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2) + this.moveSpeed * 2.0f;
+                    this.y += (float) Math.sin((double) lastUpdate / 500) / 5.0f;
+                    this.x             += (float) Math.cos((double) lastUpdate / 500) / 5.0f + this.moveSpeed;
                     break;
                 }
                 case 1:{
-                    this.y += (float) Math.sin((double) lastUpdate / 1000) * 2;
+                    this.y += (float) Math.sin((double) lastUpdate / 1000) / 5.0f;
                     this.x += this.moveSpeed;
                     break;
                 } case 2:{
-                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2) + this.moveSpeed * 0.5f;
+                    this.x             += (float) (Math.cos((double) lastUpdate / 500)) / 5.0f + this.moveSpeed * 0.5f;
                    break;
                 }
                 case 3:{
                     if(this.y >= Game.SCREEN_HEIGHT * 0.5f){
-                       this.y -= 2.0f;
+                       this.y -= 0.2f;
                     }
-                    this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2);
+                    this.x             += (float) Math.cos((double) lastUpdate / 500) / 5.0f;
                     break;
                 }
                 default:{

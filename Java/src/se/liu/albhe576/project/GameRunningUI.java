@@ -4,7 +4,8 @@ import java.awt.*;
 
 public class GameRunningUI extends UI{
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp) {
-        renderer.renderTextStartAt(String.format("Score: %d", score), -Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT - 15, 15, Color.WHITE);
+        final float fontSize = 15.0f / Game.SCREEN_HEIGHT * 100.0f;
+        renderer.renderTextStartAt(String.format("Score: %d", score), -100.0f, 100.0f - fontSize, fontSize, Color.WHITE);
         renderer.renderHealth(hp);
         return UIState.GAME_RUNNING;
 

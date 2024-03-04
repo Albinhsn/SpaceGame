@@ -28,26 +28,26 @@ public class Background {
     final Random rng = new Random();
 
     private float getRandomMeteorX(){
-        return rng.nextFloat(-Game.SCREEN_WIDTH, Game.SCREEN_WIDTH);
+        return rng.nextFloat(-100.0f, 100.0f);
     }
     private float getRandomMeteorWidth(){
-        final float lowerBound = 1.5f / 620.0f * Game.SCREEN_WIDTH;
-        final float upperBound = 4.0f / 620.0f * Game.SCREEN_WIDTH;
+        final float lowerBound = 1.5f / 620.0f * 100.0f;
+        final float upperBound = 4.0f / 620.0f * 100.0f;
         return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorHeight(){
-        final float lowerBound = 1.5f / 480.0f * Game.SCREEN_WIDTH;
-        final float upperBound = 4.0f / 480.0f * Game.SCREEN_WIDTH;
+        final float lowerBound = 1.5f / 480.0f * 100.0f;
+        final float upperBound = 4.0f / 480.0f * 100.0f;
         return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorAcceleration(){
-        final float lowerBound = 1.0f / 480.0f * Game.SCREEN_WIDTH;
-        final float upperBound = 8.0f / 480.0f * Game.SCREEN_WIDTH;
+        final float lowerBound = 1.0f / 480.0f * 100.0f;
+        final float upperBound = 8.0f / 480.0f * 100.0f;
 
         return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorY(){
-        return rng.nextFloat(Game.SCREEN_HEIGHT, Game.SCREEN_HEIGHT * 1.1f);
+        return rng.nextFloat(100.0f,  110.0f);
     }
     private void updateMeteor(Entity meteor){
         meteor.x = this.getRandomMeteorX();
@@ -78,7 +78,7 @@ public class Background {
     }
 
     private boolean entityIsOutOfBounds(Entity entity){
-        return entity.y - entity.height - 2.0f < -Game.SCREEN_HEIGHT;
+        return entity.y - entity.height - 2.0f < -100.0f;
     }
 
     public void update(){

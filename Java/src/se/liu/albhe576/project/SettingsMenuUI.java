@@ -8,12 +8,11 @@ import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.glViewport;
 
 public class SettingsMenuUI extends UI {
-    private UIState parentState;
-    private final ButtonUI returnButton;
-    private final CheckboxUI vsyncCheckbox;
-    private final DropdownUI<Point> screenSizeDropdown;
-
-    private final SliderUI audioSlider;
+    private         UIState parentState;
+    private final   ButtonUIComponent returnButton;
+    private final   CheckboxUIComponent vsyncCheckbox;
+    private final   DropdownUIComponent<Point> screenSizeDropdown;
+    private final   SliderUIComponent audioSlider;
 
     public void setParentState(UIState uiState){
         this.parentState = uiState;
@@ -22,13 +21,12 @@ public class SettingsMenuUI extends UI {
     public UIState render(InputState inputState,Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(returnButton);
-        returnButton.animate(inputState, 0.01f, 10.0f, ButtonUI.easeOutCubic);
+        returnButton.animate(inputState, 0.01f, 10.0f / Game.SCREEN_HEIGHT * 100, Animation.easeOutCubic);
         if(returnButton.isReleased(inputState)){
             return this.parentState;
         }
 
-        renderer.renderTextCentered("vsync", -Game.SCREEN_WIDTH * 0.2f, 0, Game.SCREEN_HEIGHT * 0.04f, Color.WHITE);
-
+        renderer.renderTextCentered("vsync", -25.0f, 0, 4.0f, Color.WHITE);
         renderer.renderCheckbox(this.vsyncCheckbox);
         if(vsyncCheckbox.isReleased(inputState)){
             vsyncCheckbox.toggled = !vsyncCheckbox.toggled;
@@ -37,7 +35,7 @@ public class SettingsMenuUI extends UI {
 
         if(this.screenSizeDropdown.toggled){
             for(int i = 0; i < this.screenSizeDropdown.dropdownData.length; i++){
-                ButtonUI item = this.screenSizeDropdown.dropdownItems.get(i);
+                ButtonUIComponent item = this.screenSizeDropdown.dropdownItems.get(i);
                 if(item.isReleased(inputState)){
                     this.screenSizeDropdown.toggled = !this.screenSizeDropdown.toggled;
                     Point newWindowSize = this.screenSizeDropdown.dropdownData[i];
@@ -64,97 +62,98 @@ public class SettingsMenuUI extends UI {
         return UIState.SETTINGS_MENU;
     }
     public SettingsMenuUI(){
-        this.returnButton       = new ButtonUI(
+        this.returnButton       = new ButtonUIComponent(
                 0.0f,
-                -Game.SCREEN_HEIGHT * 0.4f,
-                Game.SCREEN_WIDTH * 0.4f,
-                Game.SCREEN_HEIGHT * 0.1f,
+                -40.0f,
+                40.0f,
+                10.0f,
                 "Return",
                 Texture.GREY_BOX,
-                20.0f, Color.RED
+                20.0f / Game.SCREEN_HEIGHT * 100.0f,
+                Color.RED
         );
-        this.vsyncCheckbox      = new CheckboxUI(
+        this.vsyncCheckbox      = new CheckboxUIComponent(
                 Texture.GREY_CHECKMARK_GREY,
                 0,
                 0,
-                Game.SCREEN_WIDTH * 0.06f,
-                Game.SCREEN_HEIGHT * 0.08f,
+                6.0f,
+                8.0f,
                 Texture.GREY_SLIDER_UP,
                 // This is scuffed because of aspect ratio
-                Game.SCREEN_WIDTH * 0.05f,
-                Game.SCREEN_HEIGHT * 0.06f
+                5.0f,
+                6.0f
         );
 
-        ButtonUI dropdownButton = new ButtonUI(
-                Game.SCREEN_WIDTH * 0.6f,
-                Game.SCREEN_HEIGHT * 0.2f,
-                Game.SCREEN_WIDTH * 0.3f,
-                Game.SCREEN_HEIGHT * 0.06f,
+        ButtonUIComponent dropdownButton = new ButtonUIComponent(
+                60.0f,
+                20.0f,
+                30.0f,
+                6.0f,
                 "Screen size",
                 Texture.GREY_BOX,
-                Game.SCREEN_HEIGHT * 0.04f,
+                3.0f,
                 Color.RED
         );
-        ArrayList<ButtonUI> dropdownItems = new ArrayList<>();
-        dropdownItems.add(new ButtonUI(
-                Game.SCREEN_WIDTH * 0.6f,
-                Game.SCREEN_HEIGHT * 0.1f,
-                Game.SCREEN_WIDTH * 0.3f,
-                Game.SCREEN_HEIGHT * 0.06f,
+        ArrayList<ButtonUIComponent> dropdownItems = new ArrayList<>();
+        dropdownItems.add(new ButtonUIComponent(
+                60.0f,
+                10.0f,
+                30.0f,
+                6.0f,
                 "1920x1080",
                 Texture.GREY_BOX,
-                Game.SCREEN_HEIGHT * 0.04f,
+                4.0f,
                 Color.RED
         ));
 
-        dropdownItems.add(new ButtonUI(
-                Game.SCREEN_WIDTH * 0.6f,
+        dropdownItems.add(new ButtonUIComponent(
+                60.0f,
                 0,
-                Game.SCREEN_WIDTH * 0.3f,
-                Game.SCREEN_HEIGHT * 0.06f,
+                30.0f,
+                6.0f,
                 "1600x900",
                 Texture.GREY_BOX,
-                Game.SCREEN_HEIGHT * 0.04f,
+                4.0f,
                 Color.RED
         ));
 
-        dropdownItems.add(new ButtonUI(
-                Game.SCREEN_WIDTH * 0.6f,
-                -Game.SCREEN_HEIGHT * 0.1f,
-                Game.SCREEN_WIDTH * 0.3f,
-                Game.SCREEN_HEIGHT * 0.06f,
+        dropdownItems.add(new ButtonUIComponent(
+                60.0f,
+                -10.0f,
+                30.0f,
+                6.0f,
                 "1024x768",
                 Texture.GREY_BOX,
-                Game.SCREEN_HEIGHT * 0.04f,
+                4.0f,
                 Color.RED
         ));
 
-        dropdownItems.add(new ButtonUI(
-                Game.SCREEN_WIDTH * 0.6f,
-                -Game.SCREEN_HEIGHT * 0.2f,
-                Game.SCREEN_WIDTH * 0.3f,
-                Game.SCREEN_HEIGHT * 0.06f,
+        dropdownItems.add(new ButtonUIComponent(
+                60.0f,
+                -20.0f,
+                30.0f,
+                6.0f,
                 "620x480",
                 Texture.GREY_BOX,
-                Game.SCREEN_HEIGHT * 0.04f,
+                4.0f,
                 Color.RED
         ));
         Point[] dropdownData = new Point[]{new Point(1920, 1080), new Point(1600, 900), new Point(1024, 768), new Point(620, 480)};
-        this.screenSizeDropdown = new DropdownUI<>(dropdownButton, dropdownItems, dropdownData);
+        this.screenSizeDropdown = new DropdownUIComponent<>(dropdownButton, dropdownItems, dropdownData);
 
 
         //int textureId, float x, float y, float width, float height, int sliderTextureId, float sliderX, float sliderY, float sliderWidth, float sliderHeight
-        this.audioSlider = new SliderUI(
+        this.audioSlider = new SliderUIComponent(
                 Texture.GREY_BOX,
                 0,
-                Game.SCREEN_HEIGHT * 0.6f,
-                Game.SCREEN_WIDTH * 0.65f,
-                Game.SCREEN_HEIGHT * 0.08f,
+                60.0f,
+                65.0f,
+                8.0f,
                 Texture.GREY_SLIDER_HORIZONTAL,
                 0,
-                Game.SCREEN_HEIGHT * 0.6f,
-                Game.SCREEN_WIDTH * 0.05f,
-                Game.SCREEN_HEIGHT * 0.06f,
+                60.0f,
+                5.0f,
+                6.0f,
                 1,
                 100
         );

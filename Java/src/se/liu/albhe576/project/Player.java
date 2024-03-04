@@ -20,7 +20,7 @@ public class Player  extends Entity{
 	}
 
 	public boolean updatePlayer(InputState inputState, long lastTick){
-		final float moveSpeed = 5.0f;
+		final float moveSpeed = 1.0f;
 		float xAcceleration = 0;
 		float yAcceleration = 0;
 		if(inputState.isWPressed()){

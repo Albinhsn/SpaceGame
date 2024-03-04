@@ -7,11 +7,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL40.*;
@@ -29,35 +27,39 @@ public class Renderer
         this.resourceManager = resourceManager;
         this.fontTextureId = glGenTextures();
 
-        Font font1;
+        this.font = this.loadFont();
+    }
+
+    private Font loadFont(){
         try{
-            font1 = Font.createFont(Font.TRUETYPE_FONT, new File("./resources/Font/kenvector_future.ttf"));
+            return Font.createFont(Font.TRUETYPE_FONT, new File("./resources/Font/kenvector_future.ttf"));
 
         }catch (IOException | FontFormatException e){
             e.printStackTrace();
-            font1 = null;
-
+            return null;
         }
-        this.font = font1;
     }
+
     private FontMetrics createFontMetrics(Font font){
         BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
         Graphics2D g = image.createGraphics();
         g.setFont(font);
         return g.getFontMetrics();
     }
-    public void renderButton(ButtonUI button){
-        renderUIComponent(button.textureId, button.x, button.y, button.width, button.height);
-        this.renderTextCentered(button.text, button.x, button.y, button.fontSize, button.textColor);
+    public void renderButton(ButtonUIComponent button){
+
+        renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
+        this.renderTextCentered(button.text, button.x,button.y, button.fontSize, button.textColor);
     }
 
-    public void renderCheckbox(CheckboxUI checkbox){
+    public void renderCheckbox(CheckboxUIComponent checkbox){
         renderUIComponent(checkbox.textureId, checkbox.x, checkbox.y, checkbox.width, checkbox.height);
         if(checkbox.toggled){
             renderUIComponent(checkbox.checkmarkTextureId, checkbox.x, checkbox.y, checkbox.checkmarkWidth, checkbox.checkmarkHeight);
         }
     }
     public void renderUIComponent(int textureId, float x, float y, float width, float height){
+
         float [] transMatrix = this.getTransformationMatrix(
                 x,
                 y,
@@ -68,16 +70,16 @@ public class Renderer
         glBindTexture(GL_TEXTURE_2D, textureId);
         this.renderTexture(transMatrix);
     }
-    public void renderSlider(SliderUI slider){
+    public void renderSlider(SliderUIComponent slider){
         renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
         renderUIComponent(17, slider.x, slider.y, slider.width - 10, slider.height / 10);
         renderUIComponent(slider.sliderTextureId, slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight);
     }
 
-    public void renderDropdown(ButtonUI dropdownButton, boolean toggled, List<ButtonUI> dropdownItems){
+    public void renderDropdown(ButtonUIComponent dropdownButton, boolean toggled, List<ButtonUIComponent> dropdownItems){
         this.renderButton(dropdownButton);
         if(toggled){
-            for(ButtonUI item :  dropdownItems){
+            for(ButtonUIComponent item :  dropdownItems){
                 this.renderButton(item);
             }
         }
@@ -109,15 +111,21 @@ public class Renderer
     private TextImageData getTextImageData(String text, float fontSize, Color color){
         Font textFont = this.font.deriveFont(fontSize);
         FontMetrics fontMetrics = createFontMetrics(textFont);
-
         int width = fontMetrics.stringWidth(text);
         int height = fontMetrics.getHeight();
-        BufferedImage image = new BufferedImage(width,height, BufferedImage.TYPE_4BYTE_ABGR);
+
+        Font textFont2 = this.font.deriveFont(fontSize * 20);
+        FontMetrics fontMetrics2 = createFontMetrics(textFont2);
+        int actualWidth =fontMetrics2.stringWidth(text);
+        int actualHeight = fontMetrics2.getHeight();
+
+
+        BufferedImage image = new BufferedImage(actualWidth, actualHeight, BufferedImage.TYPE_4BYTE_ABGR);
 
         Graphics2D g2d = image.createGraphics();
-        g2d.setFont(textFont);
+        g2d.setFont(textFont2);
         g2d.setColor(color);
-        g2d.drawString(text, 0, height - fontMetrics.getDescent());
+        g2d.drawString(text, 0, actualHeight - fontMetrics2.getDescent());
 
         byte[] data = ((DataBufferByte) image.getData().getDataBuffer()).getData();
         for(int i = 0; i < data.length; i+=4){
@@ -142,23 +150,22 @@ public class Renderer
 
         TextImageData data   = this.getTextImageData(text, fontSize, color);
         float [] transMatrix = this.getTransformationMatrix(x, y, data.stringWidth, data.fontHeight, 0);
-
         this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
-
         this.renderTexture(transMatrix);
     }
+
     public void renderHealth(int hp){
         // ToDo hoist this out
-        final int height    = 30;
-        final int y         = Game.SCREEN_HEIGHT - height;
-        final int width     = 30;
-        int x               = -hp * width / 2;
+        final float height    = 10.0f;
+        final float y         = 100.0f - height;
+        final float width     = 10.0f;
+        float x               = -hp * width / 2;
 
         Texture texture = this.resourceManager.textureIdMap.get(Texture.HP_HEART);
         glBindTexture(GL_TEXTURE_2D, texture.textureId);
         glBindVertexArray(texture.vertexArrayId);
 
-        for(int i = 0; i < hp; i++, x += width + 20){
+        for(int i = 0; i < hp; i++, x += width + 2.0f){
             float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
             this.renderTexture(transMatrix);
         }
@@ -194,6 +201,8 @@ public class Renderer
     }
 
     public float[] getTransformationMatrix(float x, float y, float width, float height, float rotation){
+
+
         float r = (float) (rotation * Math.PI / 180.0f);
         float [] rotationM = new float[]{
                 (float)Math.cos(r), (float)Math.sin(r), 0,
@@ -202,16 +211,16 @@ public class Renderer
         };
 
 
-        float transformX = ((x + Game.SCREEN_WIDTH) / (float)Game.SCREEN_WIDTH) - 1.0f;
-        float transformY = ((y + Game.SCREEN_HEIGHT) / (float)Game.SCREEN_HEIGHT) - 1.0f;
+        float transformX = x / 100.0f;
+        float transformY = y / 100.0f;
         float [] translationM = new float[]{
                 1,0,0,
                 0,1,0,
                 transformX, transformY, 1
         };
 
-        float scaleX = ((width + Game.SCREEN_WIDTH) / (float)Game.SCREEN_WIDTH) - 1.0f;
-        float scaleY = ((height + Game.SCREEN_HEIGHT) / (float)Game.SCREEN_HEIGHT) - 1.0f;
+        float scaleX = width / 100.0f;
+        float scaleY = height / 100.0f;
 
         float [] scaleM = new float[]{
              scaleX, 0, 0,

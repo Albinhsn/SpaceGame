@@ -224,10 +224,10 @@ public class ResourceManager
 				enemies.add(new Enemy(
 						enemyEntityData.hp,
 						enemyType,
-						Game.SCREEN_WIDTH * spawnPositionX,
-						-Game.SCREEN_HEIGHT * spawnPositionY,
-						Game.SCREEN_WIDTH * enemyEntityData.width,
-						Game.SCREEN_HEIGHT * enemyEntityData.height,
+						100.0f * spawnPositionX,
+						-100.0f * spawnPositionY,
+						100.0f * enemyEntityData.width,
+						100.0f * enemyEntityData.height,
 						enemyEntityData.textureIdx,
 						spawnTime,
 						pathId
@@ -274,8 +274,8 @@ public class ResourceManager
 
 	public Player getPlayer(){
 		EntityData playerData = this.entityData.get(4);
-		float width = playerData.width * Game.SCREEN_WIDTH;
-		float height = playerData.height * Game.SCREEN_HEIGHT;
+		float width = playerData.width * 100.0f;
+		float height = playerData.height * 100.0f;
 		return new Player(playerData.hp, 0,0, width, height, playerData.textureIdx);
 	}
 
@@ -289,11 +289,11 @@ public class ResourceManager
 		return new Bullet(
 			parent.x,
 			parent.y + yOffset * dir,
-			data.bulletWidth * Game.SCREEN_WIDTH,
-			data.bulletHeight * Game.SCREEN_HEIGHT,
+			data.bulletWidth * 100.0f,
+			data.bulletHeight * 100.0f,
 			data.bulletTextureIdx,
 			parent,
-		data.bulletSpeed * dir * Game.SCREEN_HEIGHT,
+		data.bulletSpeed * dir * 100.0f,
 			dir == 1 ? 0.0f : 180.0f
 		);
 	}
