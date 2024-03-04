@@ -10,7 +10,6 @@ public class PauseMenuUI extends UI {
 
         renderer.renderButton(playButton);
         if(playButton.isReleased(inputState)){
-            System.out.println("Play!");
             return UIState.GAME_RUNNING;
         }
 
@@ -21,7 +20,6 @@ public class PauseMenuUI extends UI {
 
         renderer.renderButton(settingsButton);
         if(settingsButton.isReleased(inputState)){
-            System.out.println("Settings!");
             return UIState.SETTINGS_MENU;
         }
 
@@ -29,9 +27,11 @@ public class PauseMenuUI extends UI {
 
     }
     public PauseMenuUI(){
-        this.playButton     = new ButtonUIComponent(0.0f, 20.0f, 32.0f, 10.0f, "Play", Texture.GREY_BOX, 4.0f, Color.ORANGE);
-        this.settingsButton     = new ButtonUIComponent(0.0f, 0.0f, 32.0f, 10.0f, "Settings", Texture.GREY_BOX, 4.0f, Color.ORANGE);
-        this.mainMenuButton     = new ButtonUIComponent(0.0f, -20.0f, 32.0f, 10.0f, "Main Menu", Texture.GREY_BOX, 4.0f, Color.ORANGE);
-
+        final float buttonWidth     = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumWidth");
+        final float buttonHeight    = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumHeight");
+        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.get("fontSizeMedium");
+        this.playButton             = new ButtonUIComponent(0.0f, 2.0f * buttonHeight, buttonWidth, buttonHeight, "Play",buttonFontSize);
+        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Settings",  buttonFontSize);
+        this.mainMenuButton         = new ButtonUIComponent(0.0f, -2.0f * buttonHeight, buttonWidth, buttonHeight, "Main Menu", buttonFontSize);
     }
 }

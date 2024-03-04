@@ -9,7 +9,6 @@ import java.awt.*;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -24,12 +23,11 @@ public class Game
     private int score;
     private final Timer timer;
     private long lastUpdated;
-
     private final List<Bullet> bullets;
     private Wave wave;
     private final Renderer renderer;
-    public static int SCREEN_WIDTH = 620;
-    public static int SCREEN_HEIGHT = 480;
+    public static int SCREEN_WIDTH;
+    public static int SCREEN_HEIGHT;
     private final InputState inputState;
     private final ResourceManager resourceManager;
     private final Player player;
@@ -45,11 +43,12 @@ public class Game
     }
 
     private void checkCollision(){
+        final int scoreIncreasePerEnemyDeath = this.resourceManager.STATE_VARIABLES.get("scorePerEnemy").intValue();
 
         List<Entity> entities = this.wave.getEnemiesAsEntities();
         for(Bullet bullet: this.bullets){
             if(bullet.checkCollision(entities) && bullet.getParent() == this.player){
-                this.score += 100;
+                this.score += scoreIncreasePerEnemyDeath;
             }
             bullet.checkCollision(this.player);
         }
@@ -64,9 +63,10 @@ public class Game
     }
 
     private boolean shouldHandleUpdates(){
-        long lastTick = this.timer.getLastTick();
-        // 16 ms = 60fps
-        if(lastTick >= this.lastUpdated + 16){
+        final long lastTick = this.timer.getLastTick();
+        final int updateTimerMS = ResourceManager.STATE_VARIABLES.get("updateTimerMS").intValue();
+
+        if(lastTick >= this.lastUpdated + updateTimerMS){
             this.lastUpdated = lastTick;
             return true;
         }
@@ -75,12 +75,9 @@ public class Game
 
 
     private void gameLoop(){
-        // Update entities
-
         this.timer.updateTimer();
 
         if(this.shouldHandleUpdates()) {
-            this.queryInput();
 
             if(this.inputState.isPPressed()){
                 this.updateUIState(UIState.PAUSE_MENU);
@@ -88,19 +85,20 @@ public class Game
 
             // Handle updates
             this.updatePlayer();
+
             List<Bullet> newEnemyBullets = this.wave.updateWave(this.timer.getLastTick(), this.resourceManager);
             this.bullets.addAll(newEnemyBullets);
             this.updateBullets();
+
+
             this.checkCollision();
         }
 
-        // Render entities
-        this.renderEverything();
-
+        this.renderGameEntities();
         this.wave.removeOutOfBoundsEnemies();
     }
 
-    private void renderEverything(){
+    private void renderGameEntities(){
         this.renderer.renderEntities(this.wave.getEnemiesAsEntities());
         this.renderer.renderEntity(this.player);
         this.renderer.renderEntities(this.bullets);
@@ -111,17 +109,17 @@ public class Game
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     }
 
-    private void queryInput(){
+    private void queryInputEvents(){
         glfwPollEvents();
         this.inputState.handleMouseInput();
     }
     private void resetGame(){
+        this.score          = 0;
+        this.lastUpdated    = 0;
         this.wave = this.resourceManager.getWave(0);
         this.bullets.clear();
         this.player.reset();
         this.timer.reset();
-        this.score = 0;
-        this.lastUpdated = 0;
     }
     private void updateUIState(UIState newState){
         if(this.uiState == UIState.GAME_RUNNING && newState != UIState.GAME_RUNNING){
@@ -166,7 +164,7 @@ public class Game
             this.background.updateAndRender(this.renderer);
 
             this.inputState.resetState();
-            this.queryInput();
+            this.queryInputEvents();
 
 
             if (this.uiState == UIState.GAME_RUNNING) {
@@ -221,7 +219,8 @@ public class Game
         }
 
         glfwMakeContextCurrent(window);
-        glfwSwapInterval(0);
+        int vsync = this.resourceManager.STATE_VARIABLES.get("vsync").intValue();
+        glfwSwapInterval(vsync);
 
         glfwShowWindow(window);
 
@@ -232,28 +231,37 @@ public class Game
         glViewport(0,0,Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
     public Game() {
+        this.score              = 0;
+        this.prevTick           = 0;
+        this.lastUpdated        = 0;
+        this.resourceManager    = new ResourceManager();
+
+        Game.SCREEN_HEIGHT = this.resourceManager.STATE_VARIABLES.get("SCREEN_HEIGHT").intValue();
+        Game.SCREEN_WIDTH  = this.resourceManager.STATE_VARIABLES.get("SCREEN_WIDTH").intValue();
+
         this.initGLFW();
-        this.timer = new Timer();
-        this.score = 0;
-        this.prevTick = 0;
-        this.lastUpdated = 0;
-        this.resourceManager = new ResourceManager();
+        this.resourceManager.loadResources();
 
-        this.player   = this.resourceManager.getPlayer();
-        this.bullets = new ArrayList<>();
+        this.timer              = new Timer();
+        this.bullets            = new ArrayList<>();
+        this.renderer           = new Renderer(this.window, resourceManager);
+        this.background         = new Background();
+        this.inputState         = new InputState(this.window);
 
-        this.renderer = new Renderer(this.window, resourceManager);
-        this.background = new Background();
-        this.inputState = new InputState(this.window);
-        this.wave = this.resourceManager.getWave(0);
+        this.player             = this.resourceManager.getPlayer();
+
+        final int waveIdx = this.resourceManager.STATE_VARIABLES.get("waveIdx").intValue();
+        this.wave               = this.resourceManager.getWave(waveIdx);
+
         this.uiState = UIState.MAIN_MENU;
-
         this.uiMap = new HashMap<>();
         this.uiMap.put(UIState.MAIN_MENU, new MainMenuUI(this.window));
         this.uiMap.put(UIState.GAME_RUNNING, new GameRunningUI());
         this.uiMap.put(UIState.GAME_OVER_MENU, new GameOverUI());
         this.uiMap.put(UIState.PAUSE_MENU, new PauseMenuUI());
         this.uiMap.put(UIState.SETTINGS_MENU , new SettingsMenuUI());
+
+
     }
 
     public static void main(String[] args){

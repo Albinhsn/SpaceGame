@@ -6,6 +6,18 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class Background {
+    static class Meteor extends Entity{
+
+        private final float yAcceleration;
+        public Meteor(float x, float y, float width, float height, int textureIdx, float yAcceleration) {
+            super(0, x, y, width, height, textureIdx, (float) (Math.random() / 360.0f));
+            this.yAcceleration = yAcceleration;
+        }
+
+        public void update() {
+            this.y -= this.yAcceleration;
+        }
+    }
 
     private final List<Meteor> meteors;
     private final Timer timer;
@@ -17,7 +29,7 @@ public class Background {
         if(this.lastUpdate + 16 <= tick){
             for(Meteor meteor : this.meteors){
                 if(this.meteorIsOutOfBounds(meteor)){
-                    this.updateMeteor(meteor);
+                    this.resetMeteor(meteor);
                 }
                 meteor.update();
             }
@@ -52,7 +64,7 @@ public class Background {
     private float getRandomMeteorY(){
         return rng.nextFloat(100.0f,  110.0f);
     }
-    private void updateMeteor(Entity meteor){
+    private void resetMeteor(Entity meteor){
         meteor.x = this.getRandomMeteorX();
         meteor.y = this.getRandomMeteorY();
         meteor.width = this.getRandomMeteorWidth();
@@ -71,7 +83,6 @@ public class Background {
 
             this.meteors.add(new Meteor(x,y,width ,height , textureIdx, yAcceleration));
         }
-
     }
     public Background(){
         this.meteors    = new ArrayList<>();

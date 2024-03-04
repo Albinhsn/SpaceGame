@@ -8,9 +8,10 @@ public class GameOverUI extends UI {
     private final ButtonUIComponent mainMenuButton;
     public boolean lostGame;
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp) {
+        final float fontSize = ResourceManager.STATE_VARIABLES.get("fontSizeLarge");
 
-        renderer.renderTextCentered(lostGame  ? "GAME OVER" : "GAME WON", 0, 40.0f, 8.0f, Color.WHITE);
-        renderer.renderTextCentered(String.format("Score: %d", score), 0, 20.0f, 8.0f, Color.WHITE);
+        renderer.renderTextCentered(lostGame  ? "GAME OVER" : "GAME WON", 0, 40.0f, fontSize, Color.WHITE);
+        renderer.renderTextCentered(String.format("Score: %d", score), 0, 20.0f, fontSize, Color.WHITE);
 
         renderer.renderButton(restartButton);
         if(restartButton.isReleased(inputState)){
@@ -27,8 +28,12 @@ public class GameOverUI extends UI {
     }
 
     public GameOverUI(){
-        this.restartButton     = new ButtonUIComponent(0.0f, 0.0f, 32.5f, 10.0f, "Restart Game", Texture.GREY_BOX, 2.0f, Color.RED);
-        this.mainMenuButton     = new ButtonUIComponent(0.0f, -20.0f, 32.0f, 10.0f, "Main Menu", Texture.GREY_BOX, 2.0f, Color.RED);
-        this.lostGame = false;
+        final float buttonWidth     = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumWidth");
+        final float buttonHeight    = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumHeight");
+        final float fontSize        = ResourceManager.STATE_VARIABLES.get("fontSizeSmall");
+
+        this.restartButton          = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Restart Game", fontSize);
+        this.mainMenuButton         = new ButtonUIComponent(0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, "Main Menu", fontSize);
+        this.lostGame               = false;
     }
 }

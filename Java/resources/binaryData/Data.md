@@ -41,3 +41,29 @@
   * float 
 * pathId
   * int 
+
+## State variables
+vsync
+screenWidth
+screenHeight
+waveIdx
+scorePerEnemy
+updateTimerMS
+enemyMS
+enemyGCDMin
+enemyGCDMax
+playerMS
+playerGCDMS
+buttonSizeSmallWidth
+buttonSizeSmallHeight
+buttonSizeMediumWidth
+buttonSizeMediumHeight
+fontSizeSmall
+fontSizeMedium
+fontSizeLarge
+checkboxWidth
+checkboxHeight
+buttonTextureMapKey
+hpHeartHeight
+hpHeartWidth
+

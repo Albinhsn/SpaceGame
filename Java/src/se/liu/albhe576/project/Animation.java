@@ -6,8 +6,8 @@ public class Animation {
 
     private final float initialWidth;
     private final float initialHeight;
-    private long startedAnimation;
-    private long endedAnimation;
+    private long        startedAnimation;
+    private long        endedAnimation;
 
     public static final UnaryOperator<Float> easeOutCubic = (x) -> (float) (1 - Math.pow(1 - x, 3));
     public static final UnaryOperator<Float> easeLinearly = (x) -> x;

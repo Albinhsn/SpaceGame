@@ -1,11 +1,8 @@
 package se.liu.albhe576.project;
 
-import java.awt.*;
-
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class MainMenuUI extends UI{
-
     private final long window;
     private final ButtonUIComponent playButton;
     private final ButtonUIComponent exitButton;
@@ -35,9 +32,13 @@ public class MainMenuUI extends UI{
         return UIState.MAIN_MENU;
     }
     public MainMenuUI(long window){
-        this.window         = window;
-        this.playButton     = new ButtonUIComponent(0.0f, 31.0f, 40.0f, 10.0f, "Play", Texture.GREY_BOX, 4.0f, Color.RED);
-        this.settingsButton = new ButtonUIComponent(0.0f, 0.0f, 40.0f, 10.0f, "Settings", Texture.GREY_BOX, 4.0f, Color.RED);
-        this.exitButton     = new ButtonUIComponent(0.0f, -31.0f, 40.0f, 10.0f, "Exit", Texture.GREY_BOX, 4.0f, Color.RED);
+        final float buttonWidth     = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeWidth");
+        final float buttonHeight    = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeHeight");
+        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.get("fontSizeMedium");
+
+        this.window                 = window;
+        this.playButton             = new ButtonUIComponent(0.0f, 31.0f, buttonWidth, buttonHeight, "Play", buttonFontSize);
+        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Settings",  buttonFontSize);
+        this.exitButton             = new ButtonUIComponent(0.0f, -31.0f, buttonWidth, buttonHeight, "Exit", buttonFontSize);
     }
 }

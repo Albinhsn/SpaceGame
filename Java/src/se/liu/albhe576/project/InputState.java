@@ -86,7 +86,7 @@ public class InputState
 
         glfwSetKeyCallback(window, (window2, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ) {
-                System.out.println("Should close the window");
+                System.out.println("Closing Window!");
                 glfwSetWindowShouldClose(window, true);
             }
             else if(action == GLFW_PRESS || action == GLFW_RELEASE){
@@ -103,9 +103,9 @@ public class InputState
             }
         });
     }
+    private final DoubleBuffer posBufferX = BufferUtils.createDoubleBuffer(1);
+    private final DoubleBuffer posBufferY = BufferUtils.createDoubleBuffer(1);
     public void handleMouseInput(){
-        DoubleBuffer posBufferX = BufferUtils.createDoubleBuffer(1);
-        DoubleBuffer posBufferY= BufferUtils.createDoubleBuffer(1);
         glfwGetCursorPos(this.window, posBufferX, posBufferY);
 
         int posX = (int) posBufferX.get(0);

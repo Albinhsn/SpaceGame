@@ -11,7 +11,8 @@ public class UIComponent {
         this.height         = newPosition[1];
     }
     public void animate(InputState inputState, float increasePerMs, float maxSize, UnaryOperator<Float> easeInFunction){
-        this.animate(inputState, increasePerMs, maxSize, easeInFunction, easeInFunction); }
+        this.animate(inputState, increasePerMs, maxSize, easeInFunction, easeInFunction);
+    }
     public boolean hovers(InputState inputState){
         Point mousePos = inputState.getMousePosition();
 
@@ -29,14 +30,12 @@ public class UIComponent {
     public boolean isPressed(InputState inputState){
         if(!inputState.isMouse1Pressed()){
             return false;
-
         }
         return this.hovers(inputState);
     }
     public boolean isReleased(InputState inputState){
         if(!inputState.isMouse1Released()){
             return false;
-
         }
         return this.hovers(inputState);
     }

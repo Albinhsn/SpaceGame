@@ -1,32 +1,14 @@
 package se.liu.albhe576.project;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Bullet extends Entity
 {
-    private final Entity parent;
-    private final float yAcc;
+    private final Entity    parent;
+    private final float     yAcc;
     public Entity getParent(){
         return this.parent;
     }
-    public Bullet(
-	    float x,
-	    float y,
-        float width,
-        float height,
-        int textureIdx,
-	    Entity shooter,
-        float yAcc,
-        float rotation
-    )
-    {
-		super(0, x, y, width, height, textureIdx, rotation);
-		this.parent = shooter;
-        this.yAcc = yAcc;
-    }
-
     public void update() {
         this.y += this.yAcc;
     }
@@ -74,8 +56,25 @@ public class Bullet extends Entity
         }
 
         for(Entity entity : entities){
-            this.checkCollision(entity);
+            if(this.checkCollision(entity)){
+                return true;
+            }
         }
         return false;
+    }
+    public Bullet(
+            float x,
+            float y,
+            float width,
+            float height,
+            int textureIdx,
+            Entity shooter,
+            float yAcc,
+            float rotation
+    )
+    {
+        super(0, x, y, width, height, textureIdx, rotation);
+        this.parent = shooter;
+        this.yAcc = yAcc;
     }
 }

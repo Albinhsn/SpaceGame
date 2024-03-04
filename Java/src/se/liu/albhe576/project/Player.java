@@ -20,7 +20,7 @@ public class Player  extends Entity{
 	}
 
 	public boolean updatePlayer(InputState inputState, long lastTick){
-		final float moveSpeed 	= 1.0f;
+		final float moveSpeed 	= ResourceManager.STATE_VARIABLES.get("playerMS");
 		float xAcceleration 	= 0;
 		float yAcceleration 	= 0;
 
@@ -45,11 +45,12 @@ public class Player  extends Entity{
 			this.y -= yAcceleration;
 		}
 
+		// Check whether we shoot or not
 		return inputState.isSpacePressed() && this.canShoot(lastTick);
 	}
 
     private boolean canShoot(long lastTick){
-		final long gcd = 500;
+		final long gcd = ResourceManager.STATE_VARIABLES.get("playerGCDMS").longValue();
 		if(lastShot > lastTick){
 			return false;
 		}

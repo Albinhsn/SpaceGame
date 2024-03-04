@@ -41,8 +41,8 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class ResourceManager
 {
-	private List<Integer> programs;
-
+	private final List<Integer> programs;
+	public Map<Integer, Texture> textureIdMap;
 	private List<EntityData> entityData;
 	private List<Wave> waves;
 	static class EntityData{
@@ -132,7 +132,22 @@ public class ResourceManager
 		}
 		this.programs.add(0, programId);
 	}
-	public Map<Integer, Texture> textureIdMap;
+	private void loadStateVariables() {
+		List<String> stateVariables;
+		try{
+			stateVariables = Files.readAllLines(Path.of("./resources/variables/state.txt"));
+		}catch(IOException e){
+			e.printStackTrace();
+			System.out.println("Unable to load state variables, will use defaults");
+			return;
+		}
+
+		for(String variable : stateVariables){
+			String[] keyValuePair = variable.strip().split(" ");
+			System.out.printf("Added %s:%f\n", keyValuePair[0], Float.parseFloat(keyValuePair[1]));
+			this.STATE_VARIABLES.put(keyValuePair[0], Float.parseFloat(keyValuePair[1]));
+		}
+	}
 	private void loadTextures(){
 		this.textureIdMap = new HashMap<>();
 
@@ -164,6 +179,10 @@ public class ResourceManager
 	}
 	public ResourceManager(){
 		this.programs = new ArrayList<>(1);
+		this.loadStateVariables();
+	}
+
+	public void loadResources(){
 		this.loadTextures();
 		this.loadEntityData();
 		this.loadWaveData();
@@ -386,6 +405,36 @@ public class ResourceManager
 			put(Texture.GREY_SLIDER_HORIZONTAL, "./resources/UI/grey_sliderHorizontal.png");
 		}
     };
+	public static final Map<String, Float> STATE_VARIABLES = new HashMap<>()
+	{
+		{
+			put("vsync", 1.0f);
+			put("SCREEN_WIDTH", 620.0f);
+			put("SCREEN_HEIGHT", 480.0f);
+			put("waveIdx", 0.0f);
+			put("scorePerEnemy", 100.0f);
+			put("updateTimerMS", 16.0f);
+			put("enemyMS", 0.2f);
+			put("enemyGCDMin", 400.0f);
+			put("enemyGCDMax", 1000.0f);
+			put("playerMS", 1.0f);
+			put("playerGCDMS", 500.0f);
+			put("buttonSizeSmallWidth", 18.0f);
+			put("buttonSizeSmallHeight", 6.0f);
+			put("buttonSizeMediumWidth", 32.0f);
+			put("buttonSizeMediumHeight", 10.0f);
+			put("buttonSizeLargeWidth", 40.0f);
+			put("buttonSizeLargeHeight", 10.0f);
+			put("fontSizeSmall", 2.0f);
+			put("fontSizeMedium", 4.0f);
+			put("fontSizeLarge", 8.0f);
+			put("checkboxWidth", 6.0f);
+			put("checkboxHeight", 8.0f);
+			put("buttonTextureIdMapKey", 13.0f);
+			put("hpHeartWidth", 10.0f);
+			put("hpHeartHeight", 10.0f);
+		}
+	};
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{
 			"./resources/binaryData/wave12024-03-04 10:10:42.516.bin",

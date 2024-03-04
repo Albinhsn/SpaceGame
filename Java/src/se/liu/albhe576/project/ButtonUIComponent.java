@@ -7,11 +7,11 @@ public class ButtonUIComponent extends UIComponent{
     public String text;
     public float fontSize;
     public Color textColor;
-    public ButtonUIComponent(float x, float y, float width, float height, String text, int textureId, float fontSize, Color textColor){
-        super(x,y,width,height,textureId);
+    public ButtonUIComponent(float x, float y, float width, float height, String text, float fontSize){
+        super(x,y,width,height, ResourceManager.STATE_VARIABLES.get("buttonTextureIdMapKey").intValue());
         this.text           = text;
         this.fontSize       = fontSize;
-        this.textColor      = textColor;
+        this.textColor      = Color.RED;
     }
 
 

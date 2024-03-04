@@ -18,12 +18,10 @@ public class SettingsMenuUI extends UI {
         this.parentState = uiState;
     }
     private void updateWindowSize(long window, Point newWindowSize){
-        this.screenSizeDropdown.toggled = !this.screenSizeDropdown.toggled;
         glfwSetWindowSize(window, newWindowSize.x, newWindowSize.y);
         Game.SCREEN_WIDTH = newWindowSize.x;
         Game.SCREEN_HEIGHT = newWindowSize.y;
-        glViewport(0,0,Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
-
+        glViewport(0,0,newWindowSize.x, newWindowSize.y);
     }
 
     public UIState render(InputState inputState,Renderer renderer, long window, int score, int hp){
@@ -46,6 +44,7 @@ public class SettingsMenuUI extends UI {
                 ButtonUIComponent item = this.screenSizeDropdown.dropdownItems.get(i);
                 if(item.isReleased(inputState)){
                     this.updateWindowSize(window, this.screenSizeDropdown.dropdownData[i]);
+                    this.screenSizeDropdown.toggled = false;
                     break;
                 }
             }
@@ -66,83 +65,27 @@ public class SettingsMenuUI extends UI {
         return UIState.SETTINGS_MENU;
     }
     public SettingsMenuUI(){
-        this.returnButton       = new ButtonUIComponent(
-                0.0f,
-                -40.0f,
-                40.0f,
-                10.0f,
-                "Return",
-                Texture.GREY_BOX,
-                4.0f,
-                Color.RED
-        );
-        this.vsyncCheckbox      = new CheckboxUIComponent(
-                Texture.GREY_CHECKMARK_GREY,
-                0,
-                0,
-                6.0f,
-                8.0f,
-                Texture.GREY_SLIDER_UP,
-                5.0f,
-                6.0f
-        );
+        final float buttonWidth                     = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeWidth");
+        final float buttonHeight                    = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeHeight");
+        final float fontSizeSmall                        = ResourceManager.STATE_VARIABLES.get("fontSizeSmall");
+        final float fontSize                        = ResourceManager.STATE_VARIABLES.get("fontSizeMedium");
 
-        ButtonUIComponent dropdownButton = new ButtonUIComponent(
-                60.0f,
-                20.0f,
-                30.0f,
-                6.0f,
-                "Screen size",
-                Texture.GREY_BOX,
-                3.0f,
-                Color.RED
-        );
-        ArrayList<ButtonUIComponent> dropdownItems = new ArrayList<>();
-        dropdownItems.add(new ButtonUIComponent(
-                60.0f,
-                10.0f,
-                30.0f,
-                6.0f,
-                "1920x1080",
-                Texture.GREY_BOX,
-                4.0f,
-                Color.RED
-        ));
+        this.returnButton                           = new ButtonUIComponent(0.0f, -40.0f, buttonWidth, buttonHeight, "Return", fontSize);
+        this.vsyncCheckbox                          = new CheckboxUIComponent(Texture.GREY_CHECKMARK_GREY, 0, 0, 6.0f, 8.0f, Texture.GREY_SLIDER_UP, 5.0f, 6.0f);
 
-        dropdownItems.add(new ButtonUIComponent(
-                60.0f,
-                0,
-                30.0f,
-                6.0f,
-                "1600x900",
-                Texture.GREY_BOX,
-                4.0f,
-                Color.RED
-        ));
+        final float dropdownButtonWidth                     = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumWidth");
+        final float dropdownButtonHeight                    = ResourceManager.STATE_VARIABLES.get("buttonSizeSmallHeight");
 
-        dropdownItems.add(new ButtonUIComponent(
-                60.0f,
-                -10.0f,
-                30.0f,
-                6.0f,
-                "1024x768",
-                Texture.GREY_BOX,
-                4.0f,
-                Color.RED
-        ));
+        ButtonUIComponent            dropdownButton = new ButtonUIComponent(60.0f, 20.0f, dropdownButtonWidth, dropdownButtonHeight, "Screen size", fontSizeSmall);
+        ArrayList<ButtonUIComponent> dropdownItems  = new ArrayList<>();
 
-        dropdownItems.add(new ButtonUIComponent(
-                60.0f,
-                -20.0f,
-                30.0f,
-                6.0f,
-                "620x480",
-                Texture.GREY_BOX,
-                4.0f,
-                Color.RED
-        ));
-        Point[] dropdownData = new Point[]{new Point(1920, 1080), new Point(1600, 900), new Point(1024, 768), new Point(620, 480)};
+        dropdownItems.add(new ButtonUIComponent(60.0f, 10.0f, dropdownButtonWidth, dropdownButtonHeight, "1920x1080", fontSize));
+        dropdownItems.add(new ButtonUIComponent(60.0f, 0, dropdownButtonWidth, dropdownButtonHeight, "1600x900", fontSize));
+        dropdownItems.add(new ButtonUIComponent(60.0f, -10.0f, dropdownButtonWidth, dropdownButtonHeight, "1024x768", fontSize));
+        dropdownItems.add(new ButtonUIComponent(60.0f, -20.0f, dropdownButtonWidth, dropdownButtonHeight, "620x480", fontSize));
+
+        Point[] dropdownData    = new Point[]{new Point(1920, 1080), new Point(1600, 900), new Point(1024, 768), new Point(620, 480)};
         this.screenSizeDropdown = new DropdownUIComponent<>(dropdownButton, dropdownItems, dropdownData);
-        this.audioSlider = new SliderUIComponent(Texture.GREY_BOX, 0, 60.0f, 65.0f, 8.0f, Texture.GREY_SLIDER_HORIZONTAL, 5.0f, 6.0f, 1, 100);
+        this.audioSlider        = new SliderUIComponent(Texture.GREY_BOX, 0, 60.0f, 65.0f, 8.0f, Texture.GREY_SLIDER_HORIZONTAL, 5.0f, dropdownButtonHeight, 1, 100);
     }
 }

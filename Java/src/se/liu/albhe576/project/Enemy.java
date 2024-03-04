@@ -27,14 +27,14 @@ public class Enemy extends Entity
     public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
     {
 		super(hp, x, y, width, height, textureIdx, 0.0f);
-        final float ms = 0.2f;
-            this.type = enemyType;
-			this.pathId         = pathId;
-			this.lastUpdate     = 0;
-            this.alive          = true;
-            this.spawnTime      = spawnTime;
-            this.moveSpeed      = x > 0 ? -ms : ms;
-            this.lastShot       = 0;
+        final float ms = ResourceManager.STATE_VARIABLES.get("enemyMS");
+        this.type = enemyType;
+        this.pathId         = pathId;
+        this.lastUpdate     = 0;
+        this.alive          = true;
+        this.spawnTime      = spawnTime;
+        this.moveSpeed      = x > 0 ? -ms : ms;
+        this.lastShot       = 0;
     }
 
     public boolean hasSpawned(long lastTick){
@@ -43,7 +43,10 @@ public class Enemy extends Entity
 
 
     public boolean willShoot(long lastTick){
-        final long gcd = rng.nextLong(400, 1000);
+        final long lowerBound = ResourceManager.STATE_VARIABLES.get("enemyGCDMin").longValue();
+        final long upperBound = ResourceManager.STATE_VARIABLES.get("enemyGCDMax").longValue();
+
+        final long gcd = rng.nextLong(lowerBound, upperBound);
         if(this.lastShot <= lastTick - gcd){
             this.lastShot = lastTick + gcd;
             return true;

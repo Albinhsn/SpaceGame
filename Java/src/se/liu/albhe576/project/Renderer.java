@@ -17,10 +17,10 @@ import static org.lwjgl.opengl.GL40.*;
 
 public class Renderer
 {
-    private final long window;
-    private final ResourceManager resourceManager;
-    private final Font font;
-    private final int fontTextureId;
+    private final long              window;
+    private final ResourceManager   resourceManager;
+    private final Font              font;
+    private final int               fontTextureId;
 
     public Renderer(long window, ResourceManager resourceManager) {
         this.window = window;
@@ -61,6 +61,7 @@ public class Renderer
         glBindTexture(GL_TEXTURE_2D, textureId);
         this.renderTexture(transMatrix);
     }
+
     public void renderSlider(SliderUIComponent slider){
         // This one is mostly for debugging/showcase purpose
         renderTextCentered(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), 5f, Color.WHITE);
@@ -105,15 +106,15 @@ public class Renderer
 
     private TextImageData getTextImageData(String text, float fontSize, Color color){
         // ToDo change this so it actually makes sense the fontSize you call
-        Font textFont = this.font.deriveFont(fontSize);
-        FontMetrics fontMetrics = createFontMetrics(textFont);
-        int width = fontMetrics.stringWidth(text);
-        int height = fontMetrics.getHeight();
+        Font textFont               = this.font.deriveFont(fontSize);
+        FontMetrics fontMetrics     = createFontMetrics(textFont);
+        int width                   = fontMetrics.stringWidth(text);
+        int height                  = fontMetrics.getHeight();
 
-        Font textFont2 = this.font.deriveFont(fontSize * 20);
-        FontMetrics fontMetrics2 = createFontMetrics(textFont2);
-        int actualWidth =fontMetrics2.stringWidth(text);
-        int actualHeight = fontMetrics2.getHeight();
+        Font textFont2              = this.font.deriveFont(fontSize * 20);
+        FontMetrics fontMetrics2    = createFontMetrics(textFont2);
+        int actualWidth             = fontMetrics2.stringWidth(text);
+        int actualHeight            = fontMetrics2.getHeight();
 
 
         BufferedImage image = new BufferedImage(actualWidth, actualHeight, BufferedImage.TYPE_4BYTE_ABGR);
@@ -151,10 +152,10 @@ public class Renderer
     }
 
     public void renderHealth(int hp){
-        // ToDo hoist this out
-        final float height    = 10.0f;
+        final float height    = ResourceManager.STATE_VARIABLES.get("hpHeartHeight");
+        final float width     = ResourceManager.STATE_VARIABLES.get("hpHeartWidth");
+
         final float y         = 100.0f - height;
-        final float width     = 10.0f;
         float x               = -hp * width / 2;
 
         Texture texture = this.resourceManager.textureIdMap.get(Texture.HP_HEART);
@@ -172,6 +173,7 @@ public class Renderer
 
         int programId = this.resourceManager.getProgramByIndex(0);
         glUseProgram(programId);
+
         int loc = glGetUniformLocation(programId, "transMatrix");
         if(loc == -1){
             System.out.println("Failed to get location of transMatrix");
@@ -183,7 +185,7 @@ public class Renderer
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
-    private float[] matMul(float [] m0, float[]m1){
+    private float[] matrixMultiplication3x3(float [] m0, float[]m1){
         float [] res = new float[9];
 
         for(int i = 0; i < 3; i++){
@@ -224,8 +226,8 @@ public class Renderer
              0,  0,1
         };
 
-        float [] m0 = this.matMul(translationM, rotationM);
-        return this.matMul(m0, scaleM);
+        float [] m0 = this.matrixMultiplication3x3(translationM, rotationM);
+        return this.matrixMultiplication3x3(m0, scaleM);
     }
 
 
