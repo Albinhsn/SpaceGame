@@ -20,7 +20,8 @@ public class Enemy extends Entity
 
         final float maxEntityX = bb[1];
         final float maxEntityY = bb[3];
-        return (minEntityX < -Game.SCREEN_WIDTH * 1.4f || maxEntityX > Game.SCREEN_WIDTH * 1.4f|| minEntityY < -Game.SCREEN_HEIGHT * 1.4f || maxEntityY > Game.SCREEN_HEIGHT * 1.4f);
+        // This should be given from the wave data or something
+        return (minEntityX < -Game.SCREEN_WIDTH * 1.6f || maxEntityX > Game.SCREEN_WIDTH * 1.6f|| minEntityY < -Game.SCREEN_HEIGHT * 1.6f || maxEntityY > Game.SCREEN_HEIGHT * 1.6f);
     }
 
     public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
@@ -76,7 +77,7 @@ public class Enemy extends Entity
                     this.x             += (float) (Math.cos((double) lastUpdate / 500) * 2) + this.moveSpeed * 0.5f;
                    break;
                 }
-                case 4:{
+                case 3:{
                     if(this.y >= Game.SCREEN_HEIGHT * 0.5f){
                        this.y -= 2.0f;
                     }

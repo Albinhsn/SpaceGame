@@ -74,7 +74,7 @@ public class BinaryDataConverterScript
             new WaveData(0, 15.2f,1.2f, -0.9f, 0),
             new WaveData(0, 15.2f,1.2f, -0.8f, 0),
             new WaveData(2, 15.2f, 1.2f, -0.7f, 0),
-            new WaveData(3, 20.0f, -0.2f, -1.2f, 3)
+            new WaveData(3, 20.0f, -0.2f, -1.4f, 3)
         };
         final int size = 24;
         assert(data.length == size);
@@ -151,6 +151,6 @@ public class BinaryDataConverterScript
     }
 
     public static void main(String[] args) {
-        BinaryDataConverterScript.createEntityData();
+        BinaryDataConverterScript.createWaveData();
     }
 }

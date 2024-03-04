@@ -19,3 +19,5 @@
 * global variables for textureids
     * just make it an enum
 * Fix so you're able to change screen resolution
+  * fix so it actually renders in the same size
+* General refactor thingies

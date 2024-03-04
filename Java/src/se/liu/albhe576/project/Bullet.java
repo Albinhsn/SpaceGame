@@ -59,22 +59,22 @@ public class Bullet extends Entity
     }
 
     public boolean checkCollision(List<Entity> entities){
+        if(!this.isWithinBounds()){
+            return false;
+        }
+
         for(Entity entity : entities){
-            if(this.collided(entity) && (this.parent.getClass() != entity.getClass())){
+            if(entity.isWithinBounds() && this.collided(entity) && (this.parent.getClass() != entity.getClass())){
                 this.alive = false;
 
                 entity.hp -= 1;
-                if(entity instanceof Player){
-                    System.out.printf("Player has %d lives!\n", entity.hp);
-                }
-
                 if(entity.hp <= 0){
                     entity.alive = false;
+                    return true;
                 }
-                return true;
+                return false;
             }
         }
         return false;
     }
-
 }

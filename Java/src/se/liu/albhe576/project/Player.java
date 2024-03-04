@@ -37,7 +37,7 @@ public class Player  extends Entity{
 		}
 		this.x += xAcceleration;
 		this.y += yAcceleration;
-		if(isOutOfBounds()){
+		if(!isWithinBounds()){
 			this.x -= xAcceleration;
 			this.y -= yAcceleration;
 		}
@@ -53,11 +53,5 @@ public class Player  extends Entity{
 		this.lastShot = lastTick + gcd;
 		return true;
     }
-
-    private boolean isOutOfBounds(){
-		final int x = (int) (Game.SCREEN_WIDTH - this.width / 2);
-		final int y = (int) (Game.SCREEN_HEIGHT - this.height / 2);
-		return this.x <= -x || this.x >= x || this.y <= -y || this.y >= y;
-	}
 
 }

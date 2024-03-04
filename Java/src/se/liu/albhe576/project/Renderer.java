@@ -7,9 +7,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL40.*;
@@ -56,7 +58,13 @@ public class Renderer
         }
     }
     public void renderUIComponent(int textureId, float x, float y, float width, float height){
-        float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
+        float [] transMatrix = this.getTransformationMatrix(
+                x,
+                y,
+                width,
+                height,
+                0
+        );
         glBindTexture(GL_TEXTURE_2D, textureId);
         this.renderTexture(transMatrix);
     }
@@ -76,7 +84,7 @@ public class Renderer
     }
     public void renderTextStartAt(String text, float x, float y, float fontSize, Color color){
 
-        TextImageData data = this.getTextImage(text, fontSize, color);
+        TextImageData data = this.getTextImageData(text, fontSize, color);
         this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
         float [] transMatrix = this.getTransformationMatrix(x + data.stringWidth, y, data.stringWidth, data.fontHeight, 0);
         this.renderTexture(transMatrix);
@@ -98,7 +106,7 @@ public class Renderer
         }
     }
 
-    private TextImageData getTextImage(String text, float fontSize, Color color){
+    private TextImageData getTextImageData(String text, float fontSize, Color color){
         Font textFont = this.font.deriveFont(fontSize);
         FontMetrics fontMetrics = createFontMetrics(textFont);
 
@@ -131,12 +139,16 @@ public class Renderer
     }
 
     public void renderTextCentered(String text, float x, float y, float fontSize, Color color){
-        TextImageData data = this.getTextImage(text, fontSize, color);
-        this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
+
+        TextImageData data   = this.getTextImageData(text, fontSize, color);
         float [] transMatrix = this.getTransformationMatrix(x, y, data.stringWidth, data.fontHeight, 0);
+
+        this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
+
         this.renderTexture(transMatrix);
     }
     public void renderHealth(int hp){
+        // ToDo hoist this out
         final int height    = 30;
         final int y         = Game.SCREEN_HEIGHT - height;
         final int width     = 30;

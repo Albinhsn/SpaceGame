@@ -29,7 +29,6 @@ public class SliderUI extends UIComponent{
         float maxSliderX = this.x + this.width - 10 - this.sliderWidth;
 
         this.value = this.minValue + (this.maxValue - this.minValue) * (this.sliderX - minSliderX) / (maxSliderX - minSliderX);
-        System.out.println(this.value);
     }
     public void updateSliderPosition(int x){
         this.sliderX =((x / (float)Game.SCREEN_WIDTH) * 2.0f - 1.0f) * Game.SCREEN_WIDTH ;

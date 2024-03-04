@@ -182,7 +182,7 @@ public class ResourceManager
 	public Wave getWave(int index){
 		ArrayList<Enemy> enemies = new ArrayList<>();
 		Wave wave = this.waves.get(index);
-		for(Enemy enemy : wave.getEnemies()){
+		for(Enemy enemy : wave.enemies()){
 			enemies.add(new Enemy(
 				enemy.hp,
 				enemy.type,
@@ -388,7 +388,7 @@ public class ResourceManager
     };
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{
-			"./resources/binaryData/wave12024-03-01 10:28:47.53.bin",
+			"./resources/binaryData/wave12024-03-04 10:10:42.516.bin",
 	};
 
 	private String getShaderSource(String fileLocation) throws IOException {

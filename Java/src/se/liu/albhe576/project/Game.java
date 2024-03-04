@@ -5,8 +5,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import static org.lwjgl.opengl.GL40.*;
 
-import java.awt.*;
-import java.io.IOException;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.List;
@@ -27,8 +25,8 @@ public class Game
     private final List<Bullet> bullets;
     private Wave wave;
     private final Renderer renderer;
-    public static int SCREEN_WIDTH = 1024;
-    public static int SCREEN_HEIGHT = 768;
+    public static int SCREEN_WIDTH = 620;
+    public static int SCREEN_HEIGHT = 480;
     private final InputState inputState;
     private final ResourceManager resourceManager;
     private final Player player;
@@ -37,7 +35,8 @@ public class Game
     private UIState uiState;
 
     private void updateBullets(){
-        for (Bullet bullet : bullets) {
+        this.bullets.removeIf(bullet -> !bullet.isWithinBounds());
+        for (Bullet bullet : this.bullets) {
             bullet.update(this.timer.getLastTick());
         }
     }
@@ -50,7 +49,6 @@ public class Game
         for(Bullet bullet: this.bullets){
             if(bullet.checkCollision(entities) && bullet.parent == this.player){
                 this.score += 100;
-                System.out.println(this.score);
             }
         }
 
@@ -74,12 +72,12 @@ public class Game
     }
 
     private void gameLoop(){
-
         // Update entities
         this.timer.updateTimer();
 
-        if(this.shouldHandleUpdates()){
+        if(this.shouldHandleUpdates()) {
             this.queryInput();
+
             if(this.inputState.isPPressed()){
                 this.updateUIState(UIState.PAUSE_MENU);
             }
@@ -153,27 +151,27 @@ public class Game
             this.initNewFrame();
             this.background.updateAndRender(this.renderer);
 
+
             if (this.uiState == UIState.GAME_RUNNING) {
                 this.gameLoop();
 
                 if(!this.player.alive){
                     this.uiState = UIState.GAME_OVER_MENU;
                     ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = true;
-
-                }else if(this.wave.getEnemies().isEmpty()){
+                }else if(this.wave.enemies().isEmpty()){
                     this.uiState = UIState.GAME_OVER_MENU;
                     ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = false;
-
                 }
-
             }else{
                 this.queryInput();
             }
 
 
+
            updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.hp));
 
             glfwSwapBuffers(window);
+
             this.inputState.resetState();
         }
         glfwFreeCallbacks(window);
@@ -225,6 +223,7 @@ public class Game
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glViewport(0,0,Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
     public Game() {
         this.initGLFW();
@@ -252,7 +251,7 @@ public class Game
                 this.uiMap.put(UIState.SETTINGS_MENU , new SettingsMenuUI());
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args){
         Game game = new Game(); 
         game.runGame();
         System.exit(1);
