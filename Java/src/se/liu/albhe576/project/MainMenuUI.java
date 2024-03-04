@@ -14,20 +14,20 @@ public class MainMenuUI extends UI{
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(playButton);
-        playButton.animateEaseOutCubic(inputState, 0.005f, 10.0f);
+        playButton.animate(inputState, 0.005f, 10.0f, ButtonUI.easeInCubic);
         if(playButton.isReleased(inputState)){
             return UIState.GAME_RUNNING;
         }
 
         renderer.renderButton(exitButton);
-        exitButton.animateLinearly(inputState, 0.005f, 10.0f);
+        exitButton.animate(inputState, 0.005f, 10.0f, ButtonUI.easeLinearly);
         if(exitButton.isReleased(inputState)){
             glfwSetWindowShouldClose(this.window, true);
             return UIState.MAIN_MENU;
         }
 
         renderer.renderButton(settingsButton);
-        settingsButton.animateEaseInCubic(inputState, 0.005f, 10.0f);
+        settingsButton.animate(inputState, 0.005f, 10.0f, ButtonUI.easeOutCubic);
         if(settingsButton.isReleased(inputState)){
             return UIState.SETTINGS_MENU;
         }

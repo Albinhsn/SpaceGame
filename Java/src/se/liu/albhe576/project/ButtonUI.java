@@ -15,6 +15,7 @@ public class ButtonUI extends UIComponent{
     private final float initialWidth;
     private final float initialHeight;
     private long startedAnimation;
+    private long endedAnimation;
     public ButtonUI(float x, float y, float width, float height, String text, int textureId, float fontSize, Color textColor){
         this.x              = x;
         this.y              = y;
@@ -27,44 +28,51 @@ public class ButtonUI extends UIComponent{
         this.fontSize       = fontSize;
         this.textColor      = textColor;
         this.startedAnimation = 0;
+        this.endedAnimation = 0;
     }
-    private final UnaryOperator<Float> easeOutCubic = (x) -> {
+    public static final UnaryOperator<Float> easeOutCubic = (x) -> {
         return (float) (1 - Math.pow(1 - x, 3));
     };
-    private final UnaryOperator<Float> easeLinearly = (x) -> {
+    public static final UnaryOperator<Float> easeLinearly = (x) -> {
         return x;
     };
-    private final UnaryOperator<Float> easeInCubic = (x) -> {
+    public static final UnaryOperator<Float> easeInCubic = (x) -> {
         return x * x * x;
     };
 
-    private void animate(InputState inputState, float increasePerMs, float maxSize, UnaryOperator<Float> easeFunction){
+    public void animate(InputState inputState, float increasePerMs, float maxSize, UnaryOperator<Float> easeInFunction){
+        this.animate(inputState, increasePerMs, maxSize, easeInFunction, easeInFunction);
+    }
+    public void animate(InputState inputState, float increasePerMs, float maxSize, UnaryOperator<Float> easeInFunction, UnaryOperator<Float> easeOutFunction){
         long tick = System.currentTimeMillis();
         if(this.hovers(inputState)){
-            if(startedAnimation == 0){
+            if(this.startedAnimation == 0){
                 this.startedAnimation = tick;
             }
             long tickDifference = tick - this.startedAnimation;
-            float increase = easeFunction.apply(Math.min(increasePerMs * tickDifference, 1));
+            float increase = easeInFunction.apply(Math.min(increasePerMs * tickDifference, 1));
 
             this.width  = this.initialWidth + maxSize * increase;
             this.height = this.initialHeight + maxSize * increase;
+            this.endedAnimation = tick;
         }else{
+            if(this.endedAnimation != 0){
+                long tickDifference = tick - this.endedAnimation;
+                float increase = easeOutFunction.apply(1.0f - Math.min(increasePerMs * tickDifference, 1));
+
+                if(increase <= 0){
+                    this.endedAnimation = 0;
+                }
+
+                this.width  = this.initialWidth + maxSize * increase;
+                this.height = this.initialHeight + maxSize * increase;
+            }else{
+                this.width = initialWidth;
+                this.height = initialHeight;
+            }
             this.startedAnimation = 0;
-            this.width = initialWidth;
-            this.height = initialHeight;
         }
 
     }
 
-    public void animateEaseInCubic(InputState inputState, float increasePerMs, float maxSize){
-        animate(inputState, increasePerMs, maxSize, this.easeInCubic);
-    }
-
-    public void animateEaseOutCubic(InputState inputState, float increasePerMs, float maxSize){
-        animate(inputState, increasePerMs, maxSize, this.easeOutCubic);
-    }
-    public void animateLinearly(InputState inputState, float increasePerMs, float maxSize){
-        animate(inputState, increasePerMs, maxSize, this.easeLinearly);
-    }
 }

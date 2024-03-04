@@ -22,7 +22,7 @@ public class SettingsMenuUI extends UI {
     public UIState render(InputState inputState,Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(returnButton);
-        returnButton.animateEaseOutCubic(inputState, 0.01f, 10.0f);
+        returnButton.animate(inputState, 0.01f, 10.0f, ButtonUI.easeOutCubic);
         if(returnButton.isReleased(inputState)){
             return this.parentState;
         }

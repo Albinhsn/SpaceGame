@@ -8,6 +8,8 @@
 * Fix so you're able to change screen resolution
   * fix so it actually renders in the same size
 * General refactor thingies
+  * animations?
+  * rename ui stuff
 
 
 ### Data
