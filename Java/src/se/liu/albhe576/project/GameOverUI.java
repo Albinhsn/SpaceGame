@@ -9,8 +9,8 @@ public class GameOverUI extends UI {
     public boolean lostGame;
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp) {
 
-        renderer.renderTextCentered(lostGame  ? "GAME OVER" : "GAME WON", 0, 200.0f / Game.SCREEN_HEIGHT * 100.0f, 40 / (float)Game.SCREEN_HEIGHT * 100.0f, Color.WHITE);
-        renderer.renderTextCentered(String.format("Score: %d", score), 0, 100 / (float)Game.SCREEN_HEIGHT * 100.0f, 40 / (float)Game.SCREEN_HEIGHT * 100.0f, Color.WHITE);
+        renderer.renderTextCentered(lostGame  ? "GAME OVER" : "GAME WON", 0, 40.0f, 8.0f, Color.WHITE);
+        renderer.renderTextCentered(String.format("Score: %d", score), 0, 20.0f, 8.0f, Color.WHITE);
 
         renderer.renderButton(restartButton);
         if(restartButton.isReleased(inputState)){
@@ -27,26 +27,8 @@ public class GameOverUI extends UI {
     }
 
     public GameOverUI(){
-        this.restartButton     = new ButtonUIComponent(
-                0.0f,
-                0.0f,
-                200.0f / Game.SCREEN_WIDTH * 100.0f,
-                50.0f / Game.SCREEN_HEIGHT * 100.0f,
-                "Restart Game",
-                Texture.GREY_BOX,
-                10.0f / Game.SCREEN_HEIGHT * 100.0f,
-                Color.RED
-        );
-        this.mainMenuButton     = new ButtonUIComponent(
-                0.0f,
-                -100.0f / Game.SCREEN_HEIGHT * 100.0f,
-                200.0f / Game.SCREEN_WIDTH * 100.0f,
-                50.0f / Game.SCREEN_HEIGHT * 100.0f,
-                "Main Menu",
-                Texture.GREY_BOX,
-                10.0f / Game.SCREEN_HEIGHT * 100.0f,
-                Color.RED
-        );
+        this.restartButton     = new ButtonUIComponent(0.0f, 0.0f, 32.5f, 10.0f, "Restart Game", Texture.GREY_BOX, 2.0f, Color.RED);
+        this.mainMenuButton     = new ButtonUIComponent(0.0f, -20.0f, 32.0f, 10.0f, "Main Menu", Texture.GREY_BOX, 2.0f, Color.RED);
         this.lostGame = false;
     }
 }

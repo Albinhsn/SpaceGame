@@ -41,7 +41,8 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class ResourceManager
 {
-	public List<Integer> programs;
+	private List<Integer> programs;
+
 	private List<EntityData> entityData;
 	private List<Wave> waves;
 	static class EntityData{
@@ -91,7 +92,6 @@ public class ResourceManager
 		};
 
 		texture.vertexArrayId = glGenVertexArrays();
-
 
 		glBindVertexArray(texture.vertexArrayId);
 
@@ -418,5 +418,8 @@ public class ResourceManager
 		}
 
 		return shader;
+	}
+	public int getProgramByIndex(int index){
+		return this.programs.get(index);
 	}
 }

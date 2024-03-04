@@ -29,36 +29,9 @@ public class PauseMenuUI extends UI {
 
     }
     public PauseMenuUI(){
-        this.playButton     = new ButtonUIComponent(
-                0.0f,
-                100.0f / Game.SCREEN_HEIGHT * 100.0f,
-                200.0f / Game.SCREEN_WIDTH * 100.0f ,
-                50.0f  / Game.SCREEN_HEIGHT * 100.0f ,
-                "Play",
-                Texture.GREY_BOX,
-               20.0f  / Game.SCREEN_HEIGHT * 100.0f ,
-                Color.ORANGE
-        );
-        this.mainMenuButton     = new ButtonUIComponent(
-                0.0f,
-                -100.0f / Game.SCREEN_HEIGHT * 100.0f,
-                200.0f / Game.SCREEN_WIDTH * 100.0f ,
-                50.0f  / Game.SCREEN_HEIGHT * 100.0f ,
-                "Main Menu",
-                Texture.GREY_BOX,
-                20.0f  / Game.SCREEN_HEIGHT * 100.0f ,
-                Color.ORANGE
-        );
+        this.playButton     = new ButtonUIComponent(0.0f, 20.0f, 32.0f, 10.0f, "Play", Texture.GREY_BOX, 4.0f, Color.ORANGE);
+        this.settingsButton     = new ButtonUIComponent(0.0f, 0.0f, 32.0f, 10.0f, "Settings", Texture.GREY_BOX, 4.0f, Color.ORANGE);
+        this.mainMenuButton     = new ButtonUIComponent(0.0f, -20.0f, 32.0f, 10.0f, "Main Menu", Texture.GREY_BOX, 4.0f, Color.ORANGE);
 
-        this.settingsButton     = new ButtonUIComponent(
-                0.0f,
-                0.0f,
-                200.0f / Game.SCREEN_WIDTH * 100.0f ,
-                50.0f  / Game.SCREEN_HEIGHT * 100.0f ,
-                "Settings",
-                Texture.GREY_BOX,
-                20.0f  / Game.SCREEN_HEIGHT * 100.0f ,
-                Color.ORANGE
-        );
     }
 }

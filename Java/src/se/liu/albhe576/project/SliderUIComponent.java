@@ -30,16 +30,16 @@ public class SliderUIComponent extends UIComponent{
     public float sliderY;
     public float sliderWidth;
     public float sliderHeight;
-    public SliderUIComponent(int textureId, float x, float y, float width, float height, int sliderTextureId, float sliderX, float sliderY, float sliderWidth, float sliderHeight, float minValue, float maxValue){
+    public SliderUIComponent(int textureId, float x, float y, float width, float height, int sliderTextureId, float sliderWidth, float sliderHeight, float minValue, float maxValue){
         super(x,y,width,height,textureId);
 
         this.sliderTextureId    = sliderTextureId;
-        this.sliderX            = sliderX;
-        this.sliderY            = sliderY;
+        this.sliderX            = x;
+        this.sliderY            = y;
         this.sliderWidth        = sliderWidth;
         this.sliderHeight       = sliderHeight;
-        this.value = maxValue - (maxValue - minValue) / 2;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
+        this.value              = maxValue - (maxValue - minValue) / 2;
+        this.minValue           = minValue;
+        this.maxValue           = maxValue;
     }
 }

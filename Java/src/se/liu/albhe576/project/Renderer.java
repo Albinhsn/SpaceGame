@@ -33,7 +33,6 @@ public class Renderer
     private Font loadFont(){
         try{
             return Font.createFont(Font.TRUETYPE_FONT, new File("./resources/Font/kenvector_future.ttf"));
-
         }catch (IOException | FontFormatException e){
             e.printStackTrace();
             return null;
@@ -47,32 +46,28 @@ public class Renderer
         return g.getFontMetrics();
     }
     public void renderButton(ButtonUIComponent button){
-
-        renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
+        this.renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
         this.renderTextCentered(button.text, button.x,button.y, button.fontSize, button.textColor);
     }
 
     public void renderCheckbox(CheckboxUIComponent checkbox){
-        renderUIComponent(checkbox.textureId, checkbox.x, checkbox.y, checkbox.width, checkbox.height);
+        this.renderUIComponent(checkbox.textureId, checkbox.x, checkbox.y, checkbox.width, checkbox.height);
         if(checkbox.toggled){
-            renderUIComponent(checkbox.checkmarkTextureId, checkbox.x, checkbox.y, checkbox.checkmarkWidth, checkbox.checkmarkHeight);
+            this.renderUIComponent(checkbox.checkmarkTextureId, checkbox.x, checkbox.y, checkbox.checkmarkWidth, checkbox.checkmarkHeight);
         }
     }
     public void renderUIComponent(int textureId, float x, float y, float width, float height){
-
-        float [] transMatrix = this.getTransformationMatrix(
-                x,
-                y,
-                width,
-                height,
-                0
-        );
+        float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
         glBindTexture(GL_TEXTURE_2D, textureId);
         this.renderTexture(transMatrix);
     }
     public void renderSlider(SliderUIComponent slider){
+        // This one is mostly for debugging/showcase purpose
+        renderTextCentered(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), 5f, Color.WHITE);
+
         renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
-        renderUIComponent(17, slider.x, slider.y, slider.width - 10, slider.height / 10);
+        final int sliderTextureId = this.resourceManager.textureIdMap.get(Texture.GREY_SLIDER_HORIZONTAL).textureId;
+        renderUIComponent(sliderTextureId, slider.x, slider.y, slider.width - 10, slider.height / 10);
         renderUIComponent(slider.sliderTextureId, slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight);
     }
 
@@ -166,7 +161,7 @@ public class Renderer
         glBindTexture(GL_TEXTURE_2D, texture.textureId);
         glBindVertexArray(texture.vertexArrayId);
 
-        for(int i = 0; i < hp; i++, x += width + 2.0f){
+        for(int i = 0; i < hp; i++, x += width * 1.5f){
             float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
             this.renderTexture(transMatrix);
         }
@@ -175,7 +170,7 @@ public class Renderer
     }
     private void renderTexture(float [] transMatrix){
 
-        int programId = this.resourceManager.programs.get(0);
+        int programId = this.resourceManager.getProgramByIndex(0);
         glUseProgram(programId);
         int loc = glGetUniformLocation(programId, "transMatrix");
         if(loc == -1){
@@ -201,7 +196,7 @@ public class Renderer
         return res;
     }
 
-    public float[] getTransformationMatrix(float x, float y, float width, float height, float rotation){
+    private float[] getTransformationMatrix(float x, float y, float width, float height, float rotation){
 
 
         float r = (float) (rotation * Math.PI / 180.0f);
@@ -237,7 +232,7 @@ public class Renderer
     public void renderEntity(Entity entity){
         Texture texture = this.resourceManager.textureIdMap.get(entity.getTextureIdx());
 
-        int programId = this.resourceManager.programs.get(0);
+        int programId = this.resourceManager.getProgramByIndex(0);
         glUseProgram(programId);
         glBindTexture(GL_TEXTURE_2D, texture.textureId);
         glBindVertexArray(texture.vertexArrayId);

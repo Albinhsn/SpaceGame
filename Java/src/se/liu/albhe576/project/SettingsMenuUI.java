@@ -17,11 +17,19 @@ public class SettingsMenuUI extends UI {
     public void setParentState(UIState uiState){
         this.parentState = uiState;
     }
+    private void updateWindowSize(long window, Point newWindowSize){
+        this.screenSizeDropdown.toggled = !this.screenSizeDropdown.toggled;
+        glfwSetWindowSize(window, newWindowSize.x, newWindowSize.y);
+        Game.SCREEN_WIDTH = newWindowSize.x;
+        Game.SCREEN_HEIGHT = newWindowSize.y;
+        glViewport(0,0,Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+
+    }
 
     public UIState render(InputState inputState,Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(returnButton);
-        returnButton.animate(inputState, 0.01f, 10.0f / Game.SCREEN_HEIGHT * 100, Animation.easeOutCubic);
+        returnButton.animate(inputState, 0.01f, 2.0f, Animation.easeOutCubic);
         if(returnButton.isReleased(inputState)){
             return this.parentState;
         }
@@ -37,16 +45,12 @@ public class SettingsMenuUI extends UI {
             for(int i = 0; i < this.screenSizeDropdown.dropdownData.length; i++){
                 ButtonUIComponent item = this.screenSizeDropdown.dropdownItems.get(i);
                 if(item.isReleased(inputState)){
-                    this.screenSizeDropdown.toggled = !this.screenSizeDropdown.toggled;
-                    Point newWindowSize = this.screenSizeDropdown.dropdownData[i];
-                    glfwSetWindowSize(window, newWindowSize.x, newWindowSize.y);
-                    Game.SCREEN_WIDTH = newWindowSize.x;
-                    Game.SCREEN_HEIGHT = newWindowSize.y;
-                    glViewport(0,0,Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
+                    this.updateWindowSize(window, this.screenSizeDropdown.dropdownData[i]);
                     break;
                 }
             }
         }
+
         // This happens after we attempt to render the items to avoid bugs with 1 click accidentally choosing the first item instantly
         renderer.renderDropdown(screenSizeDropdown.dropdownButton, screenSizeDropdown.toggled, screenSizeDropdown.dropdownItems);
         if(this.screenSizeDropdown.dropdownButton.isReleased(inputState)){
@@ -69,7 +73,7 @@ public class SettingsMenuUI extends UI {
                 10.0f,
                 "Return",
                 Texture.GREY_BOX,
-                20.0f / Game.SCREEN_HEIGHT * 100.0f,
+                4.0f,
                 Color.RED
         );
         this.vsyncCheckbox      = new CheckboxUIComponent(
@@ -79,7 +83,6 @@ public class SettingsMenuUI extends UI {
                 6.0f,
                 8.0f,
                 Texture.GREY_SLIDER_UP,
-                // This is scuffed because of aspect ratio
                 5.0f,
                 6.0f
         );
@@ -140,22 +143,6 @@ public class SettingsMenuUI extends UI {
         ));
         Point[] dropdownData = new Point[]{new Point(1920, 1080), new Point(1600, 900), new Point(1024, 768), new Point(620, 480)};
         this.screenSizeDropdown = new DropdownUIComponent<>(dropdownButton, dropdownItems, dropdownData);
-
-
-        //int textureId, float x, float y, float width, float height, int sliderTextureId, float sliderX, float sliderY, float sliderWidth, float sliderHeight
-        this.audioSlider = new SliderUIComponent(
-                Texture.GREY_BOX,
-                0,
-                60.0f,
-                65.0f,
-                8.0f,
-                Texture.GREY_SLIDER_HORIZONTAL,
-                0,
-                60.0f,
-                5.0f,
-                6.0f,
-                1,
-                100
-        );
+        this.audioSlider = new SliderUIComponent(Texture.GREY_BOX, 0, 60.0f, 65.0f, 8.0f, Texture.GREY_SLIDER_HORIZONTAL, 5.0f, 6.0f, 1, 100);
     }
 }

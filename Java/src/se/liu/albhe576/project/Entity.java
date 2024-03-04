@@ -6,33 +6,36 @@ import java.util.Objects;
 
 public abstract class Entity
 {
-    public int hp;
-    public float x;
-    public float y;
-    public float width;
-    public float height;
-    public boolean alive;
-    private float rotation;
+    protected int hp;
+    protected float x;
+    protected float y;
+
+    protected float width;
+    protected float height;
+    protected boolean alive;
+    protected long lastUpdate;
+    private final float rotation;
     private final int textureIdx;
+    protected float xAcceleration;
+    protected float yAcceleration;
     public int getTextureIdx(){
         return this.textureIdx;
     }
     public float getRotation(){
         return this.rotation;
     }
-    protected float xAcceleration;
-    protected float yAcceleration;
     protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation){
-        this.hp = hp;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.textureIdx = textureIdx;
-        this.xAcceleration = 0.0f;
-        this.yAcceleration = 0.0f;
-        this.alive = true;
-        this.rotation = rotation;
+        this.hp             = hp;
+        this.x              = x;
+        this.y              = y;
+        this.width          = width;
+        this.height         = height;
+        this.textureIdx     = textureIdx;
+        this.xAcceleration  = 0.0f;
+        this.yAcceleration  = 0.0f;
+        this.lastUpdate     = 0;
+        this.alive          = true;
+        this.rotation       = rotation;
     }
 
 

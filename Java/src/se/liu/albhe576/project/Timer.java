@@ -19,6 +19,11 @@ public class Timer {
         this.serverTicks = 0;
         this.lastTick = 0;
     }
+
+    public boolean isRunning() {
+        return running;
+    }
+
     public void updateTimer(){
         long ticks = System.currentTimeMillis();
         this.lastTick += ticks - this.serverTicks;

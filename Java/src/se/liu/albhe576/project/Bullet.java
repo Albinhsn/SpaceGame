@@ -6,9 +6,11 @@ import java.util.Objects;
 
 public class Bullet extends Entity
 {
-    public final Entity parent;
+    private final Entity parent;
     private final float yAcc;
-
+    public Entity getParent(){
+        return this.parent;
+    }
     public Bullet(
 	    float x,
 	    float y,
@@ -22,20 +24,14 @@ public class Bullet extends Entity
     {
 		super(0, x, y, width, height, textureIdx, rotation);
 		this.parent = shooter;
-        this.lastUpdate = 0;
         this.yAcc = yAcc;
     }
-    private long lastUpdate;
 
-    public void update(long lastTick) {
-		if(lastUpdate + 10 <= lastTick){
-			lastUpdate = lastTick;
-			this.y += this.yAcc;
-		}
+    public void update() {
+        this.y += this.yAcc;
     }
 
     private boolean collided(Entity entity){
-        // ToDo hoist this out
         float[] entityBoundingBox = entity.getBoundingBox();
         final float minEntityX = entityBoundingBox[0];
         final float maxEntityX = entityBoundingBox[1];
@@ -52,28 +48,33 @@ public class Bullet extends Entity
         if(minEntityX > maxBulletX || maxEntityX < minBulletX){
             return false;
         }
-        if(minEntityY > maxBulletY || maxEntityY < minBulletY){
-            return false;
-        }
-        return true;
+        return !(minEntityY > maxBulletY) && !(maxEntityY < minBulletY);
     }
 
+    public boolean checkCollision(Entity entity){
+        if(!this.isWithinBounds()){
+            return false;
+        }
+
+        if(entity.isWithinBounds() && this.collided(entity) && (this.parent.getClass() != entity.getClass())){
+            this.alive = false;
+
+            entity.hp -= 1;
+            if(entity.hp <= 0){
+                entity.alive = false;
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
     public boolean checkCollision(List<Entity> entities){
         if(!this.isWithinBounds()){
             return false;
         }
 
         for(Entity entity : entities){
-            if(entity.isWithinBounds() && this.collided(entity) && (this.parent.getClass() != entity.getClass())){
-                this.alive = false;
-
-                entity.hp -= 1;
-                if(entity.hp <= 0){
-                    entity.alive = false;
-                    return true;
-                }
-                return false;
-            }
+            this.checkCollision(entity);
         }
         return false;
     }

@@ -2,7 +2,6 @@ package se.liu.albhe576.project;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record Wave(List<Enemy> enemies) {
     public void removeKilledEnemies() {
@@ -12,10 +11,10 @@ public record Wave(List<Enemy> enemies) {
     public void removeOutOfBoundsEnemies() {
         this.enemies.removeIf(Enemy::isOutOfBounds);
     }
-
     public List<Entity> getEnemiesAsEntities() {
-        return this.enemies.stream().map(enemy -> (Entity) enemy).collect(Collectors.toList());
+        return this.enemies.stream().map(x -> (Entity)x).toList();
     }
+
 
     public List<Bullet> updateWave(long lastTick, ResourceManager resourceManager) {
         List<Bullet> bullets = new ArrayList<>();

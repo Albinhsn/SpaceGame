@@ -15,7 +15,7 @@ public class UIComponent {
     public boolean hovers(InputState inputState){
         Point mousePos = inputState.getMousePosition();
 
-        // get it between 0 - 100
+        // get it between [-100,100]
         float mouseX = ((mousePos.x / (float)Game.SCREEN_WIDTH) * 2.0f - 1.0f) * 100.0f;
         float mouseY = ((mousePos.y / (float)Game.SCREEN_HEIGHT) * 2.0f - 1.0f) * -100.0f;
 
@@ -40,12 +40,12 @@ public class UIComponent {
         }
         return this.hovers(inputState);
     }
-    public int   textureId;
-    public float x;
-    public float y;
-    public float width;
-    public float height;
-    public Animation animation;
+    protected int   textureId;
+    protected float x;
+    protected float y;
+    protected float width;
+    protected float height;
+    protected final Animation animation;
 
     public UIComponent(float x, float y,float width,float height, int textureId){
         this.x = x;
