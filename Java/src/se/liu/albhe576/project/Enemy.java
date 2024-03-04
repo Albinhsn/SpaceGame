@@ -78,7 +78,7 @@ public class Enemy extends Entity
                    break;
                 }
                 case 3:{
-                    if(this.y >= Game.SCREEN_HEIGHT * 0.5f){
+                    if(this.y >= 50.0f){
                        this.y -= 0.2f;
                     }
                     this.x             += (float) Math.cos((double) lastUpdate / 500) / 5.0f;

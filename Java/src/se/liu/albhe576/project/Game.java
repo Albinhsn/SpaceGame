@@ -171,7 +171,7 @@ public class Game
             }
             long ms = System.currentTimeMillis()  - this.prevTick;
             this.renderer.renderTextStartAt(String.format("ms: %d\n", ms), -100.0f, 60.0f, 3.0f, Color.WHITE);
-            this.renderer.renderTextStartAt(String.format("fps: %d\n", (int)(1000.0f/(float)ms)), -100.0f, 50.0f, 3.0f, Color.WHITE);
+            this.renderer.renderTextStartAt(String.format("fps: %d\n", Math.min((int)(1000.0f/ms), 999)), -100.0f, 50.0f, 3.0f, Color.WHITE);
             this.prevTick = System.currentTimeMillis();
 
 
