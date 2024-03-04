@@ -19,9 +19,10 @@ public class SettingsMenuUI extends UI {
         this.parentState = uiState;
     }
 
-    public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp){
+    public UIState render(InputState inputState,Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(returnButton);
+        returnButton.animateEaseOutCubic(inputState, 0.01f, 10.0f);
         if(returnButton.isReleased(inputState)){
             return this.parentState;
         }
@@ -70,7 +71,7 @@ public class SettingsMenuUI extends UI {
                 Game.SCREEN_HEIGHT * 0.1f,
                 "Return",
                 Texture.GREY_BOX,
-                20.0f, Color.ORANGE
+                20.0f, Color.RED
         );
         this.vsyncCheckbox      = new CheckboxUI(
                 Texture.GREY_CHECKMARK_GREY,
@@ -92,7 +93,7 @@ public class SettingsMenuUI extends UI {
                 "Screen size",
                 Texture.GREY_BOX,
                 Game.SCREEN_HEIGHT * 0.04f,
-                Color.ORANGE
+                Color.RED
         );
         ArrayList<ButtonUI> dropdownItems = new ArrayList<>();
         dropdownItems.add(new ButtonUI(
@@ -103,7 +104,7 @@ public class SettingsMenuUI extends UI {
                 "1920x1080",
                 Texture.GREY_BOX,
                 Game.SCREEN_HEIGHT * 0.04f,
-                Color.ORANGE
+                Color.RED
         ));
 
         dropdownItems.add(new ButtonUI(
@@ -114,7 +115,7 @@ public class SettingsMenuUI extends UI {
                 "1600x900",
                 Texture.GREY_BOX,
                 Game.SCREEN_HEIGHT * 0.04f,
-                Color.ORANGE
+                Color.RED
         ));
 
         dropdownItems.add(new ButtonUI(
@@ -125,7 +126,7 @@ public class SettingsMenuUI extends UI {
                 "1024x768",
                 Texture.GREY_BOX,
                 Game.SCREEN_HEIGHT * 0.04f,
-                Color.ORANGE
+                Color.RED
         ));
 
         dropdownItems.add(new ButtonUI(
@@ -136,7 +137,7 @@ public class SettingsMenuUI extends UI {
                 "620x480",
                 Texture.GREY_BOX,
                 Game.SCREEN_HEIGHT * 0.04f,
-                Color.ORANGE
+                Color.RED
         ));
         Point[] dropdownData = new Point[]{new Point(1920, 1080), new Point(1600, 900), new Point(1024, 768), new Point(620, 480)};
         this.screenSizeDropdown = new DropdownUI<>(dropdownButton, dropdownItems, dropdownData);

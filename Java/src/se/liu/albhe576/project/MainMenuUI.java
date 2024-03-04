@@ -14,21 +14,21 @@ public class MainMenuUI extends UI{
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(playButton);
+        playButton.animateEaseOutCubic(inputState, 0.005f, 10.0f);
         if(playButton.isReleased(inputState)){
-            System.out.println("Play!");
             return UIState.GAME_RUNNING;
         }
 
         renderer.renderButton(exitButton);
+        exitButton.animateLinearly(inputState, 0.005f, 10.0f);
         if(exitButton.isReleased(inputState)){
-            System.out.println("Exiting!");
             glfwSetWindowShouldClose(this.window, true);
             return UIState.MAIN_MENU;
         }
 
         renderer.renderButton(settingsButton);
+        settingsButton.animateEaseInCubic(inputState, 0.005f, 10.0f);
         if(settingsButton.isReleased(inputState)){
-            System.out.println("Settings!");
             return UIState.SETTINGS_MENU;
         }
 
@@ -36,8 +36,8 @@ public class MainMenuUI extends UI{
     }
     public MainMenuUI(long window){
         this.window         = window;
-        this.playButton     = new ButtonUI(0.0f, 100.0f, 200.0f, 50.0f, "Play", Texture.GREY_BOX, 20.0f, Color.RED);
-        this.exitButton     = new ButtonUI(0.0f, -100.0f, 200.0f, 50.0f, "Exit", Texture.GREY_BOX, 20.0f, Color.RED);
+        this.playButton     = new ButtonUI(0.0f, 150.0f, 200.0f, 50.0f, "Play", Texture.GREY_BOX, 20.0f, Color.RED);
+        this.exitButton     = new ButtonUI(0.0f, -150.0f, 200.0f, 50.0f, "Exit", Texture.GREY_BOX, 20.0f, Color.RED);
         this.settingsButton     = new ButtonUI(0.0f, 0.0f, 200.0f, 50.0f, "Settings", Texture.GREY_BOX, 20.0f, Color.RED);
 
     }

@@ -4,11 +4,7 @@ import java.awt.*;
 
 public abstract class UIComponent {
 
-    public boolean isReleased(InputState inputState){
-        if(!inputState.isMouse1Released()){
-            return false;
-
-        }
+    public boolean hovers(InputState inputState){
         Point mousePos = inputState.getMousePosition();
 
         float mouseX = ((mousePos.x / (float)Game.SCREEN_WIDTH) * 2.0f - 1.0f) * Game.SCREEN_WIDTH;
@@ -20,6 +16,13 @@ public abstract class UIComponent {
         final float maxY = this.y + this.height;
 
         return minX <= mouseX && mouseX <= maxX && minY <= mouseY && mouseY <= maxY;
+    }
+    public boolean isReleased(InputState inputState){
+        if(!inputState.isMouse1Released()){
+            return false;
+
+        }
+        return this.hovers(inputState);
     }
     protected int   textureId;
     protected float x;
