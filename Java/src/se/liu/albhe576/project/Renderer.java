@@ -109,6 +109,7 @@ public class Renderer
     }
 
     private TextImageData getTextImageData(String text, float fontSize, Color color){
+        // ToDo change this so it actually makes sense the fontSize you call
         Font textFont = this.font.deriveFont(fontSize);
         FontMetrics fontMetrics = createFontMetrics(textFont);
         int width = fontMetrics.stringWidth(text);

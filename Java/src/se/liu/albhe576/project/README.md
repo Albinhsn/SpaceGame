@@ -5,18 +5,6 @@
 ### Game things
 
 ### Random
-* Fix so you're able to change screen resolution
-  * fix so it actually renders in the same size
-
-* General refactor thingies
-  * animations?
-  * rename ui stuff
-
-### Animation class thingy?
-* Able to render lists of element
-* Implicit rendering of element
-* Layout
-
 
 ### Data
 * Create one large image and be able to parse it
@@ -27,3 +15,6 @@
   * Actually hoist out to wave function
   * i.e the wave controls when shit spawns
   * i.e not need for an enemy class?
+* Able to render lists of element
+* Implicit rendering of element
+* Layout
