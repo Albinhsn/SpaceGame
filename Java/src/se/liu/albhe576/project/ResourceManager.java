@@ -247,7 +247,7 @@ public class ResourceManager
 				enemy.spawnTime,
 				enemy.pathId,
 				enemy.scoreGiven,
-				enemy.moveSpeed
+				-enemy.moveSpeed
 			));
 		}
 		return new Wave(enemies);
@@ -478,7 +478,7 @@ public class ResourceManager
 	};
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{
-			"./resources/binaryData/wave12024-03-04 10:10:42.516.bin",
+			"./resources/binaryData/wave22024-03-05 23:08:09.345.bin",
 	};
 
 	private String getShaderSource(String fileLocation) throws IOException {

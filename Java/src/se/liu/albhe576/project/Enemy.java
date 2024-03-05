@@ -65,16 +65,16 @@ public class Enemy extends Entity
     private void move(long lastTick){
         switch(this.pathId){
             case 0:{
-                this.y += (float) Math.sin((double) lastTick / 500) / 5.0f;
-                this.x             += (float) Math.cos((double) lastTick / 500) / 5.0f + this.moveSpeed;
+                this.x += (float) Math.sin((double) lastTick / 500) / 5.0f;
+                this.y             += (float) Math.cos((double) lastTick / 500) / 5.0f + this.moveSpeed;
                 break;
             }
             case 1:{
-                this.y += (float) Math.sin((double) lastTick / 1000) / 5.0f;
-                this.x += this.moveSpeed;
+                this.x += (float) Math.sin((double) lastTick / 1000) / 5.0f;
+                this.y += this.moveSpeed;
                 break;
             } case 2:{
-                this.x             += (float) (Math.cos((double) lastTick / 500)) / 5.0f + this.moveSpeed * 0.5f;
+                this.y             += (float) (Math.cos((double) lastTick / 500)) / 5.0f + this.moveSpeed * 0.5f;
                break;
             }
             case 3:{

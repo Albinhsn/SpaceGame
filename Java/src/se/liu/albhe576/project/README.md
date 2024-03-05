@@ -1,14 +1,9 @@
 # Galaga? 
 
 ## ToDo
-* font bitmap
-    * differentiate between static and dynamic text rendering
-    * fix to text actually looks good
 * Rather then side to side enemies actually go downwards mostly
     * one of them is basically a kamikaze pilot
         * this requires to check collision between players and enemies
-    * Create proper paths
-      * interpolate between two positions, enemyType also have some sort of function to modify the path
 
 ### Game things
 * Wave logic
@@ -22,6 +17,9 @@
 
 ### Rendering
 * Create one large image and be able to parse it
+* font bitmap
+    * differentiate between static and dynamic text rendering
+    * fix to text actually looks good
 
 ### Data
 * Figure out how we parse UI data from file
