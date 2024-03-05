@@ -50,17 +50,17 @@ public class Bullet extends Entity
         }
         return false;
     }
-    public boolean checkCollision(List<Entity> entities){
+    public int checkCollision(List<Entity> entities){
         if(!this.isWithinBounds()){
-            return false;
+            return -1;
         }
 
         for(Entity entity : entities){
             if(this.checkCollision(entity)){
-                return true;
+                return entity.scoreGiven;
             }
         }
-        return false;
+        return -1;
     }
     public Bullet(
             float x,
@@ -73,7 +73,7 @@ public class Bullet extends Entity
             float rotation
     )
     {
-        super(0, x, y, width, height, textureIdx, rotation);
+        super(0, x, y, width, height, textureIdx, rotation, 0);
         this.parent = shooter;
         this.yAcc = yAcc;
     }

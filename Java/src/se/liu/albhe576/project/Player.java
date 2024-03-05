@@ -6,7 +6,7 @@ public class Player  extends Entity{
 	private final int initialHp;
 
     public Player(int hp, float x, float y, float width, float height, int textureIdx){
-		super(hp, x, y, width, height, textureIdx, 0.0f);
+		super(hp, x, y, width, height, textureIdx, 0.0f, 0);
 			this.lastShot 	= 0;
 			this.initialHp 	= hp;
     }

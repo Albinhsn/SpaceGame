@@ -9,7 +9,7 @@ public class Enemy extends Entity
     public final int pathId;
     public final long spawnTime;
     private long lastShot;
-    private final float moveSpeed;
+    public final float moveSpeed;
     public final int type;
     private final Random rng = new Random();
 
@@ -24,16 +24,14 @@ public class Enemy extends Entity
         return (minEntityX < -160.0f || maxEntityX > 160.0f|| minEntityY < -160.0f || maxEntityY > 160.0f);
     }
 
-    public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId)
+    public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int pathId, int scoreGiven, float movementSpeed)
     {
-		super(hp, x, y, width, height, textureIdx, 0.0f);
-        final float ms = ResourceManager.STATE_VARIABLES.get("enemyMS");
-        this.type = enemyType;
+		super(hp, x, y, width, height, textureIdx, 0.0f, scoreGiven);
+        this.type           = enemyType;
         this.pathId         = pathId;
-        this.lastUpdate     = 0;
         this.alive          = true;
         this.spawnTime      = spawnTime;
-        this.moveSpeed      = x > 0 ? -ms : ms;
+        this.moveSpeed      = movementSpeed;
         this.lastShot       = 0;
     }
 
@@ -57,33 +55,33 @@ public class Enemy extends Entity
 
     public boolean update(long lastTick) {
         if(this.alive){
-            this.move();
+            this.move(lastTick);
             return this.willShoot(lastTick);
         }
         return false;
     }
 
 
-    private void move(){
+    private void move(long lastTick){
         switch(this.pathId){
             case 0:{
-                this.y += (float) Math.sin((double) lastUpdate / 500) / 5.0f;
-                this.x             += (float) Math.cos((double) lastUpdate / 500) / 5.0f + this.moveSpeed;
+                this.y += (float) Math.sin((double) lastTick / 500) / 5.0f;
+                this.x             += (float) Math.cos((double) lastTick / 500) / 5.0f + this.moveSpeed;
                 break;
             }
             case 1:{
-                this.y += (float) Math.sin((double) lastUpdate / 1000) / 5.0f;
+                this.y += (float) Math.sin((double) lastTick / 1000) / 5.0f;
                 this.x += this.moveSpeed;
                 break;
             } case 2:{
-                this.x             += (float) (Math.cos((double) lastUpdate / 500)) / 5.0f + this.moveSpeed * 0.5f;
+                this.x             += (float) (Math.cos((double) lastTick / 500)) / 5.0f + this.moveSpeed * 0.5f;
                break;
             }
             case 3:{
                 if(this.y >= 50.0f){
                    this.y -= 0.2f;
                 }
-                this.x             += (float) Math.cos((double) lastUpdate / 500) / 5.0f;
+                this.x             += (float) Math.cos((double) lastTick / 500) / 5.0f;
                 break;
             }
             default:{

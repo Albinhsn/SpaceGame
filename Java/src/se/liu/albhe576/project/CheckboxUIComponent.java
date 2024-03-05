@@ -7,7 +7,6 @@ public class CheckboxUIComponent extends UIComponent{
     public float checkmarkHeight;
     public CheckboxUIComponent(int textureId, float x, float y, float width, float height, int checkmarkTextureId, float checkmarkWidth, float checkmarkHeight, boolean initToggle){
         super(x,y,width,height,textureId);
-        System.out.println(width + " " + height);
 
         this.checkmarkTextureId = checkmarkTextureId;
         this.checkmarkWidth = checkmarkWidth;

@@ -43,12 +43,12 @@ public class Game
     }
 
     private void checkCollision(){
-        final int scoreIncreasePerEnemyDeath = this.resourceManager.STATE_VARIABLES.get("scorePerEnemy").intValue();
 
         List<Entity> entities = this.wave.getEnemiesAsEntities();
         for(Bullet bullet: this.bullets){
-            if(bullet.checkCollision(entities) && bullet.getParent() == this.player){
-                this.score += scoreIncreasePerEnemyDeath;
+            int score = bullet.checkCollision(entities);
+            if(score != -1 && bullet.getParent() == this.player){
+                this.score += score;
             }
             bullet.checkCollision(this.player);
         }

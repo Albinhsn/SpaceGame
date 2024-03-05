@@ -45,8 +45,26 @@ public class ResourceManager
 	public Map<Integer, Texture> textureIdMap;
 	private List<EntityData> entityData;
 	private List<Wave> waves;
+	private Texture tokenTexture;
 	static class EntityData{
-		public static final int size = 8 * 4;
+		@Override
+		public String toString() {
+			return String.format(
+					"%d %d %f %f %d %f %f %f %d %f",
+					hp,
+					textureIdx,
+					width,
+					height,
+					bulletTextureIdx,
+					bulletSpeed,
+					bulletWidth,
+					bulletHeight,
+					score,
+					movementSpeed
+			);
+		}
+
+		public static final int size = 10 * 4;
 		int hp;
 		int textureIdx;
 		float width;
@@ -55,15 +73,19 @@ public class ResourceManager
 		float bulletSpeed;
 		float bulletWidth;
 		float bulletHeight;
-		public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh){
-			this.hp = hp;
-			this.textureIdx = ti;
-			this.width = w;
-			this.height = h;
-			this.bulletTextureIdx = bti;
-			this.bulletSpeed = bs;
-			this.bulletWidth = bw;
-			this.bulletHeight = bh;
+		int score;
+		float movementSpeed;
+		public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh, int s, float ms){
+			this.hp 				= hp;
+			this.textureIdx 		= ti;
+			this.width 				= w;
+			this.height 			= h;
+			this.bulletTextureIdx 	= bti;
+			this.bulletSpeed 		= bs;
+			this.bulletWidth 		= bw;
+			this.bulletHeight 		= bh;
+			this.score 				= s;
+			this.movementSpeed 		= ms;
 		}
 	}
 
@@ -144,12 +166,13 @@ public class ResourceManager
 
 		for(String variable : stateVariables){
 			String[] keyValuePair = variable.strip().split(" ");
-			System.out.printf("Added %s:%f\n", keyValuePair[0], Float.parseFloat(keyValuePair[1]));
 			this.STATE_VARIABLES.put(keyValuePair[0], Float.parseFloat(keyValuePair[1]));
 		}
 	}
 	private void loadTextures(){
 		this.textureIdMap = new HashMap<>();
+		// Create a red rectangle texture just in case some texture is missing
+		this.tokenTexture = Texture.createTokenTexture();
 
         for (Map.Entry<Integer, String> entry : this.TEXTURE_LOCATIONS.entrySet()) {
 			Integer key = entry.getKey();
@@ -164,8 +187,8 @@ public class ResourceManager
 					texture = TGAImage.decodeTGAImageFromFile(textureLocation);
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
-				continue;
+				System.out.printf("WARNING: Texture '%s' with key '%d' is missing, using token texture\n", textureLocation, key);
+				texture = this.tokenTexture;
 			}
 
 			texture.textureId = glGenTextures();
@@ -211,7 +234,9 @@ public class ResourceManager
 				enemy.height,
 				enemy.getTextureIdx(),
 				enemy.spawnTime,
-				enemy.pathId
+				enemy.pathId,
+				enemy.scoreGiven,
+				enemy.moveSpeed
 			));
 		}
 		return new Wave(enemies);
@@ -249,7 +274,9 @@ public class ResourceManager
 						100.0f * enemyEntityData.height,
 						enemyEntityData.textureIdx,
 						spawnTime,
-						pathId
+						pathId,
+						enemyEntityData.score,
+						spawnPositionX > 0 ? -enemyEntityData.movementSpeed : enemyEntityData.movementSpeed
 				));
 			}
 			this.waves.add(new Wave(enemies));
@@ -276,7 +303,9 @@ public class ResourceManager
 					this.parseIntFromByteArray(binaryData, idx + 16),
 					this.parseFloatFromByteArray(binaryData, idx + 20),
 					this.parseFloatFromByteArray(binaryData, idx + 24),
-					this.parseFloatFromByteArray(binaryData, idx + 28)
+					this.parseFloatFromByteArray(binaryData, idx + 28),
+					this.parseIntFromByteArray(binaryData, idx + 32),
+					this.parseFloatFromByteArray(binaryData, idx + 36)
 				);
 				idx += EntityData.size;
 
@@ -299,11 +328,12 @@ public class ResourceManager
 	}
 
 	public Bullet createNewBullet(Entity parent){
+		// ToDo change this 4 to be the player entity id
 		int enemyType = parent instanceof Enemy ? ((Enemy)parent).type : 4;
 		int dir = enemyType == 4 ? 1 : -1;
 
 		EntityData data = this.entityData.get(enemyType);
-		final float yOffset = (parent.height + data.bulletHeight) * 0.5f;
+		final float yOffset = (parent.height + data.bulletHeight);
 
 		return new Bullet(
 			parent.x,
@@ -383,7 +413,7 @@ public class ResourceManager
     }
 	// No reason not to have this in a text file
 	// Also make variables for each texture
-    private final Map<Integer, String> TEXTURE_LOCATIONS= new HashMap<Integer, String>()
+    private final Map<Integer, String> TEXTURE_LOCATIONS= new HashMap<>()
 	{
 		{
 			put(Texture.PLAYER_MODEL,"./resources/images/PNG/Sprites/Ships/spaceShips_001.png");

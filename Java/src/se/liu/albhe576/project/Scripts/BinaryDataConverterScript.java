@@ -92,7 +92,23 @@ public class BinaryDataConverterScript
     }
 
     static class EntityData{
-        public static final int size = 8 * 4;
+        @Override
+        public String toString() {
+            return String.format(
+                    "%d %d %f %f %d %f %f %f %d %f",
+                    hp,
+                    textureIdx,
+                    width,
+                    height,
+                    bulletTextureIdx,
+                    bulletSpeed,
+                    bulletWidth,
+                    bulletHeight,
+                    score,
+                    movementSpeed
+            );
+        }
+        public static final int size = 10 * 4;
         int hp;
         int textureIdx;
         float width;
@@ -101,7 +117,9 @@ public class BinaryDataConverterScript
         float bulletSpeed;
         float bulletWidth;
         float bulletHeight;
-        public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh){
+        int score;
+        float movementSpeed;
+        public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh, int score, float ms){
             this.hp = hp;
             this.textureIdx = ti;
             this.width = w;
@@ -110,6 +128,8 @@ public class BinaryDataConverterScript
             this.bulletSpeed = bs;
             this.bulletWidth = bw;
             this.bulletHeight = bh;
+            this.score = score;
+            this.movementSpeed = ms;
         }
         byte[] entityDataToBytes(){
             ByteBuffer buffer = ByteBuffer.allocate(EntityData.size);
@@ -121,6 +141,8 @@ public class BinaryDataConverterScript
             buffer.putFloat(20, this.bulletSpeed);
             buffer.putFloat(24, this.bulletWidth);
             buffer.putFloat(28, this.bulletHeight);
+            buffer.putInt(32, this.score);
+            buffer.putFloat(36, this.movementSpeed);
 
             byte[] out = new byte[EntityData.size];
             buffer.get(0, out);
@@ -132,18 +154,19 @@ public class BinaryDataConverterScript
         final float origScreenWidth  = 620.0f;
         final float origScreenHeight = 480.0f;
        EntityData[] data = new EntityData[]{
-               new EntityData(1,2, 0.03f, 0.06f, 6, 3.0f / origScreenHeight, 8.0f / origScreenWidth, 16.0f / origScreenHeight),
-               new EntityData(1,3, 0.03f, 0.06f, 7, 10.0f / origScreenHeight, 7.0f / origScreenWidth, 20.0f / origScreenHeight),
-               new EntityData(1,4, 0.03f, 0.06f, 8, 5.0f / origScreenHeight, 7.0f / origScreenWidth, 21.0f / origScreenHeight),
-               new EntityData(10, 5, 0.3f, 0.2f, 9, 15.0f / origScreenHeight, 30.0f / origScreenWidth, 30.0f / origScreenHeight),
-               new EntityData(3,0, 0.05f, 0.1f, 1, 5.0f / origScreenHeight, 10.0f / origScreenWidth, 10.0f / origScreenHeight),
+               new EntityData(1,2, 0.03f, 0.06f, 6, 3.0f / origScreenHeight, 8.0f / origScreenWidth, 16.0f / origScreenHeight, 100, 0.2f),
+               new EntityData(1,3, 0.03f, 0.06f, 7, 10.0f / origScreenHeight, 7.0f / origScreenWidth, 20.0f / origScreenHeight, 125, 0.3f),
+               new EntityData(1,4, 0.03f, 0.06f, 8, 5.0f / origScreenHeight, 7.0f / origScreenWidth, 21.0f / origScreenHeight, 150, 0.1f),
+               new EntityData(10, 5, 0.3f, 0.2f, 9, 15.0f / origScreenHeight, 30.0f / origScreenWidth, 30.0f / origScreenHeight, 500, 0.4f),
+               new EntityData(3,0, 0.05f, 0.1f, 1, 5.0f / origScreenHeight, 10.0f / origScreenWidth, 10.0f / origScreenHeight, 0, 1.0f),
        };
        final int size = 5;
         ByteBuffer buffer = ByteBuffer.allocate(EntityData.size * size);
         for(int idx = 0; idx < size; idx++){
+            System.out.println(data[idx]);
             buffer.put(EntityData.size * idx,  data[idx].entityDataToBytes());
         }
-        final int id = 1;
+        final int id = 3;
 
         byte[] out = new byte[EntityData.size * size];
         buffer.get(0, out);
@@ -151,6 +174,6 @@ public class BinaryDataConverterScript
     }
 
     public static void main(String[] args) {
-        BinaryDataConverterScript.createWaveData();
+        BinaryDataConverterScript.createEntityData();
     }
 }

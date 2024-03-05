@@ -1,5 +1,7 @@
 package se.liu.albhe576.project;
 
+import org.lwjgl.BufferUtils;
+
 import java.awt.*;
 import java.nio.ByteBuffer;
 
@@ -41,5 +43,21 @@ public class Texture
         this.width = width;
         this.height = height;
         this.data = data;
+    }
+
+    public static Texture createTokenTexture(){
+        // 100 x 100 rgba
+        ByteBuffer buffer = BufferUtils.createByteBuffer(100 * 100 * 4);
+        byte[] data = new byte[100 * 100 * 4];
+        for(int i = 0; i < data.length; i+=4){
+            data[i + 0] = (byte)255;
+            data[i + 1] = (byte)0;
+            data[i + 2] = (byte)0;
+            data[i + 3] = (byte)255;
+        }
+        buffer.put(data);
+        buffer.flip();
+        return new Texture(100, 100, buffer);
+
     }
 }

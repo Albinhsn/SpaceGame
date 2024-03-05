@@ -245,9 +245,6 @@ public class Renderer
     }
 
 
-
-
-
     public void renderEntities(final List<? extends Entity> entities) {
         for(Entity entity : entities){
             this.renderEntity(entity);

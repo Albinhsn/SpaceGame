@@ -9,11 +9,11 @@ public abstract class Entity
     protected int hp;
     protected float x;
     protected float y;
+    protected int scoreGiven;
 
     protected float width;
     protected float height;
     protected boolean alive;
-    protected long lastUpdate;
     private final float rotation;
     private final int textureIdx;
     protected float xAcceleration;
@@ -24,18 +24,16 @@ public abstract class Entity
     public float getRotation(){
         return this.rotation;
     }
-    protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation){
+    protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation, int scoreGiven){
         this.hp             = hp;
         this.x              = x;
         this.y              = y;
         this.width          = width;
         this.height         = height;
         this.textureIdx     = textureIdx;
-        this.xAcceleration  = 0.0f;
-        this.yAcceleration  = 0.0f;
-        this.lastUpdate     = 0;
         this.alive          = true;
         this.rotation       = rotation;
+        this.scoreGiven = scoreGiven;
     }
 
 
