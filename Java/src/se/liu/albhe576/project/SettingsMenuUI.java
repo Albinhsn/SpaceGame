@@ -32,7 +32,7 @@ public class SettingsMenuUI extends UI {
             return this.parentState;
         }
 
-        renderer.renderTextCentered("vsync", -25.0f, 0, 4.0f, Color.WHITE);
+        renderer.renderTextDynamic("vsync", -25.0f, 0, 4.0f, Color.WHITE, true);
         renderer.renderCheckbox(this.vsyncCheckbox);
         if(vsyncCheckbox.isReleased(inputState)){
             vsyncCheckbox.toggled = !vsyncCheckbox.toggled;

@@ -39,6 +39,7 @@ public class UIComponent {
         }
         return this.hovers(inputState);
     }
+    protected int   vertexArrayId;
     protected int   textureId;
     protected float x;
     protected float y;

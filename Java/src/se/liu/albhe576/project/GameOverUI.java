@@ -10,8 +10,8 @@ public class GameOverUI extends UI {
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp) {
         final float fontSize = ResourceManager.STATE_VARIABLES.get("fontSizeLarge");
 
-        renderer.renderTextCentered(lostGame  ? "GAME OVER" : "GAME WON", 0, 40.0f, fontSize, Color.WHITE);
-        renderer.renderTextCentered(String.format("Score: %d", score), 0, 20.0f, fontSize, Color.WHITE);
+        renderer.renderTextDynamic(lostGame  ? "GAME OVER" : "GAME WON", 0, 40.0f, fontSize, Color.WHITE, true);
+        renderer.renderTextDynamic(String.format("Score: %d", score), 0, 20.0f, fontSize, Color.WHITE, true);
 
         renderer.renderButton(restartButton);
         if(restartButton.isReleased(inputState)){

@@ -1,15 +1,9 @@
 package se.liu.albhe576.project;
 
-import org.lwjgl.BufferUtils;
-
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
-
-import java.io.IOException;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL40.*;
@@ -19,35 +13,51 @@ public class Renderer
 {
     private final long              window;
     private final ResourceManager   resourceManager;
-    private final Font              font;
-    private final int               fontTextureId;
+    private Font font;
 
     public Renderer(long window, ResourceManager resourceManager) {
         this.window = window;
         this.resourceManager = resourceManager;
-        this.fontTextureId = glGenTextures();
 
-        this.font = this.loadFont();
+        this.font = Font.parseFont(resourceManager, "./resources/Font/font01.tga", "./resources/Font/font01.txt");
     }
 
-    private Font loadFont(){
-        try{
-            return Font.createFont(Font.TRUETYPE_FONT, new File("./resources/Font/kenvector_future.ttf"));
-        }catch (IOException | FontFormatException e){
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private FontMetrics createFontMetrics(Font font){
-        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D g = image.createGraphics();
-        g.setFont(font);
-        return g.getFontMetrics();
-    }
     public void renderButton(ButtonUIComponent button){
         this.renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
-        this.renderTextCentered(button.text, button.x,button.y, button.fontSize, button.textColor);
+        this.renderTextDynamic(button.text, button.x,button.y, button.fontSize, button.textColor, true);
+    }
+    private void setTextShaderParams(Color color){
+        int programId = this.resourceManager.getProgramByIndex(1);
+        glUseProgram(programId);
+        int location = glGetUniformLocation(programId, "fontTexture");
+        if(location == -1){
+            System.out.println("Failed to find location of 'fontTexture'");
+            System.exit(1);
+        }
+        glUniform1i(location, 0);
+
+        location = glGetUniformLocation(programId, "pixelColor");
+        if(location == -1){
+            System.out.println("Failed to find location of 'fontTexture'");
+            System.exit(1);
+        }
+        float[] colorFloat = new float[]{
+                color.getRed() / 255.0f,
+                color.getGreen() / 255.0f,
+                color.getBlue() / 255.0f,
+                color.getAlpha() / 255.0f
+        };
+        glUniform4fv(location, colorFloat);
+    }
+    public void renderTextDynamic(String text, float x, float y, float fontSize, Color color, boolean centered){
+        this.font.updateText(text, x, y, fontSize, centered);
+
+        this.setTextShaderParams(color);
+        glBindVertexArray(this.font.dynamicVertexArrayId);
+        glBindTexture(GL_TEXTURE_2D, this.font.fontTexture.textureId);
+
+        glDrawElements(GL_TRIANGLES, this.font.textMaxLength * 4, GL_UNSIGNED_INT, 0);
+
     }
 
     public void renderCheckbox(CheckboxUIComponent checkbox){
@@ -58,13 +68,12 @@ public class Renderer
     }
     public void renderUIComponent(int textureId, float x, float y, float width, float height){
         float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        this.renderTexture(transMatrix);
+        this.renderTexture(transMatrix, textureId);
     }
 
     public void renderSlider(SliderUIComponent slider){
         // This one is mostly for debugging/showcase purpose
-        renderTextCentered(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), 5f, Color.WHITE);
+        //renderTextCentered(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), 5f, Color.WHITE);
 
         renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
         final int sliderTextureId = this.resourceManager.textureIdMap.get(Texture.GREY_SLIDER_HORIZONTAL).textureId;
@@ -80,76 +89,6 @@ public class Renderer
             }
         }
     }
-    public void renderTextStartAt(String text, float x, float y, float fontSize, Color color){
-
-        TextImageData data = this.getTextImageData(text, fontSize, color);
-        this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
-        float [] transMatrix = this.getTransformationMatrix(x + data.stringWidth, y, data.stringWidth, data.fontHeight, 0);
-        this.renderTexture(transMatrix);
-
-    }
-
-    static class TextImageData{
-        int stringWidth;
-        int fontHeight;
-        ByteBuffer buffer;
-        int imageWidth;
-        int imageHeight;
-        public TextImageData(int fontImageWidth, int fontImageHeight, int imageWidth, int imageHeight, ByteBuffer buffer){
-            this.stringWidth= fontImageWidth;
-            this.fontHeight    = fontImageHeight;
-            this.imageWidth         = imageWidth;
-            this.imageHeight        = imageHeight;
-            this.buffer             = buffer;
-        }
-    }
-
-    private TextImageData getTextImageData(String text, float fontSize, Color color){
-        // ToDo change this so it actually makes sense the fontSize you call
-        Font textFont               = this.font.deriveFont(fontSize);
-        FontMetrics fontMetrics     = createFontMetrics(textFont);
-        int width                   = fontMetrics.stringWidth(text);
-        int height                  = fontMetrics.getHeight();
-
-        Font textFont2              = this.font.deriveFont(fontSize * 20);
-        FontMetrics fontMetrics2    = createFontMetrics(textFont2);
-        int actualWidth             = fontMetrics2.stringWidth(text);
-        int actualHeight            = fontMetrics2.getHeight();
-
-
-        BufferedImage image = new BufferedImage(actualWidth, actualHeight, BufferedImage.TYPE_4BYTE_ABGR);
-
-        Graphics2D g2d = image.createGraphics();
-        g2d.setFont(textFont2);
-        g2d.setColor(color);
-        g2d.drawString(text, 0, actualHeight - fontMetrics2.getDescent());
-
-        byte[] data = ((DataBufferByte) image.getData().getDataBuffer()).getData();
-        for(int i = 0; i < data.length; i+=4){
-            byte tmp = data[i + 0];
-            data[i  + 0] = data[i + 3];
-            data[i + 3] = tmp;
-
-            tmp = data[i + 1];
-            data[i + 1] = data[i + 2];
-            data[i + 2] = tmp;
-
-        }
-        ByteBuffer buffer = BufferUtils.createByteBuffer(data.length);
-        buffer.put(data);
-        buffer.flip();
-
-        return new TextImageData(width, height, image.getWidth(), image.getHeight(), buffer);
-
-    }
-
-    public void renderTextCentered(String text, float x, float y, float fontSize, Color color){
-
-        TextImageData data   = this.getTextImageData(text, fontSize, color);
-        float [] transMatrix = this.getTransformationMatrix(x, y, data.stringWidth, data.fontHeight, 0);
-        this.resourceManager.generateTexture(this.fontTextureId, data.imageWidth, data.imageHeight, data.buffer);
-        this.renderTexture(transMatrix);
-    }
 
     public void renderHealth(int hp){
         final float height    = ResourceManager.STATE_VARIABLES.get("hpHeartHeight");
@@ -159,20 +98,20 @@ public class Renderer
         float x               = -hp * width / 2;
 
         Texture texture = this.resourceManager.textureIdMap.get(Texture.HP_HEART);
-        glBindTexture(GL_TEXTURE_2D, texture.textureId);
-        glBindVertexArray(texture.vertexArrayId);
 
         for(int i = 0; i < hp; i++, x += width * 1.5f){
             float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
-            this.renderTexture(transMatrix);
+            this.renderTexture(transMatrix, texture.textureId);
         }
 
 
     }
-    private void renderTexture(float [] transMatrix){
+    private void renderTexture(float [] transMatrix, int textureId){
 
         int programId = this.resourceManager.getProgramByIndex(0);
         glUseProgram(programId);
+        glBindVertexArray(this.resourceManager.textureVertexArrayId);
+        glBindTexture(GL_TEXTURE_2D, textureId);
 
         int loc = glGetUniformLocation(programId, "transMatrix");
         if(loc == -1){
@@ -200,7 +139,6 @@ public class Renderer
 
     private float[] getTransformationMatrix(float x, float y, float width, float height, float rotation){
 
-
         float r = (float) (rotation * Math.PI / 180.0f);
         float [] rotationM = new float[]{
                 (float)Math.cos(r), (float)Math.sin(r), 0,
@@ -209,16 +147,16 @@ public class Renderer
         };
 
 
-        float transformX = x / 100.0f;
-        float transformY = y / 100.0f;
+        float transformX = x * 0.01f;
+        float transformY = y * 0.01f;
         float [] translationM = new float[]{
                 1,0,0,
                 0,1,0,
                 transformX, transformY, 1
         };
 
-        float scaleX = width / 100.0f;
-        float scaleY = height / 100.0f;
+        float scaleX = width * 0.01f;
+        float scaleY = height * 0.01f;
 
         float [] scaleM = new float[]{
              scaleX, 0, 0,
@@ -233,15 +171,8 @@ public class Renderer
 
     public void renderEntity(Entity entity){
         Texture texture = this.resourceManager.textureIdMap.get(entity.getTextureIdx());
-
-        int programId = this.resourceManager.getProgramByIndex(0);
-        glUseProgram(programId);
-        glBindTexture(GL_TEXTURE_2D, texture.textureId);
-        glBindVertexArray(texture.vertexArrayId);
-
         float [] transMatrix = this.getTransformationMatrix(entity.x, entity.y,entity.width, entity.height, entity.getRotation());
-
-        this.renderTexture(transMatrix);
+        this.renderTexture(transMatrix, texture.textureId);
     }
 
 

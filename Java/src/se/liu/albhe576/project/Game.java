@@ -152,8 +152,8 @@ public class Game
     }
     private void renderInfoStrings(){
         long ms = System.currentTimeMillis()  - this.prevTick;
-        this.renderer.renderTextStartAt(String.format("ms: %d\n", ms), -100.0f, 60.0f, 3.0f, Color.WHITE);
-        this.renderer.renderTextStartAt(String.format("fps: %d\n", Math.min((int)(1000.0f/ms), 999)), -100.0f, 50.0f, 3.0f, Color.WHITE);
+        this.renderer.renderTextDynamic(String.format("ms: %d", ms), -100.0f, 60.0f, 10.0f, Color.WHITE, false);
+        this.renderer.renderTextDynamic(String.format("fps: %d", Math.min((int)(1000.0f/ms), 999)), -100.0f, 50.0f, 10.0f, Color.WHITE, false);
         this.prevTick = System.currentTimeMillis();
     }
 
@@ -162,6 +162,7 @@ public class Game
         while(!glfwWindowShouldClose(window)){
             this.initNewFrame();
             this.background.updateAndRender(this.renderer);
+            this.renderInfoStrings();
 
             this.inputState.resetState();
             this.queryInputEvents();
@@ -172,7 +173,6 @@ public class Game
                 this.checkGameFinished();
             }
 
-            this.renderInfoStrings();
 
             updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.hp));
             glfwSwapBuffers(window);
@@ -236,8 +236,8 @@ public class Game
         this.lastUpdated        = 0;
         this.resourceManager    = new ResourceManager();
 
-        Game.SCREEN_HEIGHT = this.resourceManager.STATE_VARIABLES.get("SCREEN_HEIGHT").intValue();
-        Game.SCREEN_WIDTH  = this.resourceManager.STATE_VARIABLES.get("SCREEN_WIDTH").intValue();
+        Game.SCREEN_HEIGHT = ResourceManager.STATE_VARIABLES.get("SCREEN_HEIGHT").intValue();
+        Game.SCREEN_WIDTH  = ResourceManager.STATE_VARIABLES.get("SCREEN_WIDTH").intValue();
 
         this.initGLFW();
         this.resourceManager.loadResources();
@@ -250,7 +250,7 @@ public class Game
 
         this.player             = this.resourceManager.getPlayer();
 
-        final int waveIdx = this.resourceManager.STATE_VARIABLES.get("waveIdx").intValue();
+        final int waveIdx = ResourceManager.STATE_VARIABLES.get("waveIdx").intValue();
         this.wave               = this.resourceManager.getWave(waveIdx);
 
         this.uiState = UIState.MAIN_MENU;

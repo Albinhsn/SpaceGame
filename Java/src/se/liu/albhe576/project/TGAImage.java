@@ -2,6 +2,10 @@ package se.liu.albhe576.project;
 
 import org.lwjgl.BufferUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -152,6 +156,18 @@ public class TGAImage
 	return imageData;
     }
 
+	private byte[] parseUncompressedBlackWhite() {
+		byte[] data = new byte[(this.fileBytes.length - 18) * 4];
+		int i = 0;
+		for(; this.index < this.fileBytes.length; i+= 4, this.index++) {
+			data[i + 0] = this.fileBytes[this.index];
+			data[i + 1] = this.fileBytes[this.index];
+			data[i + 2] = this.fileBytes[this.index];
+			data[i + 3] = this.fileBytes[this.index];
+
+		}
+		return data;
+	}
     private byte[] parseUncompressed(){
 		if(this.bpp == 4){
 			byte[] data = Arrays.copyOfRange(this.fileBytes, 18, this.fileBytes.length);
@@ -188,30 +204,34 @@ public class TGAImage
 
     }
     private ByteBuffer parseImage(){
-	this.parseTargaHeader();
-	this.index += this.targaHeader.getCharactersInIdenificationField();
+		this.parseTargaHeader();
+		this.index += this.targaHeader.getCharactersInIdenificationField();
 
 
-	ByteBuffer imageBuffer = this.allocateImageBuffer();
-	byte[] imageData = null;
+		ByteBuffer imageBuffer = this.allocateImageBuffer();
+		byte[] imageData = null;
 
-	switch(this.targaHeader.getImageType()){
-	    // Uncompressed
-	    case 2:{
-		imageData = this.parseUncompressed();
-		break;
-	    }
-	    // RLE
-	    case 10:{
-		System.out.println("Parsing RLE");
-		imageData = this.parseRunLengthEncodedImage();
-		break;
-	    }
-	    default:{
-		System.out.printf("Don't know how to parse this encoding %d\n", this.targaHeader.getImageType());
-		System.exit(2);
-	    }
-	}
+		switch(this.targaHeader.getImageType()){
+			// Uncompressed
+			case 2:{
+			imageData = this.parseUncompressed();
+			break;
+			}
+			case 3:{
+				imageData = this.parseUncompressedBlackWhite();
+				break;
+			}
+			// RLE
+			case 10:{
+			System.out.println("Parsing RLE");
+			imageData = this.parseRunLengthEncodedImage();
+			break;
+			}
+			default:{
+			System.out.printf("Don't know how to parse this encoding %d\n", this.targaHeader.getImageType());
+			System.exit(2);
+			}
+		}
 		imageBuffer.put(imageData);
 		return imageBuffer;
     }
@@ -223,4 +243,5 @@ public class TGAImage
         buffer.flip();
         return new Texture(tgaImage.targaHeader.getWidth(), tgaImage.targaHeader.getHeight(), buffer);
     }
+
 }

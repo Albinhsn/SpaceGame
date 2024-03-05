@@ -19,25 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL15.glGenBuffers;
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_LINK_STATUS;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
-import static org.lwjgl.opengl.GL20.glAttachShader;
-import static org.lwjgl.opengl.GL20.glBindAttribLocation;
-import static org.lwjgl.opengl.GL20.glCreateProgram;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glGetProgramiv;
-import static org.lwjgl.opengl.GL20.glLinkProgram;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL40.*;
 
 public class ResourceManager
 {
@@ -46,6 +28,7 @@ public class ResourceManager
 	private List<EntityData> entityData;
 	private List<Wave> waves;
 	private Texture tokenTexture;
+	public int textureVertexArrayId;
 	static class EntityData{
 		@Override
 		public String toString() {
@@ -91,20 +74,20 @@ public class ResourceManager
 
 	public void generateTexture(int textureId, int width, int height, ByteBuffer data){
 
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
-
-	private void generateVertexArrayAndVertexBuffer(Texture texture){
+	private void generateTextureVertexArray(){
 		final int []indices = new int[]{0,1,2,1,3,2};
 		final float[] bufferData = new float[]{
 				-1.0f, -1.0f, 0.0f, 1.0f, //
@@ -113,9 +96,8 @@ public class ResourceManager
 				1.0f, 1.0f, 1.0f, 0.0f, //
 		};
 
-		texture.vertexArrayId = glGenVertexArrays();
-
-		glBindVertexArray(texture.vertexArrayId);
+		this.textureVertexArrayId = glGenVertexArrays();
+		glBindVertexArray(this.textureVertexArrayId);
 
 		final int vertexBufferId = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
@@ -130,11 +112,36 @@ public class ResourceManager
 		final int indexBufferId = glGenBuffers();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+		glBindVertexArray(0);
+	}
+
+
+	private void compileTextShader(){
+		final int programId = glCreateProgram();
+		this.programs.add(programId);
+
+		int vShader = createAndCompileShader("./shaders/font.vs", GL_VERTEX_SHADER);
+		int pShader = createAndCompileShader("./shaders/font.ps", GL_FRAGMENT_SHADER);
+
+		glAttachShader(programId, vShader);
+		glAttachShader(programId, pShader);
+
+		glBindAttribLocation(programId, 0, "inputPosition");
+		glBindAttribLocation(programId, 1, "inputTexCoord");
+
+		glLinkProgram(programId);
+		int []status = new int[1];
+		glGetProgramiv(programId,GL_LINK_STATUS, status);
+		if(status[0] != 1){
+			System.out.println("Failed to link program");
+			System.exit(1);
+		}
 
 	}
 
 	private void compileTextureShader(){
 		final int programId = glCreateProgram();
+		this.programs.add( programId);
 
 		int vShader = createAndCompileShader("./shaders/texture.vs", GL_VERTEX_SHADER);
 		int pShader = createAndCompileShader("./shaders/texture.ps", GL_FRAGMENT_SHADER);
@@ -152,7 +159,6 @@ public class ResourceManager
 			System.out.println("Failed to link program");
 			System.exit(1);
 		}
-		this.programs.add(0, programId);
 	}
 	private void loadStateVariables() {
 		List<String> stateVariables;
@@ -169,46 +175,51 @@ public class ResourceManager
 			this.STATE_VARIABLES.put(keyValuePair[0], Float.parseFloat(keyValuePair[1]));
 		}
 	}
+	public Texture createTexture(String textureLocation){
+		Texture texture;
+		try {
+			if(textureLocation.contains("png")){
+				texture = ResourceManager.loadPNGFile(textureLocation);
+			}else{
+				assert(textureLocation.contains("tga"));
+				texture = TGAImage.decodeTGAImageFromFile(textureLocation);
+			}
+		} catch (IOException e) {
+			System.out.printf("WARNING: Couldn't create Texture '%s', using token texture\n", textureLocation);
+			texture = this.tokenTexture;
+		}
+
+		texture.textureId = glGenTextures();
+		this.generateTexture(texture.textureId, texture.getWidth(), texture.getHeight(), texture.getData());
+
+		return texture;
+	}
 	private void loadTextures(){
+		this.generateTextureVertexArray();
+
 		this.textureIdMap = new HashMap<>();
 		// Create a red rectangle texture just in case some texture is missing
 		this.tokenTexture = Texture.createTokenTexture();
 
         for (Map.Entry<Integer, String> entry : this.TEXTURE_LOCATIONS.entrySet()) {
 			Integer key = entry.getKey();
-			String textureLocation = entry.getValue();
 
-			Texture texture;
-			try {
-				if(textureLocation.contains("png")){
-					texture = this.loadPNGFile(textureLocation);
-				}else{
-					assert(textureLocation.contains("tga"));
-					texture = TGAImage.decodeTGAImageFromFile(textureLocation);
-				}
-			} catch (IOException e) {
-				System.out.printf("WARNING: Texture '%s' with key '%d' is missing, using token texture\n", textureLocation, key);
-				texture = this.tokenTexture;
-			}
+			Texture texture = this.createTexture(entry.getValue());
 
-			texture.textureId = glGenTextures();
-
-			this.generateTexture(texture.textureId, texture.getWidth(), texture.getHeight(), texture.getData());
-			this.generateVertexArrayAndVertexBuffer(texture);
 			this.textureIdMap.put(key, texture);
 		}
 
-		this.compileTextureShader();
 	}
-	public ResourceManager(){
-		this.programs = new ArrayList<>(1);
-		this.loadStateVariables();
+	private void compileShaders(){
+		this.compileTextureShader();
+		this.compileTextShader();
 	}
 
 	public void loadResources(){
 		this.loadTextures();
 		this.loadEntityData();
 		this.loadWaveData();
+		this.compileShaders();
 	}
 
 
@@ -347,7 +358,7 @@ public class ResourceManager
 		);
 	}
 
-    public Texture loadPNGFile(String fileLocation) throws IOException {
+    public static Texture loadPNGFile(String fileLocation) throws IOException {
 		File file = new File(fileLocation);
 		BufferedImage image = ImageIO.read(file);
 
@@ -500,5 +511,9 @@ public class ResourceManager
 	}
 	public int getProgramByIndex(int index){
 		return this.programs.get(index);
+	}
+	public ResourceManager(){
+		this.programs = new ArrayList<>(2);
+		this.loadStateVariables();
 	}
 }
