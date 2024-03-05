@@ -152,8 +152,24 @@ public class Game
     }
     private void renderInfoStrings(){
         long ms = System.currentTimeMillis()  - this.prevTick;
-        this.renderer.renderTextDynamic(String.format("ms: %d", ms), -100.0f, 60.0f, 10.0f, Color.WHITE, false);
-        this.renderer.renderTextDynamic(String.format("fps: %d", Math.min((int)(1000.0f/ms), 999)), -100.0f, 50.0f, 10.0f, Color.WHITE, false);
+        this.renderer.renderText(
+                String.format("ms:%d", ms),
+                -100.0f,
+                60.0f,
+                ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall"),
+                ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall"),
+                Color.WHITE,
+                false
+        );
+        this.renderer.renderText(
+                String.format("fps:%d", Math.min((int)(1000.0f/ms), 999)),
+                -100.0f,
+                40.0f,
+                ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall"),
+                ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall"),
+                Color.WHITE,
+                false
+        );
         this.prevTick = System.currentTimeMillis();
     }
 

@@ -2,9 +2,7 @@
 
 ## ToDo
 * font bitmap
-    * send spaceSize as param as well
     * differentiate between static and dynamic text rendering
-    * fix so fontSize is accurate
     * fix to text actually looks good
 * Rather then side to side enemies actually go downwards mostly
     * one of them is basically a kamikaze pilot

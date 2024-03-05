@@ -15,9 +15,12 @@ buttonSizeMediumWidth 32
 buttonSizeMediumHeight 10
 buttonSizeLargeWidth 40
 buttonSizeLargeHeight 10
-fontSizeSmall 10
-fontSizeMedium 10
-fontSizeLarge 40
+fontFontSizeSmall 2
+fontSpaceSizeSmall 10
+fontFontSizeMedium 5
+fontSpaceSizeMedium 10
+fontFontSizeLarge 8
+fontSpaceSizeLarge 10
 checkboxWidth 6
 checkboxHeight 8
 buttonTextureIdMapKey 13

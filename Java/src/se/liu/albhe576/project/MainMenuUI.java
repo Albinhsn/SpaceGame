@@ -34,11 +34,12 @@ public class MainMenuUI extends UI{
     public MainMenuUI(long window){
         final float buttonWidth     = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeWidth");
         final float buttonHeight    = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeHeight");
-        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.get("fontSizeMedium");
+        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.get("fontFontSizeMedium");
+        final float buttonSpaceSize = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium");
 
         this.window                 = window;
-        this.playButton             = new ButtonUIComponent(0.0f, 31.0f, buttonWidth, buttonHeight, "Play", buttonFontSize);
-        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Settings",  buttonFontSize);
-        this.exitButton             = new ButtonUIComponent(0.0f, -31.0f, buttonWidth, buttonHeight, "Exit", buttonFontSize);
+        this.playButton             = new ButtonUIComponent(0.0f, 31.0f, buttonWidth, buttonHeight, "Play", buttonSpaceSize, buttonFontSize);
+        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Settings", buttonSpaceSize, buttonFontSize);
+        this.exitButton             = new ButtonUIComponent(0.0f, -31.0f, buttonWidth, buttonHeight, "Exit", buttonSpaceSize, buttonFontSize);
     }
 }

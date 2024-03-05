@@ -1,8 +1,6 @@
 package se.liu.albhe576.project;
 
 import java.awt.*;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -19,12 +17,12 @@ public class Renderer
         this.window = window;
         this.resourceManager = resourceManager;
 
-        this.font = Font.parseFont(resourceManager, "./resources/Font/font01.tga", "./resources/Font/font01.txt");
+        this.font = Font.parseFont(resourceManager, "./resources/Font/font02.tga", "./resources/Font/font01.txt");
     }
 
     public void renderButton(ButtonUIComponent button){
         this.renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
-        this.renderTextDynamic(button.text, button.x,button.y, button.fontSize, button.textColor, true);
+        this.renderText(button.text, button.x,button.y, button.spaceSize, button.fontSize, button.textColor, true);
     }
     private void setTextShaderParams(Color color){
         int programId = this.resourceManager.getProgramByIndex(1);
@@ -49,15 +47,13 @@ public class Renderer
         };
         glUniform4fv(location, colorFloat);
     }
-    public void renderTextDynamic(String text, float x, float y, float fontSize, Color color, boolean centered){
-        this.font.updateText(text, x, y, fontSize, centered);
-
+    public void renderText(String text, float x, float y, float spaceSize, float fontSize, Color color, boolean centered){
+        this.font.updateText(text, x, y, spaceSize, fontSize, centered);
         this.setTextShaderParams(color);
         glBindVertexArray(this.font.dynamicVertexArrayId);
         glBindTexture(GL_TEXTURE_2D, this.font.fontTexture.textureId);
 
-        glDrawElements(GL_TRIANGLES, this.font.textMaxLength * 4, GL_UNSIGNED_INT, 0);
-
+        glDrawElements(GL_TRIANGLES, Font.textMaxLength * 4, GL_UNSIGNED_INT, 0);
     }
 
     public void renderCheckbox(CheckboxUIComponent checkbox){
@@ -73,7 +69,7 @@ public class Renderer
 
     public void renderSlider(SliderUIComponent slider){
         // This one is mostly for debugging/showcase purpose
-        //renderTextCentered(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), 5f, Color.WHITE);
+        renderText(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall"),5f, Color.WHITE, true);
 
         renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
         final int sliderTextureId = this.resourceManager.textureIdMap.get(Texture.GREY_SLIDER_HORIZONTAL).textureId;

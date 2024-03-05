@@ -1,7 +1,5 @@
 package se.liu.albhe576.project;
 
-import javax.swing.*;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,8 +12,7 @@ public class Font {
     public Texture fontTexture;
     public int dynamicVertexArrayId;
     public int dynamicVertexBufferId;
-    public final int textMaxLength = 32;
-    public final int spaceSize = 10;
+    public static final int textMaxLength = 32;
     static class FontType{
         @Override
         public String toString() {
@@ -34,9 +31,9 @@ public class Font {
     private final FontType[] types = new FontType[256];
     private void createTextBuffers(){
 
-       int vertexCount = this.textMaxLength * 4;
-       int []indices = new int[this.textMaxLength * 6];
-       for(int i = 0, idx = 0; idx < this.textMaxLength * 6; idx += 6, i+=4){
+       int vertexCount = Font.textMaxLength * 4;
+       int []indices = new int[Font.textMaxLength * 6];
+       for(int i = 0, idx = 0; idx < Font.textMaxLength * 6; idx += 6, i+=4){
            indices[idx + 0] = i + 0;
            indices[idx + 1] = i + 1;
            indices[idx + 2] = i + 2;
@@ -66,24 +63,25 @@ public class Font {
 
        glBindVertexArray(0);
     }
-    public void updateText(String text, float x, float y, float fontSize, boolean centered){
-        int vertexCount = this.textMaxLength * 4 * 5;
+    public void updateText(String text, float x, float y, float spaceSize, float fontSize, boolean centered){
+        int vertexCount = Font.textMaxLength * 4 * 5;
 
         glBindVertexArray(this.dynamicVertexArrayId);
-        float [] vertices = this.buildUpdatedTextVertexArray(vertexCount, text, x, y, fontSize, centered);
+        float [] vertices = this.buildUpdatedTextVertexArray(vertexCount, text, x, y, spaceSize, fontSize, centered);
 
         glBindBuffer(GL_ARRAY_BUFFER, this.dynamicVertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_DYNAMIC_DRAW);
 
         glBindVertexArray(0);
     }
-    private float[] buildUpdatedTextVertexArray(int vertexCount, String text, float x, float y, float fontSize, boolean centered){
+
+    private float[] buildUpdatedTextVertexArray(int vertexCount, String text, float x, float y,float spaceSize, float fontSize, boolean centered){
         float[] vertices = new float[vertexCount];
         Arrays.fill(vertices, 0);
 
         float drawX = x * 0.01f;
-        float drawY = (y + fontSize / 4.0f) * 0.01f;
-        float height = fontSize * 0.01f;
+        float drawY = (y + fontSize) * 0.01f;
+        float height = fontSize * 0.04f;
 
         int numLetters = text.length();
 
@@ -99,7 +97,7 @@ public class Font {
         for(int letterIdx = 0, vertexIdx = 0; letterIdx < numLetters; letterIdx++){
             int letter = text.charAt(letterIdx);
             if(letter == 32){
-                drawX += this.spaceSize * 0.01f;
+                drawX += spaceSize * 0.01f;
             }else{
                 FontType fontType = this.types[letter];
                 float size = fontType.size * 0.01f;

@@ -29,9 +29,11 @@ public class PauseMenuUI extends UI {
     public PauseMenuUI(){
         final float buttonWidth     = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumWidth");
         final float buttonHeight    = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumHeight");
-        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.get("fontSizeMedium");
-        this.playButton             = new ButtonUIComponent(0.0f, 2.0f * buttonHeight, buttonWidth, buttonHeight, "Play",buttonFontSize);
-        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Settings",  buttonFontSize);
-        this.mainMenuButton         = new ButtonUIComponent(0.0f, -2.0f * buttonHeight, buttonWidth, buttonHeight, "Main Menu", buttonFontSize);
+        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.get("fontFontSizeMedium");
+        final float buttonSpaceSize  = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium");
+
+        this.playButton             = new ButtonUIComponent(0.0f, 2.0f * buttonHeight, buttonWidth, buttonHeight, "Play",buttonSpaceSize, buttonFontSize);
+        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Settings",  buttonSpaceSize, buttonFontSize);
+        this.mainMenuButton         = new ButtonUIComponent(0.0f, -2.0f * buttonHeight, buttonWidth, buttonHeight, "Main Menu", buttonSpaceSize, buttonFontSize);
     }
 }
