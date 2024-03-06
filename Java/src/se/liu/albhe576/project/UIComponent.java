@@ -5,6 +5,22 @@ import java.util.function.UnaryOperator;
 
 public class UIComponent {
 
+    protected int   textureId;
+    protected float x;
+    protected float y;
+    protected float width;
+    protected float height;
+    protected final Animation animation;
+
+    public UIComponent(float x, float y,float width,float height, int textureId){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.textureId = textureId;
+        this.animation = new Animation(width, height);
+
+    }
     public void animate(InputState inputState, float increasePerMs, float maxSize, UnaryOperator<Float> easeInFunction, UnaryOperator<Float> easeOutFunction){
         float[] newPosition = this.animation.animate(this.hovers(inputState), increasePerMs, maxSize, easeInFunction, easeOutFunction);
         this.width          = newPosition[0];
@@ -38,22 +54,5 @@ public class UIComponent {
             return false;
         }
         return this.hovers(inputState);
-    }
-    protected int   vertexArrayId;
-    protected int   textureId;
-    protected float x;
-    protected float y;
-    protected float width;
-    protected float height;
-    protected final Animation animation;
-
-    public UIComponent(float x, float y,float width,float height, int textureId){
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.textureId = textureId;
-        this.animation = new Animation(width, height);
-
     }
 }

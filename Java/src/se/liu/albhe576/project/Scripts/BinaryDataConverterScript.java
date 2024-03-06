@@ -44,7 +44,6 @@ public class BinaryDataConverterScript
            byte[] out = new byte[24];
            buffer.get(0, out);
 
-
            return out;
        }
     }

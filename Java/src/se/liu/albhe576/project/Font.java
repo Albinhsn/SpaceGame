@@ -8,6 +8,9 @@ import java.util.List;
 
 import static org.lwjgl.opengl.GL40.*;
 
+/**
+ *
+ */
 public class Font {
     public Texture fontTexture;
     public int dynamicVertexArrayId;
@@ -83,12 +86,15 @@ public class Font {
         float drawY = (y + fontSize) * 0.01f;
         float height = fontSize * 0.04f;
 
+        float sizeModifier = 0.5f;
+
         int numLetters = text.length();
 
         if(centered){
             float totalSize = 0;
             for(char c : text.toCharArray()){
-                totalSize += this.types[(byte)c].size * 0.01f;
+                float addedSize = this.types[(byte)c].size * 0.01f * sizeModifier;
+                totalSize += addedSize != 0 ? addedSize : spaceSize * 0.01f;
             }
 
             drawX -= totalSize / 2.0f;
@@ -100,7 +106,7 @@ public class Font {
                 drawX += spaceSize * 0.01f;
             }else{
                 FontType fontType = this.types[letter];
-                float size = fontType.size * 0.01f;
+                float size = fontType.size * 0.01f * sizeModifier;
 
                 vertices[vertexIdx + 0] = drawX;
                 vertices[vertexIdx + 1] = drawY;

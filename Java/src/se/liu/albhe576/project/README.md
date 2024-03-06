@@ -1,19 +1,19 @@
 # Galaga? 
 
 ## ToDo
-* Rather then side to side enemies actually go downwards mostly
-    * one of them is basically a kamikaze pilot
-        * this requires to check collision between players and enemies
+* actual logging?
+* increasePerMs should be timer
+* Unify what checkCollision does
+  * It probably should be a boolean
+* fix the isWithinBounds and isOutOfBounds
+* fix docs
 
 ### Game things
-* Wave logic
-  * Actually hoist out to wave function
-  * i.e the wave controls when shit spawns
-  * i.e not need for an enemy class?
+* Rather then side to side enemies actually go downwards mostly
+  * one of them is basically a kamikaze pilot
+    * this requires to check collision between players and enemies
 
 ### Random
-* fix docs
-* actual logging?
 
 ### Rendering
 * Create one large image and be able to parse it
@@ -26,6 +26,6 @@
     * hoist out pretty much every data to a file :)
 
 ### UI
-* Able to render lists of element
-* Implicit rendering of element
 * Layout
+  * Able to render lists of element
+  * Implicit rendering of element

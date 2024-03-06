@@ -1,6 +1,7 @@
 package se.liu.albhe576.project;
 
 import org.lwjgl.BufferUtils;
+import se.liu.albhe576.project.Scripts.BinaryDataConverterScript;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,30 +24,37 @@ import static org.lwjgl.opengl.GL40.*;
 
 public class ResourceManager
 {
-	private final List<Integer> programs;
-	public Map<Integer, Texture> textureIdMap;
-	private List<EntityData> entityData;
-	private List<Wave> waves;
-	private Texture tokenTexture;
-	public int textureVertexArrayId;
-	static class EntityData{
-		@Override
-		public String toString() {
-			return String.format(
-					"%d %d %f %f %d %f %f %f %d %f",
-					hp,
-					textureIdx,
-					width,
-					height,
-					bulletTextureIdx,
-					bulletSpeed,
-					bulletWidth,
-					bulletHeight,
-					score,
-					movementSpeed
-			);
-		}
+	private final 	int[] 			programs = new int[2];
+	public 			Map<Integer, Texture> 	textureIdMap;
+	private 		List<EntityData> 		entityData;
+	private 		List<Wave> 				waves;
+	private 		Texture 				tokenTexture;
+	public 			int 					textureVertexArrayId;
+	static class WaveData{
+		static final int size = 24;
+		int enemyType;
+		long spawnTime;
+		float spawnPositionX;
+		float spawnPositionY;
+		int pathId;
+		public static WaveData parseFromByteArray(byte[] data, int fileIndex){
+			final int enemyType 	   = ResourceManager.parseIntFromByteArray(data, fileIndex + 0);
+			final long spawnTime	   = ResourceManager.parseLongFromByteArray(data, fileIndex + 4);
+			final float spawnPositionX = ResourceManager.parseFloatFromByteArray(data, fileIndex + 12);
+			final float spawnPositionY = ResourceManager.parseFloatFromByteArray(data, fileIndex + 16);
+			final int pathId 		   = ResourceManager.parseIntFromByteArray(data, fileIndex + 20);
 
+			return new WaveData(enemyType, spawnTime, spawnPositionX, spawnPositionY, pathId);
+		}
+		public WaveData(int t, long st, float spx, float spy, int p){
+			this.enemyType = t;
+			this.spawnTime      = st;
+			this.spawnPositionX = spx;
+			this.spawnPositionY = spy;
+			this.pathId         = p;
+		}
+	}
+	static class EntityData{
 		public static final int size = 10 * 4;
 		int hp;
 		int textureIdx;
@@ -73,7 +81,6 @@ public class ResourceManager
 	}
 
 	public void generateTexture(int textureId, int width, int height, ByteBuffer data){
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -87,6 +94,7 @@ public class ResourceManager
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
+
 	private void generateTextureVertexArray(){
 		final int []indices = new int[]{0,1,2,1,3,2};
 		final float[] bufferData = new float[]{
@@ -115,20 +123,16 @@ public class ResourceManager
 		glBindVertexArray(0);
 	}
 
-
-	private void compileTextShader(){
-		final int programId = glCreateProgram();
-		this.programs.add(programId);
-
-		int vShader = createAndCompileShader("./shaders/font.vs", GL_VERTEX_SHADER);
-		int pShader = createAndCompileShader("./shaders/font.ps", GL_FRAGMENT_SHADER);
+	private void compileAndAttachShaders(int programId, String vertexShader, String fragmentShader){
+		int vShader = createAndCompileShader(vertexShader, GL_VERTEX_SHADER);
+		int pShader = createAndCompileShader(fragmentShader, GL_FRAGMENT_SHADER);
 
 		glAttachShader(programId, vShader);
 		glAttachShader(programId, pShader);
 
-		glBindAttribLocation(programId, 0, "inputPosition");
-		glBindAttribLocation(programId, 1, "inputTexCoord");
+	}
 
+	private void linkProgram(int programId){
 		glLinkProgram(programId);
 		int []status = new int[1];
 		glGetProgramiv(programId,GL_LINK_STATUS, status);
@@ -136,29 +140,30 @@ public class ResourceManager
 			System.out.println("Failed to link program");
 			System.exit(1);
 		}
+	}
 
+
+	private void compileTextShader(){
+		final int programId = glCreateProgram();
+		this.programs[1] = programId;
+
+		this.compileAndAttachShaders(programId, "./shaders/font.vs", "./shaders/font.ps");
+
+		glBindAttribLocation(programId, 0, "inputPosition");
+		glBindAttribLocation(programId, 1, "inputTexCoord");
+
+		this.linkProgram(programId);
 	}
 
 	private void compileTextureShader(){
 		final int programId = glCreateProgram();
-		this.programs.add( programId);
+		this.programs[0] = programId;
 
-		int vShader = createAndCompileShader("./shaders/texture.vs", GL_VERTEX_SHADER);
-		int pShader = createAndCompileShader("./shaders/texture.ps", GL_FRAGMENT_SHADER);
-
-		glAttachShader(programId, vShader);
-		glAttachShader(programId, pShader);
+		this.compileAndAttachShaders(programId, "./shaders/texture.vs","./shaders/texture.ps" );
 
 		glBindAttribLocation(programId, 0, "inputPosition");
 		glBindAttribLocation(programId, 1, "inputTexCoord");
-
-		glLinkProgram(programId);
-		int []status = new int[1];
-		glGetProgramiv(programId,GL_LINK_STATUS, status);
-		if(status[0] != 1){
-			System.out.println("Failed to link program");
-			System.exit(1);
-		}
+		this.linkProgram(programId);
 	}
 	private void loadStateVariables() {
 		List<String> stateVariables;
@@ -172,23 +177,25 @@ public class ResourceManager
 
 		for(String variable : stateVariables){
 			String[] keyValuePair = variable.strip().split(" ");
-			this.STATE_VARIABLES.put(keyValuePair[0], Float.parseFloat(keyValuePair[1]));
+			ResourceManager.STATE_VARIABLES.put(keyValuePair[0], Float.parseFloat(keyValuePair[1]));
 		}
 	}
-	public Texture createTexture(String textureLocation){
-		Texture texture;
-		try {
-			if(textureLocation.contains("png")){
-				texture = ResourceManager.loadPNGFile(textureLocation);
-			}else{
-				assert(textureLocation.contains("tga"));
-				texture = TGAImage.decodeTGAImageFromFile(textureLocation);
-			}
-		} catch (IOException e) {
-			System.out.printf("WARNING: Couldn't create Texture '%s', using token texture\n", textureLocation);
-			texture = this.tokenTexture;
-		}
 
+	private Texture parseTexture(String textureLocation){
+		try{
+			if(textureLocation.contains("png")){
+				return ResourceManager.loadPNGFile(textureLocation);
+			}else if(textureLocation.contains("tga")){
+				return TGAImage.decodeTGAImageFromFile(textureLocation);
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		System.out.printf("WARNING: Unable to parse resource '%s', using token texture", textureLocation);
+		return this.tokenTexture;
+	}
+	public Texture createTexture(String textureLocation){
+		Texture texture = this.parseTexture(textureLocation);
 		texture.textureId = glGenTextures();
 		this.generateTexture(texture.textureId, texture.getWidth(), texture.getHeight(), texture.getData());
 
@@ -196,14 +203,13 @@ public class ResourceManager
 	}
 	private void loadTextures(){
 		this.generateTextureVertexArray();
-
 		this.textureIdMap = new HashMap<>();
+
 		// Create a red rectangle texture just in case some texture is missing
 		this.tokenTexture = Texture.createTokenTexture();
 
         for (Map.Entry<Integer, String> entry : this.TEXTURE_LOCATIONS.entrySet()) {
 			Integer key = entry.getKey();
-
 			Texture texture = this.createTexture(entry.getValue());
 
 			this.textureIdMap.put(key, texture);
@@ -223,32 +229,20 @@ public class ResourceManager
 	}
 
 
-	private int parseIntFromByteArray(byte [] data, int idx){
+	private static int parseIntFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getInt();
 	}
-	private long parseLongFromByteArray(byte [] data, int idx){
+	private static long parseLongFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 8).getLong();
 	}
-	private float parseFloatFromByteArray(byte [] data, int idx){
+	private static float parseFloatFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getFloat();
 	}
 	public Wave getWave(int index){
 		ArrayList<Enemy> enemies = new ArrayList<>();
 		Wave wave = this.waves.get(index);
 		for(Enemy enemy : wave.enemies()){
-			enemies.add(new Enemy(
-				enemy.hp,
-				enemy.type,
-				enemy.x,
-				enemy.y,
-				enemy.width,
-				enemy.height,
-				enemy.getTextureIdx(),
-				enemy.spawnTime,
-				enemy.pathId,
-				enemy.scoreGiven,
-				-enemy.moveSpeed
-			));
+			enemies.add(new Enemy(enemy.hp, enemy.type, enemy.x, enemy.y, enemy.width, enemy.height, enemy.getTextureIdx(), enemy.spawnTime, enemy.pathId, enemy.scoreGiven, enemy.moveSpeed));
 		}
 		return new Wave(enemies);
 	}
@@ -263,31 +257,28 @@ public class ResourceManager
 			try{
 				fileData = Files.readAllBytes(Path.of(waveFileLocation));
 			}catch(IOException e){
+				System.out.printf("Failed to load wave from '%s'\n", waveFileLocation);
 				e.printStackTrace();
 				continue;
 			}
 
 			for(int fileIndex = 0; fileIndex < fileData.length;){
-				final int enemyType 	   = this.parseIntFromByteArray(fileData, fileIndex + 0);
-				final long spawnTime	   = this.parseLongFromByteArray(fileData, fileIndex + 4);
-				final float spawnPositionX = this.parseFloatFromByteArray(fileData, fileIndex + 12);
-				final float spawnPositionY = this.parseFloatFromByteArray(fileData, fileIndex + 16);
-				final int pathId 		   = this.parseIntFromByteArray(fileData, fileIndex + 20);
-				fileIndex += 24;
+				WaveData enemyWaveData = WaveData.parseFromByteArray(fileData, fileIndex);
+				fileIndex += WaveData.size;
 
-				EntityData enemyEntityData = this.entityData.get(enemyType);
+				EntityData enemyEntityData = this.entityData.get(enemyWaveData.enemyType);
 				enemies.add(new Enemy(
 						enemyEntityData.hp,
-						enemyType,
-						100.0f * spawnPositionX,
-						-100.0f * spawnPositionY,
+						enemyWaveData.enemyType,
+						100.0f * enemyWaveData.spawnPositionX,
+						-100.0f * enemyWaveData.spawnPositionY,
 						100.0f * enemyEntityData.width,
 						100.0f * enemyEntityData.height,
 						enemyEntityData.textureIdx,
-						spawnTime,
-						pathId,
+						enemyWaveData.spawnTime,
+						enemyWaveData.pathId,
 						enemyEntityData.score,
-						spawnPositionX > 0 ? -enemyEntityData.movementSpeed : enemyEntityData.movementSpeed
+						-enemyEntityData.movementSpeed
 				));
 			}
 			this.waves.add(new Wave(enemies));
@@ -307,16 +298,16 @@ public class ResourceManager
 
 			for(int i = 0; i < count; i++){
 				EntityData entityData = new EntityData(
-					this.parseIntFromByteArray(binaryData, idx),
-					this.parseIntFromByteArray(binaryData, idx + 4),
-					this.parseFloatFromByteArray(binaryData, idx + 8),
-					this.parseFloatFromByteArray(binaryData, idx + 12),
-					this.parseIntFromByteArray(binaryData, idx + 16),
-					this.parseFloatFromByteArray(binaryData, idx + 20),
-					this.parseFloatFromByteArray(binaryData, idx + 24),
-					this.parseFloatFromByteArray(binaryData, idx + 28),
-					this.parseIntFromByteArray(binaryData, idx + 32),
-					this.parseFloatFromByteArray(binaryData, idx + 36)
+					ResourceManager.parseIntFromByteArray(binaryData, idx),
+					ResourceManager.parseIntFromByteArray(binaryData, idx + 4),
+					ResourceManager.parseFloatFromByteArray(binaryData, idx + 8),
+					ResourceManager.parseFloatFromByteArray(binaryData, idx + 12),
+					ResourceManager.parseIntFromByteArray(binaryData, idx + 16),
+					ResourceManager.parseFloatFromByteArray(binaryData, idx + 20),
+					ResourceManager.parseFloatFromByteArray(binaryData, idx + 24),
+					ResourceManager.parseFloatFromByteArray(binaryData, idx + 28),
+					ResourceManager.parseIntFromByteArray(binaryData, idx + 32),
+					ResourceManager.parseFloatFromByteArray(binaryData, idx + 36)
 				);
 				idx += EntityData.size;
 
@@ -325,7 +316,7 @@ public class ResourceManager
 			}
 
 		}catch(IOException e){
-			e.printStackTrace();
+			System.out.printf("Failed to load entities from '%s'\n", entityDataLocation);
 			System.exit(1);
 
 		}
@@ -335,15 +326,16 @@ public class ResourceManager
 		EntityData playerData = this.entityData.get(4);
 		float width = playerData.width * 100.0f;
 		float height = playerData.height * 100.0f;
+
 		return new Player(playerData.hp, 0,0, width, height, playerData.textureIdx);
 	}
 
 	public Bullet createNewBullet(Entity parent){
-		// ToDo change this 4 to be the player entity id
-		int enemyType = parent instanceof Enemy ? ((Enemy)parent).type : 4;
-		int dir = enemyType == 4 ? 1 : -1;
+		int playerEntityIdx = ResourceManager.STATE_VARIABLES.get("playerEntityIdx").intValue();
+		int entityIdx = parent instanceof Enemy ? ((Enemy)parent).type : playerEntityIdx;
+		int dir = entityIdx == playerEntityIdx ? 1 : -1;
 
-		EntityData data = this.entityData.get(enemyType);
+		EntityData data = this.entityData.get(entityIdx);
 		final float yOffset = (parent.height + data.bulletHeight);
 
 		return new Bullet(
@@ -449,6 +441,7 @@ public class ResourceManager
 	public static final Map<String, Float> STATE_VARIABLES = new HashMap<>()
 	{
 		{
+			put("playerEntityIdx", 4.0f);
 			put("vsync", 1.0f);
 			put("SCREEN_WIDTH", 620.0f);
 			put("SCREEN_HEIGHT", 480.0f);
@@ -510,10 +503,9 @@ public class ResourceManager
 		return shader;
 	}
 	public int getProgramByIndex(int index){
-		return this.programs.get(index);
+		return this.programs[index];
 	}
 	public ResourceManager(){
-		this.programs = new ArrayList<>(2);
 		this.loadStateVariables();
 	}
 }

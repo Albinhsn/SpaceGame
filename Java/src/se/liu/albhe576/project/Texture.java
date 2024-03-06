@@ -28,7 +28,6 @@ public class Texture
     private final int height;
     private final ByteBuffer data;
     public int textureId;
-    public int vertexArrayId;
     public int getWidth(){
 	return this.width;
     }

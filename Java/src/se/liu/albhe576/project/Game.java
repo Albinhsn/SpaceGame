@@ -44,17 +44,24 @@ public class Game
 
     private void checkCollision(){
 
-        List<Entity> entities = this.wave.getEnemiesAsEntities();
+        List<Entity> enemies = this.wave.getEnemiesAsEntities();
         for(Bullet bullet: this.bullets){
-            int score = bullet.checkCollision(entities);
+            int score = bullet.checkCollision(enemies);
             if(score != -1 && bullet.getParent() == this.player){
                 this.score += score;
             }
             bullet.checkCollision(this.player);
         }
-
         this.bullets.removeIf(entity -> !entity.alive);
+        for(Entity enemy : enemies){
+            if(this.player.checkCollision(enemy)){
+                this.score += enemy.scoreGiven;
+            }
+
+        }
+
         this.wave.removeKilledEnemies();
+
     }
     public void updatePlayer(){
         if(player.updatePlayer(this.inputState, this.timer.getLastTick())){
@@ -252,25 +259,25 @@ public class Game
         this.lastUpdated        = 0;
         this.resourceManager    = new ResourceManager();
 
-        Game.SCREEN_HEIGHT = ResourceManager.STATE_VARIABLES.get("SCREEN_HEIGHT").intValue();
-        Game.SCREEN_WIDTH  = ResourceManager.STATE_VARIABLES.get("SCREEN_WIDTH").intValue();
+        Game.SCREEN_HEIGHT      = ResourceManager.STATE_VARIABLES.get("SCREEN_HEIGHT").intValue();
+        Game.SCREEN_WIDTH       = ResourceManager.STATE_VARIABLES.get("SCREEN_WIDTH").intValue();
 
         this.initGLFW();
         this.resourceManager.loadResources();
 
         this.timer              = new Timer();
         this.bullets            = new ArrayList<>();
-        this.renderer           = new Renderer(this.window, resourceManager);
+        this.renderer           = new Renderer(resourceManager);
         this.background         = new Background();
         this.inputState         = new InputState(this.window);
 
         this.player             = this.resourceManager.getPlayer();
 
-        final int waveIdx = ResourceManager.STATE_VARIABLES.get("waveIdx").intValue();
+        final int waveIdx       = ResourceManager.STATE_VARIABLES.get("waveIdx").intValue();
         this.wave               = this.resourceManager.getWave(waveIdx);
 
-        this.uiState = UIState.MAIN_MENU;
-        this.uiMap = new HashMap<>();
+        this.uiState            = UIState.MAIN_MENU;
+        this.uiMap              = new HashMap<>();
         this.uiMap.put(UIState.MAIN_MENU, new MainMenuUI(this.window));
         this.uiMap.put(UIState.GAME_RUNNING, new GameRunningUI());
         this.uiMap.put(UIState.GAME_OVER_MENU, new GameOverUI());

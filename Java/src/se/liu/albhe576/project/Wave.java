@@ -7,7 +7,9 @@ public record Wave(List<Enemy> enemies) {
     public void removeKilledEnemies() {
         this.enemies.removeIf(enemy -> !enemy.alive);
     }
-    public void removeOutOfBoundsEnemies() {this.enemies.removeIf(Enemy::isOutOfBounds);}
+    public void removeOutOfBoundsEnemies() {
+        this.enemies.removeIf(Enemy::isOutOfBounds);
+    }
     public List<Entity> getEnemiesAsEntities() {
         return this.enemies.stream().map(x -> (Entity)x).toList();
     }

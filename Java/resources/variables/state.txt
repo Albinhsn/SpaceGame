@@ -1,3 +1,4 @@
+playerEntityIdx 4
 vsync 0
 screenWidth 620
 screenHeight 480
@@ -15,11 +16,11 @@ buttonSizeMediumWidth 32
 buttonSizeMediumHeight 10
 buttonSizeLargeWidth 40
 buttonSizeLargeHeight 10
-fontFontSizeSmall 2
-fontSpaceSizeSmall 10
-fontFontSizeMedium 5
+fontFontSizeSmall 3
+fontSpaceSizeSmall 5
+fontFontSizeMedium 6
 fontSpaceSizeMedium 10
-fontFontSizeLarge 8
+fontFontSizeLarge 12
 fontSpaceSizeLarge 10
 checkboxWidth 6
 checkboxHeight 8

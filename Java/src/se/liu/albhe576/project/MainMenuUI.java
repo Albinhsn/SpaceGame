@@ -2,12 +2,35 @@ package se.liu.albhe576.project;
 
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
+/**
+ *
+ */
 public class MainMenuUI extends UI{
+    /**
+     *
+     */
     private final long window;
+    /**
+     *
+     */
     private final ButtonUIComponent playButton;
+    /**
+     *
+     */
     private final ButtonUIComponent exitButton;
+    /**
+     *
+     */
     private final ButtonUIComponent settingsButton;
 
+    /**
+     * @param inputState
+     * @param renderer
+     * @param window
+     * @param score
+     * @param hp
+     * @return
+     */
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(playButton);
@@ -31,6 +54,10 @@ public class MainMenuUI extends UI{
 
         return UIState.MAIN_MENU;
     }
+
+    /**
+     * @param window
+     */
     public MainMenuUI(long window){
         final float buttonWidth     = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeWidth");
         final float buttonHeight    = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeHeight");
@@ -38,8 +65,8 @@ public class MainMenuUI extends UI{
         final float buttonSpaceSize = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium");
 
         this.window                 = window;
-        this.playButton             = new ButtonUIComponent(0.0f, 31.0f, buttonWidth, buttonHeight, "Play", buttonSpaceSize, buttonFontSize);
-        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "Settings", buttonSpaceSize, buttonFontSize);
-        this.exitButton             = new ButtonUIComponent(0.0f, -31.0f, buttonWidth, buttonHeight, "Exit", buttonSpaceSize, buttonFontSize);
+        this.playButton             = new ButtonUIComponent(0.0f, 31.0f, buttonWidth, buttonHeight, "PLAY", buttonSpaceSize, buttonFontSize);
+        this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "SETTINGS", buttonSpaceSize, buttonFontSize);
+        this.exitButton             = new ButtonUIComponent(0.0f, -31.0f, buttonWidth, buttonHeight, "EXIT", buttonSpaceSize, buttonFontSize);
     }
 }

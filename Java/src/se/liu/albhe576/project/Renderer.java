@@ -9,44 +9,45 @@ import static org.lwjgl.opengl.GL40.*;
 
 public class Renderer
 {
-    private final long              window;
     private final ResourceManager   resourceManager;
-    private Font font;
+    private final Font font;
 
-    public Renderer(long window, ResourceManager resourceManager) {
-        this.window = window;
-        this.resourceManager = resourceManager;
-
-        this.font = Font.parseFont(resourceManager, "./resources/Font/font02.tga", "./resources/Font/font01.txt");
+    public Renderer(ResourceManager resourceManager) {
+        this.resourceManager    = resourceManager;
+        this.font               = Font.parseFont(resourceManager, "./resources/Font/font01.tga", "./resources/Font/font01.txt");
     }
 
     public void renderButton(ButtonUIComponent button){
         this.renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
         this.renderText(button.text, button.x,button.y, button.spaceSize, button.fontSize, button.textColor, true);
     }
+
+    private int getShaderParamLocation(int programId, String name){
+        int location = glGetUniformLocation(programId, name);
+        if(location == -1){
+            System.out.printf("Failed to find location of '%s'", name);
+            System.exit(1);
+        }
+        return location;
+    }
+
     private void setTextShaderParams(Color color){
         int programId = this.resourceManager.getProgramByIndex(1);
         glUseProgram(programId);
-        int location = glGetUniformLocation(programId, "fontTexture");
-        if(location == -1){
-            System.out.println("Failed to find location of 'fontTexture'");
-            System.exit(1);
-        }
+
+        int location  = this.getShaderParamLocation(programId, "fontTexture");
         glUniform1i(location, 0);
 
-        location = glGetUniformLocation(programId, "pixelColor");
-        if(location == -1){
-            System.out.println("Failed to find location of 'fontTexture'");
-            System.exit(1);
-        }
         float[] colorFloat = new float[]{
                 color.getRed() / 255.0f,
                 color.getGreen() / 255.0f,
                 color.getBlue() / 255.0f,
                 color.getAlpha() / 255.0f
         };
+        location  = this.getShaderParamLocation(programId, "pixelColor");
         glUniform4fv(location, colorFloat);
     }
+
     public void renderText(String text, float x, float y, float spaceSize, float fontSize, Color color, boolean centered){
         this.font.updateText(text, x, y, spaceSize, fontSize, centered);
         this.setTextShaderParams(color);
@@ -73,6 +74,7 @@ public class Renderer
 
         renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
         final int sliderTextureId = this.resourceManager.textureIdMap.get(Texture.GREY_SLIDER_HORIZONTAL).textureId;
+
         renderUIComponent(sliderTextureId, slider.x, slider.y, slider.width - 10, slider.height / 10);
         renderUIComponent(slider.sliderTextureId, slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight);
     }
@@ -90,12 +92,14 @@ public class Renderer
         final float height    = ResourceManager.STATE_VARIABLES.get("hpHeartHeight");
         final float width     = ResourceManager.STATE_VARIABLES.get("hpHeartWidth");
 
+        // Render in top middle
         final float y         = 100.0f - height;
         float x               = -hp * width / 2;
 
         Texture texture = this.resourceManager.textureIdMap.get(Texture.HP_HEART);
 
-        for(int i = 0; i < hp; i++, x += width * 1.5f){
+        final float gap = 1.5f;
+        for(int i = 0; i < hp; i++, x += width * gap){
             float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
             this.renderTexture(transMatrix, texture.textureId);
         }
@@ -105,17 +109,13 @@ public class Renderer
     private void renderTexture(float [] transMatrix, int textureId){
 
         int programId = this.resourceManager.getProgramByIndex(0);
+
         glUseProgram(programId);
         glBindVertexArray(this.resourceManager.textureVertexArrayId);
         glBindTexture(GL_TEXTURE_2D, textureId);
 
-        int loc = glGetUniformLocation(programId, "transMatrix");
-        if(loc == -1){
-            System.out.println("Failed to get location of transMatrix");
-            glfwSetWindowShouldClose(this.window, true);
-            System.exit(1);
-        }
-        glUniformMatrix3fv(loc, true, transMatrix);
+        int location = this.getShaderParamLocation(programId, "transMatrix");
+        glUniformMatrix3fv(location, true, transMatrix);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
@@ -130,6 +130,7 @@ public class Renderer
                 }
             }
         }
+
         return res;
     }
 
@@ -166,8 +167,8 @@ public class Renderer
 
 
     public void renderEntity(Entity entity){
-        Texture texture = this.resourceManager.textureIdMap.get(entity.getTextureIdx());
-        float [] transMatrix = this.getTransformationMatrix(entity.x, entity.y,entity.width, entity.height, entity.getRotation());
+        Texture texture         = this.resourceManager.textureIdMap.get(entity.getTextureIdx());
+        float [] transMatrix    = this.getTransformationMatrix(entity.x, entity.y,entity.width, entity.height, entity.getRotation());
         this.renderTexture(transMatrix, texture.textureId);
     }
 
