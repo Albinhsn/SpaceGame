@@ -40,7 +40,7 @@ public class Player  extends Entity{
 
 		this.x += xAcceleration;
 		this.y += yAcceleration;
-		if(!isWithinBounds()){
+		if(!isWithinScreen()){
 			this.x -= xAcceleration;
 			this.y -= yAcceleration;
 		}

@@ -12,22 +12,24 @@ public class UIComponent {
     protected float height;
     protected final Animation animation;
 
-    public UIComponent(float x, float y,float width,float height, int textureId){
+    public UIComponent(float x, float y,float width,float height, int textureId, Animation animation){
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.textureId = textureId;
-        this.animation = new Animation(width, height);
+        this.animation = animation;
+    }
+    public UIComponent(float x, float y,float width,float height, int textureId){
+        this(x,y,width,height,textureId, null);
+    }
 
-    }
-    public void animate(InputState inputState, float increasePerMs, float maxSize, UnaryOperator<Float> easeInFunction, UnaryOperator<Float> easeOutFunction){
-        float[] newPosition = this.animation.animate(this.hovers(inputState), increasePerMs, maxSize, easeInFunction, easeOutFunction);
-        this.width          = newPosition[0];
-        this.height         = newPosition[1];
-    }
-    public void animate(InputState inputState, float increasePerMs, float maxSize, UnaryOperator<Float> easeInFunction){
-        this.animate(inputState, increasePerMs, maxSize, easeInFunction, easeInFunction);
+    public void animate(InputState inputState){
+        if(this.animation != null){
+            float[] newPosition = this.animation.animate(this.hovers(inputState));
+            this.width          = newPosition[0];
+            this.height         = newPosition[1];
+        }
     }
     public boolean hovers(InputState inputState){
         Point mousePos = inputState.getMousePosition();

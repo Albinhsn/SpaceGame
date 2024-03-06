@@ -182,26 +182,24 @@ public class TGAImage
 		}
 
 
-	if(this.bpp == 3){
-			int imageSizeBytes = getImageSizeInBytes();
-			int imageSize = imageSizeBytes / 4;
-			byte[] imageData = new byte[imageSizeBytes];
-			for(int idx = 0; idx < imageSize; idx++){
-				byte[] color = this.parseColor();
-				imageData[idx * 4 + 0] = color[2];
-				imageData[idx * 4 + 1] = color[1];
-				imageData[idx * 4 + 2] = color[0];
-				imageData[idx * 4 + 3] = color[3];
-			}
-			System.out.printf("Last written to %d\n", (imageSize - 1) * 4 + 3);
+		if(this.bpp == 3){
+				int imageSizeBytes = getImageSizeInBytes();
+				int imageSize = imageSizeBytes / 4;
+				byte[] imageData = new byte[imageSizeBytes];
+				for(int idx = 0; idx < imageSize; idx++){
+					byte[] color = this.parseColor();
+					imageData[idx * 4 + 0] = color[2];
+					imageData[idx * 4 + 1] = color[1];
+					imageData[idx * 4 + 2] = color[0];
+					imageData[idx * 4 + 3] = color[3];
+				}
 
-	    return imageData;
+			return imageData;
 
-	}
-	System.out.printf("Havn't implemented this parsing this bpp yet %d\n", this.bpp);
-	System.exit(1);
-	return null;
-
+		}
+		System.out.printf("Havn't implemented this parsing this bpp yet %d\n", this.bpp);
+		System.exit(1);
+		return null;
     }
     private ByteBuffer parseImage(){
 		this.parseTargaHeader();
@@ -223,13 +221,12 @@ public class TGAImage
 			}
 			// RLE
 			case 10:{
-			System.out.println("Parsing RLE");
-			imageData = this.parseRunLengthEncodedImage();
-			break;
+				imageData = this.parseRunLengthEncodedImage();
+				break;
 			}
 			default:{
-			System.out.printf("Don't know how to parse this encoding %d\n", this.targaHeader.getImageType());
-			System.exit(2);
+				System.out.printf("Don't know how to parse this encoding %d\n", this.targaHeader.getImageType());
+				System.exit(2);
 			}
 		}
 		imageBuffer.put(imageData);

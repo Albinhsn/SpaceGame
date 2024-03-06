@@ -1,11 +1,6 @@
 # Galaga? 
 
 ## ToDo
-* actual logging?
-* increasePerMs should be timer
-* Unify what checkCollision does
-  * It probably should be a boolean
-* fix the isWithinBounds and isOutOfBounds
 * fix docs
 
 ### Game things

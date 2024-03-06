@@ -24,21 +24,15 @@ public class ButtonUIComponent extends UIComponent{
      */
     public Color textColor;
 
-    /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @param text
-     * @param spaceSize
-     * @param fontSize
-     */
-    public ButtonUIComponent(float x, float y, float width, float height, String text, float spaceSize, float fontSize){
-        super(x,y,width,height, ResourceManager.STATE_VARIABLES.get("buttonTextureIdMapKey").intValue());
+    public ButtonUIComponent(float x, float y, float width, float height, String text, float spaceSize, float fontSize, Animation animation){
+        super(x,y,width,height, ResourceManager.STATE_VARIABLES.get("buttonTextureIdMapKey").intValue(), animation);
         this.text           = text;
         this.fontSize       = fontSize;
         this.spaceSize      = spaceSize;
         this.textColor      = Color.RED;
+    }
+    public ButtonUIComponent(float x, float y, float width, float height, String text, float spaceSize, float fontSize){
+        this(x,y,width,height, text,spaceSize, fontSize, null);
     }
 
 

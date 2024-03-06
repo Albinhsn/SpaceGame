@@ -1,8 +1,6 @@
 package se.liu.albhe576.project;
 
-import java.awt.*;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -122,42 +120,33 @@ public abstract class Entity
         }
         return false;
     }
-
-    /**
-     * @param entity
-     * @return
-     */
-    public boolean checkCollision(Entity entity){
-        if(!this.isWithinBounds()){
-            return false;
+    private boolean checkBulletCollision(Entity target){
+        if(!(this instanceof Bullet bullet)){
+            return true;
         }
-        if(this.collided(entity)){
+        return bullet.getParent().getClass() != target.getClass() && target.getClass() != Bullet.class;
+    }
+
+    public boolean checkCollision(Entity entity){
+        return this.isWithinScreen() && this.collided(entity) && checkBulletCollision(entity);
+    }
+
+    public boolean handleCollision(Entity entity){
+        if(this.checkCollision(entity)){
             this.takeDamage();
-            return entity.takeDamage();
+            entity.takeDamage();
+            return true;
         }
         return false;
+
     }
 
-    /**
-     * @param entities
-     * @return
-     */
-    public int checkCollision(List<Entity> entities){
-        if(!this.isWithinBounds()){
-            return -1;
-        }
-
+    public void handleCollisions(List<Entity> entities){
         for(Entity entity : entities){
-            if(this.checkCollision(entity)){
-                return entity.scoreGiven;
-            }
+            this.handleCollision(entity);
         }
-        return -1;
     }
 
-    /**
-     * @return
-     */
     public float[] getBoundingBox(){
         final float halvedEntityHeight = this.height;
         final float halvedEntityWidth = this.width;
@@ -170,10 +159,7 @@ public abstract class Entity
         return new float[]{minEntityX, maxEntityX, minEntityY, maxEntityY};
     }
 
-    /**
-     * @return
-     */
-    public boolean isWithinBounds(){
+    public boolean isWithinScreen(){
         final int x = (int) (100.0f - this.width / 2);
         final int y = (int) (100.0f - this.height / 2);
         return !(this.x <= -x || this.x >= x || this.y <= -y || this.y >= y);

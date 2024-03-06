@@ -2,7 +2,14 @@ package se.liu.albhe576.project;
 
 import org.lwjgl.BufferUtils;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class Texture
@@ -38,6 +45,70 @@ public class Texture
 	return this.data;
     }
 
+    public static Texture loadPNGFile(String fileLocation) throws IOException {
+        File file = new File(fileLocation);
+        BufferedImage image = ImageIO.read(file);
+
+        Raster raster = image.getData();
+        DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+
+        byte [] bytes = data.getData();
+        ByteBuffer buffer = null;
+
+        ColorModel model = image.getColorModel();
+        int pixelSize = model.getPixelSize();
+        switch(pixelSize){
+            // Black or white
+            case 4:{
+                buffer = BufferUtils.createByteBuffer(bytes.length * 4);
+                for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
+                    buffer.put(idx + 0, bytes[i]);
+                    buffer.put(idx + 1, bytes[i]);
+                    buffer.put(idx + 2, bytes[i]);
+                    buffer.put(idx + 3, (byte)0xFF);
+                }
+                break;
+            }
+            // Grayscale
+            case 8:{
+                // ToDo, figure out how to shift this another way
+                buffer = BufferUtils.createByteBuffer(bytes.length * 4);
+                for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
+                    byte a = bytes[i];
+                    byte val = (byte)(a * 4);
+                    buffer.put(idx + 0, val);
+                    buffer.put(idx + 1, val);
+                    buffer.put(idx + 2, val);
+                    buffer.put(idx + 3, val > 80 ? (byte)0xFF : (byte)0);
+                }
+                break;
+            }
+            // RGBA
+            case 32:{
+                buffer = BufferUtils.createByteBuffer(bytes.length);
+                for(int i = 0; i < bytes.length; i+=4){
+                    byte a = bytes[i];
+                    byte r = bytes[i + 1];
+                    byte g = bytes[i + 2];
+                    byte b = bytes[i + 3];
+                    buffer.put(i + 3, a);
+                    buffer.put(i + 0, b);
+                    buffer.put( i + 1, g);
+                    buffer.put(i + 2, r);
+                }
+                break;
+            }
+            default:{
+                System.out.println("Don't know how to load png with bpp of " + pixelSize);
+                System.exit(1);
+            }
+
+        }
+        buffer.flip();
+
+        return new Texture(image.getWidth(), image.getHeight(), buffer);
+
+    }
     public Texture(int width, int height,ByteBuffer data){
         this.width = width;
         this.height = height;

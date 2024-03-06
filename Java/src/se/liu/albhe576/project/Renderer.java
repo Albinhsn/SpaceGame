@@ -2,6 +2,7 @@ package se.liu.albhe576.project;
 
 import java.awt.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL40.*;
@@ -11,6 +12,7 @@ public class Renderer
 {
     private final ResourceManager   resourceManager;
     private final Font font;
+    private final Logger logger = Logger.getLogger("Renderer");
 
     public Renderer(ResourceManager resourceManager) {
         this.resourceManager    = resourceManager;
@@ -25,7 +27,7 @@ public class Renderer
     private int getShaderParamLocation(int programId, String name){
         int location = glGetUniformLocation(programId, name);
         if(location == -1){
-            System.out.printf("Failed to find location of '%s'", name);
+            logger.severe(String.format("Failed to find location of '%s'", name));
             System.exit(1);
         }
         return location;

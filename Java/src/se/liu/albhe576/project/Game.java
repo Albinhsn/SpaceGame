@@ -9,6 +9,7 @@ import java.awt.*;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -19,6 +20,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class Game
 {
     private long prevTick;
+    private final Logger logger;
     private long window;
     private int score;
     private final Timer timer;
@@ -36,7 +38,7 @@ public class Game
     private UIState uiState;
 
     private void updateBullets(){
-        this.bullets.removeIf(bullet -> !bullet.isWithinBounds());
+        this.bullets.removeIf(bullet -> !bullet.isWithinScreen());
         for (Bullet bullet : this.bullets) {
             bullet.update();
         }
@@ -46,18 +48,15 @@ public class Game
 
         List<Entity> enemies = this.wave.getEnemiesAsEntities();
         for(Bullet bullet: this.bullets){
-            int score = bullet.checkCollision(enemies);
-            if(score != -1 && bullet.getParent() == this.player){
-                this.score += score;
-            }
-            bullet.checkCollision(this.player);
+            bullet.handleCollisions(enemies);
+            bullet.handleCollision(this.player);
         }
-        this.bullets.removeIf(entity -> !entity.alive);
+        this.bullets.removeIf(bullet -> !bullet.alive);
+
         for(Entity enemy : enemies){
-            if(this.player.checkCollision(enemy)){
+            if(!enemy.alive || this.player.handleCollision(enemy)){
                 this.score += enemy.scoreGiven;
             }
-
         }
 
         this.wave.removeKilledEnemies();
@@ -158,23 +157,29 @@ public class Game
         }
     }
     private void renderInfoStrings(){
+        final float fontSize = ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall");
+        final float spaceSize = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall");
+        final Color infoStringColor = Color.WHITE;
+        final float x = -100.0f;
+        final float y = 60.0f;
         long ms = System.currentTimeMillis()  - this.prevTick;
+
         this.renderer.renderText(
                 String.format("ms:%d", ms),
-                -100.0f,
-                60.0f,
-                ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall"),
-                ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall"),
-                Color.WHITE,
+                x,
+                y,
+                spaceSize,
+                fontSize,
+                infoStringColor,
                 false
         );
         this.renderer.renderText(
                 String.format("fps:%d", Math.min((int)(1000.0f/ms), 999)),
-                -100.0f,
-                40.0f,
-                ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall"),
-                ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall"),
-                Color.WHITE,
+                x,
+                y - fontSize * 2,
+                spaceSize,
+                fontSize,
+                infoStringColor,
                 false
         );
         this.prevTick = System.currentTimeMillis();
@@ -211,6 +216,7 @@ public class Game
         final String title ="Jalaga";
 
         if(!glfwInit()){
+            this.logger.severe("Failed to initialize GLFW");
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
@@ -221,6 +227,7 @@ public class Game
 
         this.window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, title, NULL, NULL);
         if(window == NULL){
+            this.logger.severe("Failed to create the GLFW window");
             throw new RuntimeException("Failed to create the GLFW window");
         }
 
@@ -242,7 +249,7 @@ public class Game
         }
 
         glfwMakeContextCurrent(window);
-        int vsync = this.resourceManager.STATE_VARIABLES.get("vsync").intValue();
+        int vsync = ResourceManager.STATE_VARIABLES.get("vsync").intValue();
         glfwSwapInterval(vsync);
 
         glfwShowWindow(window);
@@ -254,6 +261,7 @@ public class Game
         glViewport(0,0,Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
     public Game() {
+        this.logger = Logger.getLogger("Game");
         this.score              = 0;
         this.prevTick           = 0;
         this.lastUpdated        = 0;

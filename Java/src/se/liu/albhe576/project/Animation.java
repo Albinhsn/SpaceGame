@@ -6,79 +6,43 @@ import java.util.function.UnaryOperator;
  *
  */
 public class Animation {
-    /**
-     *
-     */
     private final float initialWidth;
-    /**
-     *
-     */
     private final float initialHeight;
-    /**
-     *
-     */
     private long        startedAnimation;
-    /**
-     *
-     */
     private long        endedAnimation;
-
-    /**
-     * Easing function out cubic
-     */
+    private final float       maxSize;
+    private final long        animationTimer;
+    private final UnaryOperator<Float> inFunction;
+    private final UnaryOperator<Float> outFunction;
     public static final UnaryOperator<Float> easeOutCubic = (x) -> (float) (1 - Math.pow(1 - x, 3));
-    /**
-     * Linear easing function
-     */
     public static final UnaryOperator<Float> easeLinearly = (x) -> x;
-    /**
-     * Easing function in cubic
-     */
     public static final UnaryOperator<Float> easeInCubic = (x) -> x * x * x;
 
-    /**
-     * Animate in by given easing function
-     * @param increasePerMs
-     * The size increase per ms
-     * @param maxSize
-     * The maximum size increase
-     * @param function
-     * The easing function to animate with
-     * @return new width and height based on animation
-     */
-    private float[] animateIn(float increasePerMs, float maxSize, UnaryOperator<Float>function){
+    private float[] animateIn(){
         long tick = System.currentTimeMillis();
         if(this.startedAnimation == 0){
             this.startedAnimation = tick;
         }
         long tickDifference = tick - this.startedAnimation;
-        float increase = function.apply(Math.min(increasePerMs * tickDifference, 1));
+        float increasePerMs = this.maxSize / (float)this.animationTimer;
+        float increase = this.inFunction.apply(Math.min(increasePerMs * tickDifference, 1));
 
-        float width  = this.initialWidth + maxSize * increase;
-        float height = this.initialHeight + maxSize * increase;
+        float width  = this.initialWidth + this.maxSize * increase;
+        float height = this.initialHeight + this.maxSize * increase;
         this.endedAnimation = tick;
 
         return new float[]{width, height};
 
     }
 
-    /**
-     * Animate out by given easing function
-     * @param increasePerMs
-     * The size increase per ms
-     * @param maxSize
-     * The maximum size increase
-     * @param function
-     * The easing function to animate with
-     * @return new width and height based on animation
-     */
-    private float[]animateOut(float increasePerMs, float maxSize, UnaryOperator<Float> function){
+    private float[]animateOut(){
         long tick = System.currentTimeMillis();
         float width     = this.initialWidth;
         float height    = this.initialHeight;
         if(this.endedAnimation != 0){
             long tickDifference = tick - this.endedAnimation;
-            float increase = function.apply(1.0f - Math.min(increasePerMs * tickDifference, 1));
+            float increasePerMs = maxSize / (float)this.animationTimer;
+            float increase = this.outFunction.apply(1.0f - Math.min(increasePerMs * tickDifference, 1));
 
             if(increase <= 0){
                 this.endedAnimation = 0;
@@ -92,26 +56,21 @@ public class Animation {
         return new float[]{width, height};
     }
 
-    /**
-     * @param hovers
-     * @param increasePerMs
-     * @param maxSize
-     * @param easeInFunction
-     * @param easeOutFunction
-     * @return
-     */
-    public float[] animate(boolean hovers, float increasePerMs, float maxSize, UnaryOperator<Float> easeInFunction, UnaryOperator<Float> easeOutFunction){
-        return hovers ? animateIn(increasePerMs, maxSize, easeInFunction) : animateOut(increasePerMs, maxSize, easeOutFunction);
+    public float[] animate(boolean hovers){
+        return hovers ? animateIn() : animateOut();
     }
 
-    /**
-     * @param initialWidth
-     * @param initialHeight
-     */
-    public Animation(float initialWidth, float initialHeight){
-        this.initialWidth = initialWidth;
-        this.initialHeight = initialHeight;
-        this.endedAnimation = 0;
-        this.startedAnimation = 0;
+    public Animation(float initialWidth, float initialHeight, long animationTimer, float maxSize, UnaryOperator<Float> easeInFunction, UnaryOperator<Float> easeOutFunction){
+        this.initialWidth       = initialWidth;
+        this.initialHeight      = initialHeight;
+        this.endedAnimation     = 0;
+        this.startedAnimation   = 0;
+        this.animationTimer     = animationTimer;
+        this.maxSize            = maxSize;
+        this.inFunction         = easeInFunction;
+        this.outFunction        = easeOutFunction;
+    }
+    public Animation(float initialWidth, float initialHeight, long animationTimer, float maxSize, UnaryOperator<Float> easeInFunction){
+        this(initialWidth, initialHeight, animationTimer, maxSize, easeInFunction, easeInFunction);
     }
 }

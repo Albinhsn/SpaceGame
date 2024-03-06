@@ -36,11 +36,11 @@ public class Bullet extends Entity
     @Override
     public boolean checkCollision(Entity entity)
     {
-        if(!this.isWithinBounds()){
+        if(!this.isWithinScreen()){
             return false;
         }
 
-        if(entity.isWithinBounds() && this.collided(entity) && (this.parent.getClass() != entity.getClass())){
+        if(entity.isWithinScreen() && this.collided(entity) && (this.parent.getClass() != entity.getClass())){
             this.takeDamage();
             return entity.takeDamage();
         }

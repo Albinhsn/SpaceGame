@@ -20,7 +20,7 @@ fontFontSizeSmall 3
 fontSpaceSizeSmall 5
 fontFontSizeMedium 6
 fontSpaceSizeMedium 10
-fontFontSizeLarge 12
+fontFontSizeLarge 20
 fontSpaceSizeLarge 10
 checkboxWidth 6
 checkboxHeight 8

@@ -5,14 +5,15 @@ import org.lwjgl.BufferUtils;
 import java.awt.*;
 import java.nio.DoubleBuffer;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
 public class InputState
 {
+    private final Logger logger = Logger.getLogger("InputState");
     private final boolean[] keyboardStatePressed  = new boolean[256];
-    private final boolean[] keyboardStateReleased = new boolean[256];
     private boolean Mouse_1_Pressed;
     private boolean Mouse_1_Released;
     private int mouseX;
@@ -21,7 +22,6 @@ public class InputState
 
     public void resetState(){
         this.Mouse_1_Released = false;
-        Arrays.fill(this.keyboardStateReleased, false);
     }
     public InputState(long window){
         this.Mouse_1_Pressed    = false;
@@ -31,7 +31,6 @@ public class InputState
         this.window             = window;
         this.initInputHandling();
         Arrays.fill(this.keyboardStatePressed, false);
-        Arrays.fill(this.keyboardStateReleased, false);
     }
 
     public void setMouse_1_Pressed(boolean val){
@@ -86,19 +85,14 @@ public class InputState
 
         glfwSetKeyCallback(window, (window2, key, scancode, action, mods) -> {
             if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ) {
-                System.out.println("Closing Window!");
+                logger.info("Closing Window!");
                 glfwSetWindowShouldClose(window, true);
             }
             else if(action == GLFW_PRESS || action == GLFW_RELEASE){
                 if(key <= 255){
-                    if(action == GLFW_PRESS){
-                        this.keyboardStatePressed[key] = true;
-                    }else{
-                        this.keyboardStateReleased[key] = true;
-                        this.keyboardStatePressed[key] = false;
-                    }
+                    this.keyboardStatePressed[key] = action == GLFW_PRESS;
                 }else{
-                    System.out.printf("Unknown key %d\n", key);
+                    logger.info(String.format("Unknown key %d", key));
                 }
             }
         });

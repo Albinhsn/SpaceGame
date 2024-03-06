@@ -1,7 +1,6 @@
 package se.liu.albhe576.project;
 
 import org.lwjgl.BufferUtils;
-import se.liu.albhe576.project.Scripts.BinaryDataConverterScript;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -19,12 +18,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static org.lwjgl.opengl.GL40.*;
 
 public class ResourceManager
 {
-	private final 	int[] 			programs = new int[2];
+	private final 	int[] 					programs 	= new int[2];
+	private final   Logger                  logger 		= Logger.getLogger("Resource Manager");
 	public 			Map<Integer, Texture> 	textureIdMap;
 	private 		List<EntityData> 		entityData;
 	private 		List<Wave> 				waves;
@@ -137,7 +138,7 @@ public class ResourceManager
 		int []status = new int[1];
 		glGetProgramiv(programId,GL_LINK_STATUS, status);
 		if(status[0] != 1){
-			System.out.println("Failed to link program");
+			logger.severe(String.format("Failed to link program with id %d", programId));
 			System.exit(1);
 		}
 	}
@@ -167,11 +168,11 @@ public class ResourceManager
 	}
 	private void loadStateVariables() {
 		List<String> stateVariables;
+		final String statePath = "./resources/variables/state.txt";
 		try{
-			stateVariables = Files.readAllLines(Path.of("./resources/variables/state.txt"));
+			stateVariables = Files.readAllLines(Path.of(statePath));
 		}catch(IOException e){
-			e.printStackTrace();
-			System.out.println("Unable to load state variables, will use defaults");
+			logger.warning(String.format("Unable to load state variables from '%s', will use defaults", statePath));
 			return;
 		}
 
@@ -184,14 +185,13 @@ public class ResourceManager
 	private Texture parseTexture(String textureLocation){
 		try{
 			if(textureLocation.contains("png")){
-				return ResourceManager.loadPNGFile(textureLocation);
+				return Texture.loadPNGFile(textureLocation);
 			}else if(textureLocation.contains("tga")){
 				return TGAImage.decodeTGAImageFromFile(textureLocation);
 			}
-		}catch(IOException e){
-			e.printStackTrace();
+		}catch(IOException ignored){
 		}
-		System.out.printf("WARNING: Unable to parse resource '%s', using token texture", textureLocation);
+		logger.warning(String.format("Failed to parse texture from '%s'", textureLocation));
 		return this.tokenTexture;
 	}
 	public Texture createTexture(String textureLocation){
@@ -242,7 +242,7 @@ public class ResourceManager
 		ArrayList<Enemy> enemies = new ArrayList<>();
 		Wave wave = this.waves.get(index);
 		for(Enemy enemy : wave.enemies()){
-			enemies.add(new Enemy(enemy.hp, enemy.type, enemy.x, enemy.y, enemy.width, enemy.height, enemy.getTextureIdx(), enemy.spawnTime, enemy.pathId, enemy.scoreGiven, enemy.moveSpeed));
+			enemies.add(enemy.copyEnemy());
 		}
 		return new Wave(enemies);
 	}
@@ -257,8 +257,7 @@ public class ResourceManager
 			try{
 				fileData = Files.readAllBytes(Path.of(waveFileLocation));
 			}catch(IOException e){
-				System.out.printf("Failed to load wave from '%s'\n", waveFileLocation);
-				e.printStackTrace();
+				logger.warning(String.format("Failed to load wave from '%s'\n", waveFileLocation));
 				continue;
 			}
 
@@ -291,6 +290,7 @@ public class ResourceManager
 			List<String> data = Files.readAllLines(Path.of(entityDataLocation));
 			int count = Integer.parseInt(data.get(0));
 
+
 			this.entityData = new ArrayList<>(count);
 
 			byte[] binaryData = Files.readAllBytes(Path.of(data.get(1)));
@@ -312,13 +312,11 @@ public class ResourceManager
 				idx += EntityData.size;
 
 				this.entityData.add(i, entityData);
-
 			}
 
 		}catch(IOException e){
-			System.out.printf("Failed to load entities from '%s'\n", entityDataLocation);
+			logger.severe(String.format("Failed to load entities from '%s'\n", entityDataLocation));
 			System.exit(1);
-
 		}
 	}
 
@@ -350,70 +348,6 @@ public class ResourceManager
 		);
 	}
 
-    public static Texture loadPNGFile(String fileLocation) throws IOException {
-		File file = new File(fileLocation);
-		BufferedImage image = ImageIO.read(file);
-
-		Raster raster = image.getData();
-		DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-
-		byte [] bytes = data.getData();
-		ByteBuffer buffer = null;
-
-		ColorModel model = image.getColorModel();
-		int pixelSize = model.getPixelSize();
-		switch(pixelSize){
-			// Black or white
-			case 4:{
-			buffer = BufferUtils.createByteBuffer(bytes.length * 4);
-			for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
-				buffer.put(idx + 0, bytes[i]);
-				buffer.put(idx + 1, bytes[i]);
-				buffer.put(idx + 2, bytes[i]);
-				buffer.put(idx + 3, (byte)0xFF);
-			}
-			break;
-			}
-			// Grayscale
-			case 8:{
-			// ToDo, figure out how to shift this another way
-			buffer = BufferUtils.createByteBuffer(bytes.length * 4);
-			for(int i = 0, idx = 0; i < bytes.length; i++, idx += 4){
-				byte a = bytes[i];
-				byte val = (byte)(a * 4);
-				buffer.put(idx + 0, val);
-				buffer.put(idx + 1, val);
-				buffer.put(idx + 2, val);
-				buffer.put(idx + 3, val > 80 ? (byte)0xFF : (byte)0);
-			}
-			break;
-			}
-			// RGBA
-			case 32:{
-			buffer = BufferUtils.createByteBuffer(bytes.length);
-			for(int i = 0; i < bytes.length; i+=4){
-				byte a = bytes[i];
-				byte r = bytes[i + 1];
-				byte g = bytes[i + 2];
-				byte b = bytes[i + 3];
-				buffer.put(i + 3, a);
-				buffer.put(i + 0, b);
-				buffer.put( i + 1, g);
-				buffer.put(i + 2, r);
-			}
-			break;
-			}
-			default:{
-			System.out.println("Don't know how to load png with bpp of " + pixelSize);
-			System.exit(1);
-			}
-
-		}
-		buffer.flip();
-
-		return new Texture(image.getWidth(), image.getHeight(), buffer);
-
-    }
 	// No reason not to have this in a text file
 	// Also make variables for each texture
     private final Map<Integer, String> TEXTURE_LOCATIONS= new HashMap<>()
@@ -441,6 +375,7 @@ public class ResourceManager
 	public static final Map<String, Float> STATE_VARIABLES = new HashMap<>()
 	{
 		{
+			put("numberOfMeteors", 30.0f);
 			put("playerEntityIdx", 4.0f);
 			put("vsync", 1.0f);
 			put("SCREEN_WIDTH", 620.0f);
@@ -495,8 +430,7 @@ public class ResourceManager
 		glGetShaderiv(shader, GL_COMPILE_STATUS, intBuffer);
 		if(intBuffer.get(0) != 1){
 			String log = glGetShaderInfoLog(shader);
-			System.out.println("Error loading shader\n");
-			System.out.println(log);
+			logger.severe(String.format("Error loading shader: \n'%s'", log));
 			System.exit(2);
 		}
 

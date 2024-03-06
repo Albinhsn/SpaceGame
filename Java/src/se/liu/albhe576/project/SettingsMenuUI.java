@@ -25,7 +25,7 @@ public class SettingsMenuUI extends UI {
     public UIState render(InputState inputState,Renderer renderer, long window, int score, int hp){
 
         renderer.renderButton(returnButton);
-        returnButton.animate(inputState, 0.01f, 2.0f, Animation.easeOutCubic);
+        returnButton.animate(inputState);
         if(returnButton.isReleased(inputState)){
             return this.parentState;
         }
@@ -70,7 +70,9 @@ public class SettingsMenuUI extends UI {
         final float spaceSize                       = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium");
         final float dropdownButtonWidth             = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumWidth");
         final float dropdownButtonHeight            = ResourceManager.STATE_VARIABLES.get("buttonSizeSmallHeight");
-        this.returnButton                           = new ButtonUIComponent(0.0f, -40.0f, buttonWidth, buttonHeight, "RETURN", spaceSize, fontSize);
+
+        Animation returnButtonAnimation = new Animation(buttonWidth, buttonHeight, 500, 2.0f, Animation.easeOutCubic);
+        this.returnButton                           = new ButtonUIComponent(0.0f, -40.0f, buttonWidth, buttonHeight, "RETURN", spaceSize, fontSize, returnButtonAnimation);
         this.vsyncCheckbox                          = new CheckboxUIComponent(Texture.GREY_CHECKMARK_GREY, 0, 0, 6.0f, 8.0f, Texture.GREY_SLIDER_UP, 5.0f, 6.0f);
 
 
