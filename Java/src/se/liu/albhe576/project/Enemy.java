@@ -6,11 +6,11 @@ public class Enemy extends Entity{
     private final int pathId;
     private final long spawnTime;
     private long lastShot;
-    private final float moveSpeed;
+    private final float movementSpeed;
    public final int type;
 
-    public boolean hasSpawned(long lastTick){
-        return lastTick >= this.spawnTime;
+    public boolean hasSpawned(long timeWaveStarted, long lastTick){
+        return lastTick >= this.spawnTime + timeWaveStarted;
     }
     private boolean willShoot(long lastTick){
         final Random rng        = new Random();
@@ -20,7 +20,7 @@ public class Enemy extends Entity{
         final long gcd = rng.nextLong(lowerBound, upperBound);
         if(this.lastShot <= lastTick - gcd){
             this.lastShot = lastTick;
-            return true;
+            return false;
         }
         return false;
 
@@ -30,15 +30,15 @@ public class Enemy extends Entity{
         switch(this.pathId){
             case 0:{
                 this.x += (float) Math.sin((double) lastTick / 500) / 5.0f;
-                this.y += (float) Math.cos((double) lastTick / 500) / 5.0f + this.moveSpeed;
+                this.y -= (float) Math.cos((double) lastTick / 500) / 5.0f + this.movementSpeed;
                 break;
             }
             case 1:{
                 this.x += (float) Math.sin((double) lastTick / 1000) / 5.0f;
-                this.y += this.moveSpeed;
+                this.y -= this.movementSpeed;
                 break;
             } case 2:{
-                this.y += (float) Math.sin((double) lastTick / 1000) / 5.0f;
+                this.y -= (float) Math.sin((double) lastTick / 1000) / 5.0f  + this.movementSpeed;
                 break;
             }
             // This is boss movement
@@ -51,14 +51,29 @@ public class Enemy extends Entity{
                 this.x             += (float) Math.cos((double) lastTick / 500);
                 break;
             }
+            case 4:{
+                this.y += (float) Math.sin((double) lastTick / 500) / 5.0f;
+                this.x -= (float) Math.cos((double) lastTick / 500) / 5.0f + this.movementSpeed;
+                break;
+
+            }
+            case 5:{
+                this.y += (float) Math.sin((double) lastTick / 1000) / 5.0f;
+                this.x += this.movementSpeed;
+                break;
+            }
+            case 6:{
+                this.x += (float) Math.sin((double) lastTick / 1000) / 5.0f  + this.movementSpeed;
+                break;
+            }
             default:{
                 System.out.printf("How did this happen to me %d\n", this.pathId);
                 System.exit(1);
             }
         }
     }
-    public boolean update(long lastTick) {
-        if(this.hasSpawned(lastTick) && this.alive){
+    public boolean update(long timeWaveStarted, long lastTick) {
+        if(this.hasSpawned(timeWaveStarted, lastTick) && this.alive){
             move(lastTick);
             return willShoot(lastTick);
         }
@@ -76,7 +91,7 @@ public class Enemy extends Entity{
                 this.spawnTime,
                 this.pathId,
                 this.scoreGiven,
-                this.moveSpeed
+                this.movementSpeed
         );
 
     }
@@ -87,7 +102,12 @@ public class Enemy extends Entity{
         this.pathId         = pathId;
         this.alive          = true;
         this.spawnTime      = spawnTime;
-        this.moveSpeed      = movementSpeed;
         this.lastShot       = 0;
+
+        if(x < 100.0f && x > -100.0f){
+            this.movementSpeed = movementSpeed;
+        }else{
+            this.movementSpeed = x < 0 ? movementSpeed : -movementSpeed;
+        }
     }
 }

@@ -19,6 +19,7 @@
 ### Data
 * Figure out how we parse UI data from file
     * hoist out pretty much every data to a file :)
+* add x and y acceleration to entitydata
 
 ### UI
 * Layout

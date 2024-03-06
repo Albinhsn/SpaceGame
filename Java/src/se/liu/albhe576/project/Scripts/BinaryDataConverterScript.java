@@ -50,29 +50,29 @@ public class BinaryDataConverterScript
 
     public static void createWaveData(){
         WaveData[] data = new WaveData[]{
-            new WaveData(1, 0.2f, -0.7f, -1.2f, 1),
-            new WaveData(1, 0.6f, 0.6f, -1.2f, 1),
-            new WaveData(2, 0.6f, -0.4f, -1.2f, 2),
-            new WaveData(0, 1.5f, 0.2f, -1.2f, 0),
-            new WaveData(0, 1.5f, 0.5f, -1.2f, 0),
-            new WaveData(1, 4.0f, -0.5f, -1.2f, 1),
-            new WaveData(0, 4.2f, 0.0f, -1.2f, 0),
-            new WaveData(0, 4.2f, -0.2f, -1.2f, 0),
-            new WaveData(1, 5.5f, 0.4f, -1.2f, 1),
-            new WaveData(2, 5.7f, 0.7f, -1.2f, 2),
-            new WaveData(2, 8.0f, -0.3f, -1.2f, 2),
-            new WaveData(1, 8.5f, 0.4f, -1.2f, 1),
-            new WaveData(1, 9.0f, -0.1f, -1.2f, 1),
-            new WaveData(2, 9.2f, 0.1f, -1.2f, 2),
-            new WaveData(0, 12.0f,0.6f, -1.2f, 0),
-            new WaveData(0, 12.1f, -0.2f, -1.2f, 0),
-            new WaveData(1, 13.0f,0.4f, -1.2f, 1),
-            new WaveData(1, 13.2f, -0.5f, -1.2f, 1),
-            new WaveData(1, 13.5f,0.5f, -1.2f, 1),
-            new WaveData(2, 15.0f,0.6f, -1.2f, 2),
-            new WaveData(0, 15.2f,0.2f, -1.2f, 0),
-            new WaveData(0, 15.2f,0.4f, -1.2f, 0),
-            new WaveData(2, 15.2f, 0.5f, -1.2f, 0),
+            new WaveData(1, 0.2f, 1.2f, -0.7f, 5),
+            new WaveData(1, 0.6f, 1.2f, 0.6f, 5),
+            new WaveData(3, 0.6f, -0.1f, -1.4f, 3),
+            new WaveData(3, 1.5f, 0.1f, -1.4f, 3),
+            new WaveData(2, 1.5f,  -1.2f,0.5f, 6),
+            new WaveData(2, 4.0f, 1.2f,-0.5f,  6),
+            new WaveData(1, 4.2f,-1.2f, 0.0f,  5),
+            new WaveData(0, 4.2f, 1.2f,-0.2f, 4),
+            new WaveData(1, 5.5f, -1.2f,0.4f,  5),
+            new WaveData(3, 5.7f, 0.0f,-1.4f,  3),
+            new WaveData(2, 8.0f, 1.2f,-0.3f,  6),
+            new WaveData(1, 8.5f, 1.2f,0.4f,  5),
+            new WaveData(1, 9.0f, -1.2f,-0.1f,  5),
+            new WaveData(3, 9.2f, 0.3f,-1.4f,  3),
+            new WaveData(3, 12.0f,-0.3f,-1.4f,  3),
+            new WaveData(2, 12.1f, -1.2f,-0.2f,  6),
+            new WaveData(0, 13.0f,1.2f,0.4f,  4),
+            new WaveData(1, 13.2f, 1.2f,-0.5f,  5),
+            new WaveData(3, 13.5f,-0.4f,-1.4f,  3),
+            new WaveData(2, 15.0f,-1.2f,0.6f,  6),
+            new WaveData(1, 15.2f,1.2f,0.2f,  5),
+            new WaveData(0, 15.2f,-1.2f,0.4f,  4),
+            new WaveData(3, 15.2f,0.2f, -1.4f,  3),
             new WaveData(3, 20.0f, -0.2f, -1.4f, 3)
         };
         final int size = 24;
@@ -82,7 +82,7 @@ public class BinaryDataConverterScript
         for(int idx = 0; idx < size; idx++){
             buffer.put(WaveData.waveDataSize * idx,  data[idx].waveDataToBytes());
         }
-        final int id = 1;
+        final int id = 2;
 
         byte[] out = new byte[WaveData.waveDataSize * size];
         buffer.get(0, out);

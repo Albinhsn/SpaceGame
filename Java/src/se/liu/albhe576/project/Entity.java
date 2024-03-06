@@ -11,43 +11,14 @@ public abstract class Entity
      *
      */
     protected int hp;
-    /**
-     *
-     */
     protected float x;
-    /**
-     *
-     */
     protected float y;
-    /**
-     *
-     */
     protected int scoreGiven;
-
-    /**
-     *
-     */
     protected float width;
-    /**
-     *
-     */
     protected float height;
-    /**
-     *
-     */
     protected boolean alive;
-    /**
-     *
-     */
     private final float rotation;
-    /**
-     *
-     */
     private final int textureIdx;
-    /**
-     *
-     */
-    protected float yAcceleration;
 
     /**
      * @return

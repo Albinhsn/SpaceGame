@@ -238,13 +238,18 @@ public class ResourceManager
 	private static float parseFloatFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getFloat();
 	}
-	public Wave getWave(int index){
+	public Wave getWave(int index, long timeWaveStarted){
+		if(index >= this.waves.size()){
+			return null;
+		}
+
 		ArrayList<Enemy> enemies = new ArrayList<>();
+
 		Wave wave = this.waves.get(index);
-		for(Enemy enemy : wave.enemies()){
+		for(Enemy enemy : wave.getEnemies()){
 			enemies.add(enemy.copyEnemy());
 		}
-		return new Wave(enemies);
+		return new Wave(enemies, timeWaveStarted);
 	}
 
 	private void loadWaveData(){
@@ -277,10 +282,10 @@ public class ResourceManager
 						enemyWaveData.spawnTime,
 						enemyWaveData.pathId,
 						enemyEntityData.score,
-						-enemyEntityData.movementSpeed
+						enemyEntityData.movementSpeed
 				));
 			}
-			this.waves.add(new Wave(enemies));
+			this.waves.add(new Wave(enemies, -1));
 		}
 	}
 
@@ -407,6 +412,7 @@ public class ResourceManager
 	// No reason not to have this in a text file
 	private final String []WAVE_LOCATIONS= new String[]{
 			"./resources/binaryData/wave22024-03-05 23:08:09.345.bin",
+			"./resources/binaryData/wave22024-03-06 16:21:02.01.bin"
 	};
 
 	private String getShaderSource(String fileLocation) throws IOException {

@@ -4,7 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public record Wave(List<Enemy> enemies) {
+public class Wave {
+    private final List<Enemy> enemies;
+    private final long timeWaveStarted;
+    public List<Enemy> getEnemies(){
+        return this.enemies;
+    }
+
     private boolean isOutOfBounds(Enemy enemy){
         float[] bb = enemy.getBoundingBox();
         final float minEntityX = bb[0];
@@ -27,11 +33,15 @@ public record Wave(List<Enemy> enemies) {
     public List<Bullet> updateWave(long lastTick, ResourceManager resourceManager) {
         List<Bullet> bullets = new ArrayList<>();
         for (Enemy enemy : this.enemies){
-            if (enemy.update(lastTick)) {
+            if (enemy.update(this.timeWaveStarted, lastTick)) {
                 bullets.add(resourceManager.createNewBullet(enemy));
             }
         }
         return bullets;
+    }
+    public Wave(List<Enemy> enemies, long timeWaveStarted){
+        this.enemies = enemies;
+        this.timeWaveStarted = timeWaveStarted;
     }
 
 }

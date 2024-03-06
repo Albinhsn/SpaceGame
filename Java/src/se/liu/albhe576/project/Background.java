@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 public class Background {
     static class Meteor extends Entity{
 
+        private final float yAcceleration;
+
         public Meteor(float x, float y, float width, float height, int textureIdx, float yAcceleration) {
             super(0, x, y, width, height, textureIdx, (float) (Math.random() / 360.0f), 0);
             this.yAcceleration = yAcceleration;
