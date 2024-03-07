@@ -1,6 +1,8 @@
 package se.liu.albhe576.project.Scripts;
 
 import org.lwjgl.BufferUtils;
+import se.liu.albhe576.project.BulletData;
+import se.liu.albhe576.project.ResourceManager;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,7 +12,6 @@ import java.sql.Timestamp;
 
 public class BinaryDataConverterScript
 {
-
     private static void writeBytesToFile(String path, byte[] bytes){
         try(FileOutputStream stream = new FileOutputStream(path)){
             stream.write(bytes);
@@ -172,7 +173,31 @@ public class BinaryDataConverterScript
         BinaryDataConverterScript.writeBytesToFile("./resources/binaryData/entity" + id  + "-" + new Timestamp(System.currentTimeMillis()) + ".bin", out);
     }
 
+    public static void createBulletData(){
+        final float origScreenWidth  = 620.0f;
+        final float origScreenHeight = 480.0f;
+        BulletData[] data = new BulletData[]{
+                new BulletData(6,7,  3.0f / origScreenHeight, 8.0f / origScreenWidth, 16.0f / origScreenHeight),
+                new BulletData(7,7,  10.0f / origScreenHeight, 7.0f / origScreenWidth, 20.0f / origScreenHeight),
+                new BulletData(8,8,  5.0f / origScreenHeight, 7.0f / origScreenWidth, 21.0f / origScreenHeight),
+                new BulletData(9, 7, 15.0f / origScreenHeight, 30.0f / origScreenWidth, 30.0f / origScreenHeight),
+                new BulletData(1,7,  5.0f / origScreenHeight, 10.0f / origScreenWidth, 10.0f / origScreenHeight),
+        };
+
+        final int size = 5;
+        ByteBuffer buffer = ByteBuffer.allocate(BulletData.size * size);
+        for(int idx = 0; idx < size; idx++){
+            buffer.put(BulletData.size * idx,  data[idx].bulletDataToBytes());
+        }
+        final int id = 1;
+
+        byte[] out = new byte[BulletData.size * size];
+        buffer.get(0, out);
+        buffer.flip();
+        BinaryDataConverterScript.writeBytesToFile("./resources/binaryData/bullet" + id  + "-" + new Timestamp(System.currentTimeMillis()) + ".bin", out);
+    }
+
     public static void main(String[] args) {
-        BinaryDataConverterScript.createWaveData();
+        BinaryDataConverterScript.createBulletData();
     }
 }

@@ -2,22 +2,13 @@ package se.liu.albhe576.project;
 
 import org.lwjgl.BufferUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static org.lwjgl.opengl.GL40.*;
@@ -27,59 +18,8 @@ public class ResourceManager
 	private final 	int[] 					programs 	= new int[2];
 	private final   Logger                  logger 		= Logger.getLogger("Resource Manager");
 	public 			Map<Integer, Texture> 	textureIdMap;
-	private 		List<EntityData> 		entityData;
-	private 		List<Wave> 				waves;
 	private 		Texture 				tokenTexture;
 	public 			int 					textureVertexArrayId;
-	static class WaveData{
-		static final int size = 24;
-		int enemyType;
-		long spawnTime;
-		float spawnPositionX;
-		float spawnPositionY;
-		int pathId;
-		public static WaveData parseFromByteArray(byte[] data, int fileIndex){
-			final int enemyType 	   = ResourceManager.parseIntFromByteArray(data, fileIndex + 0);
-			final long spawnTime	   = ResourceManager.parseLongFromByteArray(data, fileIndex + 4);
-			final float spawnPositionX = ResourceManager.parseFloatFromByteArray(data, fileIndex + 12);
-			final float spawnPositionY = ResourceManager.parseFloatFromByteArray(data, fileIndex + 16);
-			final int pathId 		   = ResourceManager.parseIntFromByteArray(data, fileIndex + 20);
-
-			return new WaveData(enemyType, spawnTime, spawnPositionX, spawnPositionY, pathId);
-		}
-		public WaveData(int t, long st, float spx, float spy, int p){
-			this.enemyType = t;
-			this.spawnTime      = st;
-			this.spawnPositionX = spx;
-			this.spawnPositionY = spy;
-			this.pathId         = p;
-		}
-	}
-	static class EntityData{
-		public static final int size = 10 * 4;
-		int hp;
-		int textureIdx;
-		float width;
-		float height;
-		int bulletTextureIdx;
-		float bulletSpeed;
-		float bulletWidth;
-		float bulletHeight;
-		int score;
-		float movementSpeed;
-		public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh, int s, float ms){
-			this.hp 				= hp;
-			this.textureIdx 		= ti;
-			this.width 				= w;
-			this.height 			= h;
-			this.bulletTextureIdx 	= bti;
-			this.bulletSpeed 		= bs;
-			this.bulletWidth 		= bw;
-			this.bulletHeight 		= bh;
-			this.score 				= s;
-			this.movementSpeed 		= ms;
-		}
-	}
 
 	public void generateTexture(int textureId, int width, int height, ByteBuffer data){
 		glActiveTexture(GL_TEXTURE0);
@@ -223,138 +163,17 @@ public class ResourceManager
 
 	public void loadResources(){
 		this.loadTextures();
-		this.loadEntityData();
-		this.loadWaveData();
 		this.compileShaders();
 	}
 
 
-	private static int parseIntFromByteArray(byte [] data, int idx){
+	public static int parseIntFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 4).getInt();
 	}
-	private static long parseLongFromByteArray(byte [] data, int idx){
+	public static long parseLongFromByteArray(byte [] data, int idx){
 		return ByteBuffer.wrap(data, idx, 8).getLong();
 	}
-	private static float parseFloatFromByteArray(byte [] data, int idx){
-		return ByteBuffer.wrap(data, idx, 4).getFloat();
-	}
-	public Wave getWave(int index, long timeWaveStarted){
-		if(index >= this.waves.size()){
-			return null;
-		}
-
-		ArrayList<Enemy> enemies = new ArrayList<>();
-
-		Wave wave = this.waves.get(index);
-		for(Enemy enemy : wave.getEnemies()){
-			enemies.add(enemy.copyEnemy());
-		}
-		return new Wave(enemies, timeWaveStarted);
-	}
-
-	private void loadWaveData(){
-		this.waves = new ArrayList<>();
-
-		for(String waveFileLocation : this.WAVE_LOCATIONS){
-			ArrayList<Enemy> enemies = new ArrayList<>();
-			final byte[] fileData;
-
-			try{
-				fileData = Files.readAllBytes(Path.of(waveFileLocation));
-			}catch(IOException e){
-				logger.warning(String.format("Failed to load wave from '%s'\n", waveFileLocation));
-				continue;
-			}
-
-			for(int fileIndex = 0; fileIndex < fileData.length;){
-				WaveData enemyWaveData = WaveData.parseFromByteArray(fileData, fileIndex);
-				fileIndex += WaveData.size;
-
-				EntityData enemyEntityData = this.entityData.get(enemyWaveData.enemyType);
-				enemies.add(new Enemy(
-						enemyEntityData.hp,
-						enemyWaveData.enemyType,
-						100.0f * enemyWaveData.spawnPositionX,
-						-100.0f * enemyWaveData.spawnPositionY,
-						100.0f * enemyEntityData.width,
-						100.0f * enemyEntityData.height,
-						enemyEntityData.textureIdx,
-						enemyWaveData.spawnTime,
-						enemyWaveData.pathId,
-						enemyEntityData.score,
-						enemyEntityData.movementSpeed
-				));
-			}
-			this.waves.add(new Wave(enemies, -1));
-		}
-	}
-
-	private void loadEntityData(){
-		final String entityDataLocation = "./resources/entities/entityData.txt";
-		try{
-			List<String> data = Files.readAllLines(Path.of(entityDataLocation));
-			int count = Integer.parseInt(data.get(0));
-
-
-			this.entityData = new ArrayList<>(count);
-
-			byte[] binaryData = Files.readAllBytes(Path.of(data.get(1)));
-			int idx = 0;
-
-			for(int i = 0; i < count; i++){
-				EntityData entityData = new EntityData(
-					ResourceManager.parseIntFromByteArray(binaryData, idx),
-					ResourceManager.parseIntFromByteArray(binaryData, idx + 4),
-					ResourceManager.parseFloatFromByteArray(binaryData, idx + 8),
-					ResourceManager.parseFloatFromByteArray(binaryData, idx + 12),
-					ResourceManager.parseIntFromByteArray(binaryData, idx + 16),
-					ResourceManager.parseFloatFromByteArray(binaryData, idx + 20),
-					ResourceManager.parseFloatFromByteArray(binaryData, idx + 24),
-					ResourceManager.parseFloatFromByteArray(binaryData, idx + 28),
-					ResourceManager.parseIntFromByteArray(binaryData, idx + 32),
-					ResourceManager.parseFloatFromByteArray(binaryData, idx + 36)
-				);
-				idx += EntityData.size;
-
-				this.entityData.add(i, entityData);
-			}
-
-		}catch(IOException e){
-			logger.severe(String.format("Failed to load entities from '%s'\n", entityDataLocation));
-			System.exit(1);
-		}
-	}
-
-	public Player getPlayer(){
-		EntityData playerData = this.entityData.get(4);
-		float width = playerData.width * 100.0f;
-		float height = playerData.height * 100.0f;
-
-		return new Player(playerData.hp, 0,0, width, height, playerData.textureIdx);
-	}
-
-	public Bullet createNewBullet(Entity parent){
-		int playerEntityIdx = ResourceManager.STATE_VARIABLES.get("playerEntityIdx").intValue();
-		int entityIdx = parent instanceof Enemy ? ((Enemy)parent).type : playerEntityIdx;
-		int dir = entityIdx == playerEntityIdx ? 1 : -1;
-
-		EntityData data = this.entityData.get(entityIdx);
-		final float yOffset = (parent.height + data.bulletHeight);
-
-		return new Bullet(
-			parent.x,
-			parent.y + yOffset * dir,
-			data.bulletWidth * 100.0f,
-			data.bulletHeight * 100.0f,
-			data.bulletTextureIdx,
-			parent,
-		data.bulletSpeed * dir * 100.0f,
-			dir == 1 ? 0.0f : 180.0f
-		);
-	}
-
-	// No reason not to have this in a text file
-	// Also make variables for each texture
+	public static float parseFloatFromByteArray(byte [] data, int idx){return ByteBuffer.wrap(data, idx, 4).getFloat();}
     private final Map<Integer, String> TEXTURE_LOCATIONS= new HashMap<>()
 	{
 		{
@@ -370,11 +189,12 @@ public class ResourceManager
 			put(Texture.ENEMY_BULLET_4, "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png");
 			put(Texture.BACKGROUND_METEOR, "./resources/images/PNG/Default/meteor_detailedLarge.tga");
 			put(Texture.HP_HEART, "./resources/images/PNG/Default/tile_0044.tga");
-			put(Texture.GREY_BUTTON_02,"./resources/UI/grey_button02.png");
+			put(Texture.GREY_BUTTON_05,"./resources/UI/grey_button05.png");
 			put(Texture.GREY_BOX, "./resources/UI/grey_box.png");
 			put(Texture.GREY_CHECKMARK_GREY, "./resources/UI/grey_checkmarkGrey.png");
 			put(Texture.GREY_SLIDER_UP, "./resources/UI/grey_sliderUp.png");
 			put(Texture.GREY_SLIDER_HORIZONTAL, "./resources/UI/grey_sliderHorizontal.png");
+			put(Texture.GREY_BUTTON_14, "./resources/UI/grey_button14.png");
 		}
     };
 	public static final Map<String, Float> STATE_VARIABLES = new HashMap<>()
@@ -388,10 +208,8 @@ public class ResourceManager
 			put("waveIdx", 0.0f);
 			put("scorePerEnemy", 100.0f);
 			put("updateTimerMS", 16.0f);
-			put("enemyMS", 0.2f);
 			put("enemyGCDMin", 400.0f);
 			put("enemyGCDMax", 1000.0f);
-			put("playerMS", 1.0f);
 			put("playerGCDMS", 500.0f);
 			put("buttonSizeSmallWidth", 18.0f);
 			put("buttonSizeSmallHeight", 6.0f);
@@ -404,16 +222,11 @@ public class ResourceManager
 			put("fontSizeLarge", 8.0f);
 			put("checkboxWidth", 6.0f);
 			put("checkboxHeight", 8.0f);
-			put("buttonTextureIdMapKey", 13.0f);
 			put("hpHeartWidth", 10.0f);
 			put("hpHeartHeight", 10.0f);
 		}
 	};
 	// No reason not to have this in a text file
-	private final String []WAVE_LOCATIONS= new String[]{
-			"./resources/binaryData/wave22024-03-05 23:08:09.345.bin",
-			"./resources/binaryData/wave22024-03-06 16:21:02.01.bin"
-	};
 
 	private String getShaderSource(String fileLocation) throws IOException {
 		return Files.readString(Paths.get(fileLocation));

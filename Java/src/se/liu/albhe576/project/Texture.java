@@ -26,11 +26,12 @@ public class Texture
     public static final int ENEMY_BULLET_4 = 9;
     public static final int BACKGROUND_METEOR = 10;
     public static final int HP_HEART = 11;
-    public static final int GREY_BUTTON_02 = 12;
+    public static final int GREY_BUTTON_05 = 12;
     public static final int GREY_BOX = 13;
     public static final int GREY_CHECKMARK_GREY = 14;
     public static final int GREY_SLIDER_UP = 15;
     public static final int GREY_SLIDER_HORIZONTAL = 16;
+    public static final int GREY_BUTTON_14 = 17;
     private final int width;
     private final int height;
     private final ByteBuffer data;

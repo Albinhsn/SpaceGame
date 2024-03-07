@@ -8,14 +8,11 @@ import java.util.stream.Collectors;
 public class Background {
     static class Meteor extends Entity{
 
-        private final float yAcceleration;
-
-        public Meteor(float x, float y, float width, float height, int textureIdx, float yAcceleration) {
-            super(0, x, y, width, height, textureIdx, (float) (Math.random() / 360.0f), 0);
-            this.yAcceleration = yAcceleration;
+        public Meteor(float x, float y, float width, float height, int textureIdx, float movementSpeed) {
+            super(0, x, y, width, height, textureIdx, (float) (Math.random() / 360.0f), 0,movementSpeed);
         }
         public void update() {
-            this.y -= this.yAcceleration;
+            this.y -= this.getMovementSpeed();
         }
     }
 
@@ -79,9 +76,9 @@ public class Background {
             float y = this.getRandomMeteorY();
             float height = this.getRandomMeteorHeight();
             float width = height;
-            float yAcceleration = this.getRandomMeteorAcceleration();
+            float movementSpeed = this.getRandomMeteorAcceleration();
 
-            this.meteors.add(new Meteor(x,y,width ,height , textureIdx, yAcceleration));
+            this.meteors.add(new Meteor(x,y,width ,height , textureIdx, movementSpeed));
         }
     }
     public Background(){

@@ -6,7 +6,7 @@ public class Player  extends Entity{
 	private final int initialHp;
 
     public Player(int hp, float x, float y, float width, float height, int textureIdx){
-		super(hp, x, y, width, height, textureIdx, 0.0f, 0);
+		super(hp, x, y, width, height, textureIdx, 0.0f, 0, ResourceManager.STATE_VARIABLES.get("playerMS"));
 			this.lastShot 	= 0;
 			this.initialHp 	= hp;
     }
@@ -20,9 +20,9 @@ public class Player  extends Entity{
 	}
 
 	public boolean updatePlayer(InputState inputState, long lastTick){
-		final float moveSpeed 	= ResourceManager.STATE_VARIABLES.get("playerMS");
 		float xAcceleration 	= 0;
 		float yAcceleration 	= 0;
+		float moveSpeed = this.getMovementSpeed();
 
 		if(inputState.isWPressed()){
 			yAcceleration += moveSpeed;

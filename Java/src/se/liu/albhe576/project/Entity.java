@@ -2,14 +2,8 @@ package se.liu.albhe576.project;
 
 import java.util.List;
 
-/**
- *
- */
 public abstract class Entity
 {
-    /**
-     *
-     */
     protected int hp;
     protected float x;
     protected float y;
@@ -17,34 +11,22 @@ public abstract class Entity
     protected float width;
     protected float height;
     protected boolean alive;
-    private final float rotation;
-    private final int textureIdx;
+    protected final float rotation;
+    protected final int textureIdx;
+    protected final float movementSpeed;
+    public float getMovementSpeed(){
+        return this.movementSpeed;
+    }
 
-    /**
-     * @return
-     */
     public int getTextureIdx(){
         return this.textureIdx;
     }
 
-    /**
-     * @return
-     */
     public float getRotation(){
         return this.rotation;
     }
 
-    /**
-     * @param hp
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @param textureIdx
-     * @param rotation
-     * @param scoreGiven
-     */
-    protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation, int scoreGiven){
+    protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation, int scoreGiven, float movementSpeed){
         this.hp             = hp;
         this.x              = x;
         this.y              = y;
@@ -54,12 +36,9 @@ public abstract class Entity
         this.alive          = true;
         this.rotation       = rotation;
         this.scoreGiven = scoreGiven;
+        this.movementSpeed = movementSpeed;
     }
 
-    /**
-     * @param entity
-     * @return
-     */
     protected boolean collided(Entity entity){
         float[] entityBoundingBox = entity.getBoundingBox();
         final float minEntityX = entityBoundingBox[0];
@@ -80,9 +59,6 @@ public abstract class Entity
         return !(minEntityY > maxBulletY) && !(maxEntityY < minBulletY);
     }
 
-    /**
-     * @return
-     */
     protected boolean takeDamage(){
         this.hp -= 1;
         if(this.hp <= 0){

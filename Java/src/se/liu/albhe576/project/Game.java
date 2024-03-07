@@ -3,6 +3,7 @@ package se.liu.albhe576.project;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+
 import static org.lwjgl.opengl.GL40.*;
 
 import java.awt.*;
@@ -35,13 +36,14 @@ public class Game
     private final Player player;
     private final Background background;
     private final Map<UIState, UI> uiMap;
+    private final EntityManager entityManager;
     private UIState uiState;
     private int waveIdx;
 
     private void updateBullets(){
         this.bullets.removeIf(bullet -> !bullet.isWithinScreen());
         for (Bullet bullet : this.bullets) {
-            bullet.update();
+            bullet.update(timer.getLastTick());
         }
     }
 
@@ -65,7 +67,7 @@ public class Game
     }
     public void updatePlayer(){
         if(player.updatePlayer(this.inputState, this.timer.getLastTick())){
-            this.bullets.add(this.resourceManager.createNewBullet(this.player));
+            this.bullets.addAll(this.entityManager.getBullets(this.player));
         }
     }
 
@@ -90,7 +92,7 @@ public class Game
             }
             this.updatePlayer();
 
-            List<Bullet> newEnemyBullets = this.wave.updateWave(this.timer.getLastTick(), this.resourceManager);
+            List<Bullet> newEnemyBullets = this.wave.updateWave(this.timer.getLastTick(), this.entityManager);
             this.bullets.addAll(newEnemyBullets);
             this.updateBullets();
 
@@ -119,7 +121,7 @@ public class Game
     private void resetGame(){
         this.score          = 0;
         this.lastUpdated    = 0;
-        this.wave = this.resourceManager.getWave(ResourceManager.STATE_VARIABLES.get("waveIdx").intValue(), 0);
+        this.wave = this.entityManager.getWave(ResourceManager.STATE_VARIABLES.get("waveIdx").intValue(), 0);
         this.bullets.clear();
         this.player.reset();
         this.timer.reset();
@@ -132,6 +134,12 @@ public class Game
             // Get parent state for settings to know where we return back to
             SettingsMenuUI settingsUI = (SettingsMenuUI)  this.uiMap.get(UIState.SETTINGS_MENU);
             settingsUI.setParentState(this.uiState);
+
+        }else if(this.uiState != UIState.CONSOLE    && newState == UIState.CONSOLE){
+            // Get parent state for settings to know where we return back to
+            ConsoleUI consoleUI = (ConsoleUI)  this.uiMap.get(UIState.CONSOLE);
+            consoleUI.setParentState(this.uiState);
+
 
         }else if(this.uiState == UIState.GAME_OVER_MENU && newState != UIState.GAME_OVER_MENU){
             this.resetGame();
@@ -150,14 +158,15 @@ public class Game
             ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = true;
         }else if(this.wave.getEnemiesAsEntities().isEmpty()){
             this.waveIdx++;
-            Wave nextWave = this.resourceManager.getWave(this.waveIdx, this.timer.getLastTick());
-            System.out.printf("Next Wave %d\n", this.waveIdx);
+            Wave nextWave = this.entityManager.getWave(this.waveIdx, this.timer.getLastTick());
+
             if(nextWave == null){
                 this.uiState = UIState.GAME_OVER_MENU;
                 ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = false;
             }else{
                 this.wave = nextWave;
             }
+
         }
     }
     private void renderInfoStrings(){
@@ -199,6 +208,11 @@ public class Game
             this.inputState.resetState();
             this.queryInputEvents();
 
+            if(this.inputState.isCReleased() && this.uiState != UIState.CONSOLE){
+                this.inputState.resetState();
+                updateUIState(UIState.CONSOLE);
+            }
+
 
             if (this.uiState == UIState.GAME_RUNNING) {
                 this.gameLoop();
@@ -206,7 +220,8 @@ public class Game
             }
 
 
-            updateUIState(this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.hp));
+            UIState nextState = this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.hp);
+            updateUIState(nextState);
             glfwSwapBuffers(window);
 
         }
@@ -265,15 +280,15 @@ public class Game
         glViewport(0,0,Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT);
     }
     public Game() {
-        Game.SCREEN_HEIGHT      = ResourceManager.STATE_VARIABLES.get("SCREEN_HEIGHT").intValue();
-        Game.SCREEN_WIDTH       = ResourceManager.STATE_VARIABLES.get("SCREEN_WIDTH").intValue();
 
         this.logger             = Logger.getLogger("Game");
-        this.waveIdx            = ResourceManager.STATE_VARIABLES.get("waveIdx").intValue();
         this.score              = 0;
         this.prevTick           = 0;
         this.lastUpdated        = 0;
         this.resourceManager    = new ResourceManager();
+        Game.SCREEN_HEIGHT      = ResourceManager.STATE_VARIABLES.get("SCREEN_HEIGHT").intValue();
+        Game.SCREEN_WIDTH       = ResourceManager.STATE_VARIABLES.get("SCREEN_WIDTH").intValue();
+        this.waveIdx            = ResourceManager.STATE_VARIABLES.get("waveIdx").intValue();
 
 
         this.initGLFW();
@@ -284,11 +299,13 @@ public class Game
         this.renderer           = new Renderer(resourceManager);
         this.background         = new Background();
         this.inputState         = new InputState(this.window);
-        this.player             = this.resourceManager.getPlayer();
-        this.wave               = this.resourceManager.getWave(this.waveIdx, 0);
+        this.entityManager      = new EntityManager(this.resourceManager);
+        this.player             = this.entityManager.getPlayer();
+        this.wave               = this.entityManager.getWave(this.waveIdx, 0);
 
         this.uiState            = UIState.MAIN_MENU;
         this.uiMap              = new HashMap<>();
+        this.uiMap.put(UIState.CONSOLE, new ConsoleUI(this.resourceManager));
         this.uiMap.put(UIState.MAIN_MENU, new MainMenuUI(this.window));
         this.uiMap.put(UIState.GAME_RUNNING, new GameRunningUI());
         this.uiMap.put(UIState.GAME_OVER_MENU, new GameOverUI());

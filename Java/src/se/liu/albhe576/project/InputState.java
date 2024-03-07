@@ -14,18 +14,26 @@ public class InputState
 {
     private final Logger logger = Logger.getLogger("InputState");
     private final boolean[] keyboardStatePressed  = new boolean[256];
+    private final boolean[] keyboardStateReleased = new boolean[256];
     private boolean Mouse_1_Pressed;
     private boolean Mouse_1_Released;
+    private boolean backspaceReleased;
+    private boolean enterReleased;
     private int mouseX;
     private int mouseY;
     private final long window;
 
     public void resetState(){
-        this.Mouse_1_Released = false;
+        this.Mouse_1_Released   = false;
+        this.backspaceReleased  = false;
+        this.enterReleased  = false;
+        Arrays.fill(this.keyboardStateReleased, false);
     }
     public InputState(long window){
         this.Mouse_1_Pressed    = false;
         this.Mouse_1_Released   = false;
+        this.backspaceReleased  = false;
+        this.enterReleased  = false;
         this.mouseX             = 0;
         this.mouseY             = 0;
         this.window             = window;
@@ -45,8 +53,22 @@ public class InputState
         this.mouseY = mouseY;
     }
 
+    public boolean[] getKeyboardStateReleased(){
+        return this.keyboardStateReleased;
+    }
+
+    public boolean isEnterReleased(){
+        return this.enterReleased;
+    }
+    public boolean isBackspaceReleased(){
+        return this.backspaceReleased;
+    }
+
     public boolean isWPressed(){
         return this.keyboardStatePressed[GLFW_KEY_W]; }
+    public boolean isCReleased(){
+        return this.keyboardStateReleased[GLFW_KEY_C];
+    }
     public boolean isAPressed(){
         return this.keyboardStatePressed[GLFW_KEY_A];
     }
@@ -90,9 +112,19 @@ public class InputState
             }
             else if(action == GLFW_PRESS || action == GLFW_RELEASE){
                 if(key <= 255){
-                    this.keyboardStatePressed[key] = action == GLFW_PRESS;
+                    if(action == GLFW_PRESS){
+                        this.keyboardStatePressed[key] = true;
+                    }else {
+                        this.keyboardStateReleased[key] = true;
+                        this.keyboardStatePressed[key] = false;
+                    }
+                }else if(key == GLFW_KEY_BACKSPACE) {
+                    this.backspaceReleased = action == GLFW_RELEASE;
+                }else if(key == GLFW_KEY_ENTER){
+                    this.enterReleased = action == GLFW_RELEASE;
                 }else{
                     logger.info(String.format("Unknown key %d", key));
+
                 }
             }
         });

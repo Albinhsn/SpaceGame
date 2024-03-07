@@ -30,11 +30,11 @@ public class Wave {
     public List<Entity> getEnemiesAsEntities() {
         return this.enemies.stream().map(x -> (Entity)x).toList();
     }
-    public List<Bullet> updateWave(long lastTick, ResourceManager resourceManager) {
+    public List<Bullet> updateWave(long lastTick, EntityManager entityManager) {
         List<Bullet> bullets = new ArrayList<>();
         for (Enemy enemy : this.enemies){
             if (enemy.update(this.timeWaveStarted, lastTick)) {
-                bullets.add(resourceManager.createNewBullet(enemy));
+                bullets.addAll(entityManager.getBullets(enemy));
             }
         }
         return bullets;

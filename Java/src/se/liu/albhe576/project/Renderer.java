@@ -114,6 +114,7 @@ public class Renderer
 
         glUseProgram(programId);
         glBindVertexArray(this.resourceManager.textureVertexArrayId);
+
         glBindTexture(GL_TEXTURE_2D, textureId);
 
         int location = this.getShaderParamLocation(programId, "transMatrix");
