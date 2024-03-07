@@ -35,13 +35,28 @@ public class ConsoleUI extends UI{
                 this.input = this.input.concat(String.valueOf((char)i));
             }
         }
+
     }
     private UIState executeCommands(){
+        if(this.input.startsWith("WAVE")){
+            String[] splitInput = this.input.split(" ");
+            if(splitInput.length == 2){
+                try{
+                    int nextWave = Integer.parseInt(splitInput[1]);
+                    ResourceManager.STATE_VARIABLES.put("waveIdx", (float)nextWave);
+                    return null;
+                }catch(NumberFormatException e){
+                    System.out.println(String.format("Failed to parse int from '%s'\n", splitInput[1]));
+                }
+            }
+        }
         if(this.input.equals("QUIT")){
             this.input = "";
             Arrays.fill(this.sentCommands, "");
+            System.out.println("Returning to " + this.parent);
             return this.parent;
         }
+        System.out.println(String.format("Unknown command '%s'", this.input));
         return null;
     }
     @Override
@@ -61,6 +76,11 @@ public class ConsoleUI extends UI{
                 return out;
             }
             this.writeCommand();
+        }
+        if(inputState.isBackspaceReleased()){
+            if(!this.input.isEmpty()){
+                this.input = this.input.substring(0, this.input.length() - 1);
+            }
         }
 
 

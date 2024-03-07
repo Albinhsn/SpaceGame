@@ -145,6 +145,16 @@ public class Game
             this.resetGame();
         }
 
+        if(this.uiState == UIState.CONSOLE){
+            // Check if any variable changed?
+            int waveIdx = ResourceManager.STATE_VARIABLES.get("waveIdx").intValue();
+            if(waveIdx != this.waveIdx){
+                this.logger.info(String.format("Changed waveIdx from %d -> %d\n", this.waveIdx, waveIdx));
+                this.waveIdx = waveIdx;
+                this.wave = this.entityManager.getWave(this.waveIdx, timer.getLastTick());
+            }
+        }
+
         if(newState == UIState.GAME_RUNNING && !this.timer.isRunning()){
             this.timer.startTimer();
         }
@@ -158,6 +168,7 @@ public class Game
             ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = true;
         }else if(this.wave.getEnemiesAsEntities().isEmpty()){
             this.waveIdx++;
+            ResourceManager.STATE_VARIABLES.put("waveIdx", (float)this.waveIdx);
             Wave nextWave = this.entityManager.getWave(this.waveIdx, this.timer.getLastTick());
 
             if(nextWave == null){
