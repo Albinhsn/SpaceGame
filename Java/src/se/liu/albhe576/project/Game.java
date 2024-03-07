@@ -135,14 +135,15 @@ public class Game
             SettingsMenuUI settingsUI = (SettingsMenuUI)  this.uiMap.get(UIState.SETTINGS_MENU);
             settingsUI.setParentState(this.uiState);
 
-        }else if(this.uiState != UIState.CONSOLE    && newState == UIState.CONSOLE){
+        }else if(this.uiState == UIState.GAME_OVER_MENU && newState != UIState.GAME_OVER_MENU){
+            this.resetGame();
+        }
+
+        if(this.uiState != UIState.CONSOLE    && newState == UIState.CONSOLE){
             // Get parent state for settings to know where we return back to
             ConsoleUI consoleUI = (ConsoleUI)  this.uiMap.get(UIState.CONSOLE);
             consoleUI.setParentState(this.uiState);
-
-
-        }else if(this.uiState == UIState.GAME_OVER_MENU && newState != UIState.GAME_OVER_MENU){
-            this.resetGame();
+            System.out.println("Settings parent " + this.uiState);
         }
 
         if(this.uiState == UIState.CONSOLE){
@@ -161,23 +162,25 @@ public class Game
 
         this.uiState = newState;
     }
+    private void getNextWave(){
+        this.waveIdx++;
+        ResourceManager.STATE_VARIABLES.put("waveIdx", (float)this.waveIdx);
+        Wave nextWave = this.entityManager.getWave(this.waveIdx, this.timer.getLastTick());
+
+        if(nextWave == null){
+            this.uiState = UIState.GAME_OVER_MENU;
+            ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = false;
+        }else{
+            this.wave = nextWave;
+        }
+    }
 
     private void checkGameFinished(){
         if(!this.player.alive){
             this.uiState = UIState.GAME_OVER_MENU;
             ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = true;
         }else if(this.wave.getEnemiesAsEntities().isEmpty()){
-            this.waveIdx++;
-            ResourceManager.STATE_VARIABLES.put("waveIdx", (float)this.waveIdx);
-            Wave nextWave = this.entityManager.getWave(this.waveIdx, this.timer.getLastTick());
-
-            if(nextWave == null){
-                this.uiState = UIState.GAME_OVER_MENU;
-                ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = false;
-            }else{
-                this.wave = nextWave;
-            }
-
+            this.getNextWave();
         }
     }
     private void renderInfoStrings(){
@@ -316,7 +319,7 @@ public class Game
 
         this.uiState            = UIState.MAIN_MENU;
         this.uiMap              = new HashMap<>();
-        this.uiMap.put(UIState.CONSOLE, new ConsoleUI(this.resourceManager));
+        this.uiMap.put(UIState.CONSOLE, new ConsoleUI(this.window, this.resourceManager));
         this.uiMap.put(UIState.MAIN_MENU, new MainMenuUI(this.window));
         this.uiMap.put(UIState.GAME_RUNNING, new GameRunningUI());
         this.uiMap.put(UIState.GAME_OVER_MENU, new GameOverUI());

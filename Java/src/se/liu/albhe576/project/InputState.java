@@ -19,6 +19,7 @@ public class InputState
     private boolean Mouse_1_Released;
     private boolean backspaceReleased;
     private boolean enterReleased;
+    private boolean escapeReleased;
     private int mouseX;
     private int mouseY;
     private final long window;
@@ -27,13 +28,15 @@ public class InputState
         this.Mouse_1_Released   = false;
         this.backspaceReleased  = false;
         this.enterReleased  = false;
+        this.escapeReleased    = false;
         Arrays.fill(this.keyboardStateReleased, false);
     }
     public InputState(long window){
         this.Mouse_1_Pressed    = false;
         this.Mouse_1_Released   = false;
         this.backspaceReleased  = false;
-        this.enterReleased  = false;
+        this.enterReleased      = false;
+        this.escapeReleased    = false;
         this.mouseX             = 0;
         this.mouseY             = 0;
         this.window             = window;
@@ -57,6 +60,9 @@ public class InputState
         return this.keyboardStateReleased;
     }
 
+    public boolean isEscapeReleased(){
+        return this.escapeReleased;
+    }
     public boolean isEnterReleased(){
         return this.enterReleased;
     }
@@ -106,11 +112,7 @@ public class InputState
         });
 
         glfwSetKeyCallback(window, (window2, key, scancode, action, mods) -> {
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE ) {
-                logger.info("Closing Window!");
-                glfwSetWindowShouldClose(window, true);
-            }
-            else if(action == GLFW_PRESS || action == GLFW_RELEASE){
+            if(action == GLFW_PRESS || action == GLFW_RELEASE){
                 if(key <= 255){
                     if(action == GLFW_PRESS){
                         this.keyboardStatePressed[key] = true;
@@ -122,6 +124,9 @@ public class InputState
                     this.backspaceReleased = action == GLFW_RELEASE;
                 }else if(key == GLFW_KEY_ENTER){
                     this.enterReleased = action == GLFW_RELEASE;
+                }else if(key == GLFW_KEY_ESCAPE){
+                    this.escapeReleased = action == GLFW_RELEASE;
+
                 }else{
                     logger.info(String.format("Unknown key %d", key));
 

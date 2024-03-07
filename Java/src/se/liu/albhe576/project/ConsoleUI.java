@@ -4,6 +4,9 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.logging.Logger;
+
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 
 public class ConsoleUI extends UI{
     // Commands
@@ -11,11 +14,13 @@ public class ConsoleUI extends UI{
     //     resetGame
     //     invincible?
 
+    private final Logger logger = Logger.getLogger("Console");
     private String input;
     private UIState parent;
     private final String[] sentCommands = new String[7];
     private final UIComponent background;
     private final UIComponent consoleInput;
+    private final long window;
 
     public void setParentState(UIState parent){
         this.parent = parent;
@@ -46,17 +51,34 @@ public class ConsoleUI extends UI{
                     ResourceManager.STATE_VARIABLES.put("waveIdx", (float)nextWave);
                     return null;
                 }catch(NumberFormatException e){
-                    System.out.println(String.format("Failed to parse int from '%s'\n", splitInput[1]));
+                    logger.info(String.format("Failed to parse int from '%s'\n", splitInput[1]));
                 }
             }
+        }
+        if(this.input.startsWith("METEOR")){
+            String[] splitInput = this.input.split(" ");
+            if(splitInput.length == 2){
+                try{
+                    int nextWave = Integer.parseInt(splitInput[1]);
+                    ResourceManager.STATE_VARIABLES.put("numberOfMeteors", (float)nextWave);
+                    return null;
+                }catch(NumberFormatException e){
+                    logger.info(String.format("Failed to parse int from '%s'\n", splitInput[1]));
+                }
+            }
+        }
+        if(this.input.equals("EXIT")) {
+            logger.info("Exiting game!");
+            glfwSetWindowShouldClose(window, true);
+            return this.parent;
         }
         if(this.input.equals("QUIT")){
             this.input = "";
             Arrays.fill(this.sentCommands, "");
-            System.out.println("Returning to " + this.parent);
+            logger.info("Returning to " + this.parent);
             return this.parent;
         }
-        System.out.println(String.format("Unknown command '%s'", this.input));
+        logger.info(String.format("Unknown command '%s'", this.input));
         return null;
     }
     @Override
@@ -82,6 +104,9 @@ public class ConsoleUI extends UI{
                 this.input = this.input.substring(0, this.input.length() - 1);
             }
         }
+        if(inputState.isEscapeReleased()){
+            return this.parent;
+        }
 
 
         if(!this.input.isEmpty()){
@@ -96,10 +121,11 @@ public class ConsoleUI extends UI{
         return UIState.CONSOLE;
     }
 
-    public ConsoleUI(ResourceManager resourceManager){
+    public ConsoleUI(long window, ResourceManager resourceManager){
         this.background     = new UIComponent(0, 0, 50.0f, 50.0f, resourceManager.textureIdMap.get(Texture.GREY_BUTTON_05).textureId);
-        float fontSize  = ResourceManager.STATE_VARIABLES.get("fontFontSizeMedium");
+        float fontSize      = ResourceManager.STATE_VARIABLES.get("fontFontSizeMedium");
         this.consoleInput   = new UIComponent(0, -40.0f, 50.0f, fontSize * 1.5f, resourceManager.textureIdMap.get(Texture.GREY_BUTTON_14).textureId);
+        this.window         = window;
         this.input          = "";
         Arrays.fill(this.sentCommands, "");
     }

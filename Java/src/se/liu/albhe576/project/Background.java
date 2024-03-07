@@ -16,13 +16,28 @@ public class Background {
         }
     }
 
-    private final List<Meteor> meteors;
+    private List<Meteor> meteors;
     private final Timer timer;
     private long lastUpdate;
 
     private final Random rng = new Random();
+    private void updateNumberOfMeteors(int numberOfMeteors){
+        if(numberOfMeteors > this.meteors.size()){
+            int prevSize = this.meteors.size();
+            for(int i = this.meteors.size(); i < numberOfMeteors; i++){
+                this.meteors.add(this.createRandomMeteor());
+            }
+            System.out.printf("Added %d more\n", numberOfMeteors - prevSize);
+        }else if(numberOfMeteors < this.meteors.size()){
+            this.meteors = this.meteors.subList(0, numberOfMeteors);
+
+        }
+    }
 
     public void updateAndRender(Renderer renderer){
+        final int numberOfMeteors = ResourceManager.STATE_VARIABLES.get("numberOfMeteors").intValue();
+        this.updateNumberOfMeteors(numberOfMeteors);
+
         this.timer.updateTimer();
         long tick = this.timer.getLastTick();
 
@@ -67,18 +82,21 @@ public class Background {
         meteor.width = this.getRandomMeteorWidth();
         meteor.height = meteor.width;
     }
+    private Meteor createRandomMeteor(){
+        final int textureIdx = Texture.BACKGROUND_METEOR;
+        float x = this.getRandomMeteorX();
+        float y = this.getRandomMeteorY();
+        float height = this.getRandomMeteorHeight();
+        float width = height;
+        float movementSpeed = this.getRandomMeteorAcceleration();
+
+        return new Meteor(x,y,width,height,textureIdx, movementSpeed);
+    }
     private void initMeteors(){
         final int numberOfMeteors = ResourceManager.STATE_VARIABLES.get("numberOfMeteors").intValue();
-        final int textureIdx = Texture.BACKGROUND_METEOR;
 
         for(int i = 0; i < numberOfMeteors; i++){
-            float x = this.getRandomMeteorX();
-            float y = this.getRandomMeteorY();
-            float height = this.getRandomMeteorHeight();
-            float width = height;
-            float movementSpeed = this.getRandomMeteorAcceleration();
-
-            this.meteors.add(new Meteor(x,y,width ,height , textureIdx, movementSpeed));
+            this.meteors.add(this.createRandomMeteor());
         }
     }
     public Background(){

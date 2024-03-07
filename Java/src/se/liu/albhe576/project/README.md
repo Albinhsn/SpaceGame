@@ -1,9 +1,9 @@
 # Galaga? 
 
 ## ToDo
-* Console aka change state 
-* Sound
 * Some other sort of background
+  * procedurally generate it?
+* Sound
 * fix docs
 
 ### Game things

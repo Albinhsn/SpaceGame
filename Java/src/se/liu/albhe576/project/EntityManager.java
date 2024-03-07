@@ -10,9 +10,9 @@ import java.util.logging.Logger;
 public class EntityManager {
     private         List<EntityData>        entityData;
     private 		List<Wave> 				waves;
-    private final AccelerationFunctions     accelerationFunctions;
-    private final BulletFactory             bulletFactory;
-    private final Logger                    logger          = Logger.getLogger("Entity Manager");
+    private final   AccelerationFunctions     accelerationFunctions;
+    private final   BulletFactory             bulletFactory;
+    private final   Logger                    logger          = Logger.getLogger("Entity Manager");
     private final String []WAVE_LOCATIONS= new String[]{
             "./resources/binaryData/wave22024-03-05 23:08:09.345.bin",
             "./resources/binaryData/wave22024-03-06 16:21:02.01.bin"
@@ -153,6 +153,7 @@ public class EntityManager {
 
     public Wave getWave(int index, long timeWaveStarted){
         if(index >= this.waves.size()){
+            logger.warning("Trying to access outside of waves array, returning null");
             return null;
         }
 
