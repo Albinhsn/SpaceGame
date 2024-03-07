@@ -32,7 +32,6 @@ public class Renderer
         }
         return location;
     }
-
     private void setTextShaderParams(Color color){
         int programId = this.resourceManager.getProgramByIndex(1);
         glUseProgram(programId);

@@ -23,11 +23,9 @@ public class Background {
     private final Random rng = new Random();
     private void updateNumberOfMeteors(int numberOfMeteors){
         if(numberOfMeteors > this.meteors.size()){
-            int prevSize = this.meteors.size();
             for(int i = this.meteors.size(); i < numberOfMeteors; i++){
                 this.meteors.add(this.createRandomMeteor());
             }
-            System.out.printf("Added %d more\n", numberOfMeteors - prevSize);
         }else if(numberOfMeteors < this.meteors.size()){
             this.meteors = this.meteors.subList(0, numberOfMeteors);
 
@@ -63,8 +61,8 @@ public class Background {
         return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorHeight(){
-        final float lowerBound = 0.25f;
-        final float upperBound = 0.65f;
+        final float lowerBound = 0.5f;
+        final float upperBound = 1.0f;
         return rng.nextFloat(lowerBound, upperBound);
     }
     private float getRandomMeteorAcceleration(){

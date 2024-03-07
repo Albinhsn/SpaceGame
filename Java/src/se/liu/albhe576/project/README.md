@@ -1,8 +1,6 @@
 # Galaga? 
 
 ## ToDo
-* Some other sort of background
-  * procedurally generate it?
 * Sound
 * fix docs
 
