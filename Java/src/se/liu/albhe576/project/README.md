@@ -1,6 +1,14 @@
 # Galaga? 
 
 ## ToDo
+* Rather then using ResourceManager.getState and set variables everywhere 
+  * Just make a getX call that returns that value
+* Console commands
+  * List X, all
+  * Save X, all to file
+  * restart wave?
+* Override player take damage function to check invincibility or not
+* Debug show hp over enemies heads?
 * Sound
 * fix docs
 
