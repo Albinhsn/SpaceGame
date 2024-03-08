@@ -48,12 +48,22 @@ public class Player  extends Entity{
 		// Check whether we shoot or not
 		return inputState.isSpacePressed() && this.canShoot(lastTick);
 	}
+	@Override
+	protected boolean takeDamage(){
+		if(!ResourceManager.STATE_VARIABLES.containsKey("invincible") || ResourceManager.STATE_VARIABLES.get("invincible").intValue() != 1){
+			this.hp -= 1;
+			boolean dead = this.hp <= 0;
+			this.alive = !dead;
+			return dead;
+		}
+		return false;
+	}
 
     private boolean canShoot(long lastTick){
-		final long gcd = ResourceManager.STATE_VARIABLES.get("playerGCDMS").longValue();
 		if(lastShot > lastTick){
 			return false;
 		}
+		final long gcd = ResourceManager.STATE_VARIABLES.get("playerGCDMS").longValue();
 		this.lastShot = lastTick + gcd;
 		return true;
     }

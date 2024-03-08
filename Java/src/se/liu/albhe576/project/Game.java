@@ -84,6 +84,7 @@ public class Game
 
 
     private void gameLoop(){
+
         this.timer.updateTimer();
 
         if(this.shouldHandleUpdates()) {
@@ -139,11 +140,9 @@ public class Game
             this.resetGame();
         }
 
-        if(this.uiState != UIState.CONSOLE    && newState == UIState.CONSOLE){
-            // Get parent state for settings to know where we return back to
+        if(this.uiState != UIState.CONSOLE   && newState == UIState.CONSOLE){
             ConsoleUI consoleUI = (ConsoleUI)  this.uiMap.get(UIState.CONSOLE);
             consoleUI.setParentState(this.uiState);
-            System.out.println("Settings parent " + this.uiState);
         }
 
         if(this.uiState == UIState.CONSOLE){
@@ -221,6 +220,12 @@ public class Game
 
             this.inputState.resetState();
             this.queryInputEvents();
+
+            // This should be hoisted out after development
+            if(ResourceManager.STATE_VARIABLES.containsKey("restartWave")){
+                ResourceManager.STATE_VARIABLES.remove("restartWave");
+                this.resetGame();
+            }
 
             if(this.inputState.isCReleased() && this.uiState != UIState.CONSOLE){
                 this.inputState.resetState();

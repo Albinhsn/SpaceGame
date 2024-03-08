@@ -169,6 +169,15 @@ public class Renderer
 
 
     public void renderEntity(Entity entity){
+        if(ResourceManager.STATE_VARIABLES.containsKey("debug") && ResourceManager.STATE_VARIABLES.get("debug").intValue() == 1){
+            if(entity.hp > 0){
+                float spaceSize = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall");
+                float fontSize = ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall");
+                renderText(String.format("%d",entity.hp), entity.x, entity.y + entity.height / 2 + fontSize, spaceSize, fontSize, Color.YELLOW, true);
+
+            }
+        }
+
         Texture texture         = this.resourceManager.textureIdMap.get(entity.getTextureIdx());
         float [] transMatrix    = this.getTransformationMatrix(entity.x, entity.y,entity.width, entity.height, entity.getRotation());
         this.renderTexture(transMatrix, texture.textureId);

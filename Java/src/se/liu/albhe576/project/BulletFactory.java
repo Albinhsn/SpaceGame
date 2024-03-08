@@ -79,7 +79,6 @@ public class BulletFactory {
     private final IBulletCreation createDoubleOppositeX = (parent, bulletData) -> {
 
         ArrayList<Bullet> newBullets = new ArrayList<>();
-        float xOffset = parent.width * 0.25f;
         newBullets.add(this.createNewBullet(
                 bulletData.textureIdx,
                 parent.x,

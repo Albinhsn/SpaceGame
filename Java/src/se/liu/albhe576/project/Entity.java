@@ -61,11 +61,9 @@ public abstract class Entity
 
     protected boolean takeDamage(){
         this.hp -= 1;
-        if(this.hp <= 0){
-            this.alive = false;
-            return true;
-        }
-        return false;
+        boolean dead = this.hp <= 0;
+        this.alive = !dead;
+        return dead;
     }
     private boolean checkBulletCollision(Entity target){
         if(!(this instanceof Bullet bullet)){

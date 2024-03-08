@@ -1,21 +1,12 @@
 # Galaga? 
 
 ## ToDo
-* Rather then using ResourceManager.getState and set variables everywhere 
-  * Just make a getX call that returns that value
-* Console commands
-  * List X, all
-  * Save X, all to file
-  * restart wave?
-* Override player take damage function to check invincibility or not
-* Debug show hp over enemies heads?
+* Create the kamikaze pilot thingy
+* Cleanup console commands
 * Sound
 * fix docs
 
 ### Game things
-* Rather then side to side enemies actually go downwards mostly
-  * one of them is basically a kamikaze pilot
-    * this requires to check collision between players and enemies
 
 ### Random
 

@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
@@ -43,6 +44,61 @@ public class ConsoleUI extends UI{
 
     }
     private UIState executeCommands(){
+        if(this.input.startsWith("DEBUG")){
+            String[] splitInput = this.input.split(" ");
+            if(splitInput.length == 2) {
+                try{
+                    int debug = Integer.parseInt(splitInput[1]);
+                    ResourceManager.STATE_VARIABLES.put("debug", (float)debug);
+                    return null;
+                }catch(NumberFormatException e){
+                    logger.info(String.format("Failed to parse int from '%s'\n", splitInput[1]));
+                }
+            }
+        }
+        if(this.input.startsWith("INVINCIBLE")){
+            String[] splitInput = this.input.split(" ");
+            if(splitInput.length == 2) {
+                try{
+                    int invincible = Integer.parseInt(splitInput[1]);
+                    ResourceManager.STATE_VARIABLES.put("invincible", (float)invincible);
+                    return null;
+                }catch(NumberFormatException e){
+                    logger.info(String.format("Failed to parse int from '%s'\n", splitInput[1]));
+                }
+            }
+        }
+        if(this.input.startsWith("RESTART")){
+            String[] splitInput = this.input.split(" ");
+            if(splitInput.length == 2) {
+                if (splitInput[1].equalsIgnoreCase("wave")) {
+                    logger.info("Restart wave command sent!");
+                    ResourceManager.STATE_VARIABLES.put("restartWave", 1.0f);
+                    return null;
+                }
+            }
+
+        }
+        else if(this.input.startsWith("LIST")){
+            String[] splitInput = this.input.split(" ");
+            if(splitInput.length == 2){
+                    if(splitInput[1].equalsIgnoreCase("all")){
+                        for (Map.Entry<String, Float> entry : ResourceManager.STATE_VARIABLES.entrySet()) {
+                            System.out.println(entry.getKey() + ": " + entry.getValue());
+                        }
+                    }else{
+                        for (Map.Entry<String, Float> entry : ResourceManager.STATE_VARIABLES.entrySet()) {
+                            if(entry.getKey().equalsIgnoreCase(splitInput[1])){
+                                System.out.println(entry.getKey() + ": " + entry.getValue());
+                                return null;
+                            }
+                        }
+                        System.out.printf("Couldn't find key '%s'\n", splitInput[1]);
+                    }
+                    return null;
+            }
+
+        }
         if(this.input.startsWith("WAVE")){
             String[] splitInput = this.input.split(" ");
             if(splitInput.length == 2){
