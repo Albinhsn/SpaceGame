@@ -5,8 +5,8 @@ import java.util.Random;
 public class Enemy extends Entity{
     private final long spawnTime;
     private long lastShot;
-    private final AccelerationFunction yAccelerationFunction;
-    private final AccelerationFunction xAccelerationFunction;
+    private final IAccelerationFunction yIAccelerationFunction;
+    private final IAccelerationFunction xIAccelerationFunction;
     public final int type;
 
     public boolean hasSpawned(long timeWaveStarted, long lastTick){
@@ -14,8 +14,8 @@ public class Enemy extends Entity{
     }
     private boolean willShoot(long lastTick){
         final Random rng        = new Random();
-        final long lowerBound   = ResourceManager.STATE_VARIABLES.get("enemyGCDMin").longValue();
-        final long upperBound   = ResourceManager.STATE_VARIABLES.get("enemyGCDMax").longValue();
+        final long lowerBound   = ResourceManager.STATE_VARIABLES.getOrDefault("enemyGCDMin", 400.0f).longValue();
+        final long upperBound   = ResourceManager.STATE_VARIABLES.getOrDefault("enemyGCDMax", 1000.0f).longValue();
 
         final long gcd = rng.nextLong(lowerBound, upperBound);
         if(this.lastShot <= lastTick){
@@ -27,8 +27,8 @@ public class Enemy extends Entity{
     }
 
     private void move(long lastTick){
-        float xOffset = this.xAccelerationFunction.apply(lastTick, this);
-        float yOffset = this.yAccelerationFunction.apply(lastTick, this);
+        float xOffset = this.xIAccelerationFunction.apply(lastTick, this);
+        float yOffset = this.yIAccelerationFunction.apply(lastTick, this);
         this.x += xOffset;
         this.y -= yOffset;
     }
@@ -39,24 +39,7 @@ public class Enemy extends Entity{
         }
         return false;
     }
-    public Enemy copyEnemy(){
-        return new Enemy(
-                this.hp,
-                this.type,
-                this.x,
-                this.y,
-                this.width,
-                this.height,
-                this.textureIdx,
-                this.spawnTime,
-                this.scoreGiven,
-                this.movementSpeed,
-                this.xAccelerationFunction,
-                this.yAccelerationFunction
-        );
-
-    }
-    public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime,int scoreGiven, float movementSpeed, AccelerationFunction xAccelerationFunction, AccelerationFunction yAccelerationFunction)
+    public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int scoreGiven, float movementSpeed, IAccelerationFunction xIAccelerationFunction, IAccelerationFunction yIAccelerationFunction)
     {
         super(hp, x, y, width, height, textureIdx, 0.0f, scoreGiven, movementSpeed);
         this.type           = enemyType;
@@ -64,8 +47,8 @@ public class Enemy extends Entity{
         this.spawnTime      = spawnTime;
         this.lastShot       = 0;
 
-        this.xAccelerationFunction = xAccelerationFunction;
-        this.yAccelerationFunction = yAccelerationFunction;
+        this.xIAccelerationFunction = xIAccelerationFunction;
+        this.yIAccelerationFunction = yIAccelerationFunction;
 
     }
 }

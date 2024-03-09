@@ -12,6 +12,20 @@ public class EntityData {
     float bulletHeight;
     int score;
     float movementSpeed;
+    public static EntityData parseFromFileBuffer(FileBuffer fileBuffer){
+        return new EntityData(
+                fileBuffer.parseIntFromByteBuffer(),
+                fileBuffer.parseIntFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer(),
+                fileBuffer.parseIntFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer(),
+                fileBuffer.parseIntFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer()
+        );
+    }
     public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh, int s, float ms){
         this.hp 				= hp;
         this.textureIdx 		= ti;

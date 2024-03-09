@@ -4,9 +4,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL40.*;
-
 
 public class Renderer
 {
@@ -21,7 +19,7 @@ public class Renderer
 
     public void renderButton(ButtonUIComponent button){
         this.renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
-        this.renderText(button.text, button.x,button.y, button.spaceSize, button.fontSize, button.textColor, true);
+        this.renderTextCenteredAt(button.getText(), button.x,button.y, button.getSpaceSize(), button.getFontSize(), button.getTextColor());
     }
 
     private int getShaderParamLocation(int programId, String name){
@@ -49,19 +47,26 @@ public class Renderer
         glUniform4fv(location, colorFloat);
     }
 
-    public void renderText(String text, float x, float y, float spaceSize, float fontSize, Color color, boolean centered){
-        this.font.updateText(text, x, y, spaceSize, fontSize, centered);
+    public void renderTextStartsAt(String text, float x, float y, float spaceSize, float fontSize, Color color){
+        this.font.updateText(text, x, y, spaceSize, fontSize, false);
+        this.renderText(color);
+    }
+    public void renderTextCenteredAt(String text, float x, float y, float spaceSize, float fontSize, Color color){
+        this.font.updateText(text, x, y, spaceSize, fontSize, true);
+        this.renderText(color);
+    }
+    private void renderText(Color color){
         this.setTextShaderParams(color);
         glBindVertexArray(this.font.dynamicVertexArrayId);
         glBindTexture(GL_TEXTURE_2D, this.font.fontTexture.textureId);
 
-        glDrawElements(GL_TRIANGLES, Font.textMaxLength * 4, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, Font.TEXT_MAX_LENGTH * 4, GL_UNSIGNED_INT, 0);
     }
 
     public void renderCheckbox(CheckboxUIComponent checkbox){
         this.renderUIComponent(checkbox.textureId, checkbox.x, checkbox.y, checkbox.width, checkbox.height);
         if(checkbox.toggled){
-            this.renderUIComponent(checkbox.checkmarkTextureId, checkbox.x, checkbox.y, checkbox.checkmarkWidth, checkbox.checkmarkHeight);
+            this.renderUIComponent(checkbox.getCheckmarkTextureId(), checkbox.x, checkbox.y, checkbox.getCheckmarkWidth(), checkbox.getCheckmarkHeight());
         }
     }
     public void renderUIComponent(int textureId, float x, float y, float width, float height){
@@ -71,7 +76,7 @@ public class Renderer
 
     public void renderSlider(SliderUIComponent slider){
         // This one is mostly for debugging/showcase purpose
-        renderText(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall"),5f, Color.WHITE, true);
+        renderTextCenteredAt(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeSmall", 5.0f),5f, Color.WHITE);
 
         renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
         final int sliderTextureId = this.resourceManager.textureIdMap.get(Texture.GREY_SLIDER_HORIZONTAL).textureId;
@@ -80,18 +85,18 @@ public class Renderer
         renderUIComponent(slider.sliderTextureId, slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight);
     }
 
-    public void renderDropdown(ButtonUIComponent dropdownButton, boolean toggled, List<ButtonUIComponent> dropdownItems){
-        this.renderButton(dropdownButton);
-        if(toggled){
-            for(ButtonUIComponent item :  dropdownItems){
+    public void renderDropdown(DropdownUIComponent<?> dropdownUIComponent){
+        this.renderButton(dropdownUIComponent.getDropdownButton());
+        if(dropdownUIComponent.toggled){
+            for(ButtonUIComponent item :  dropdownUIComponent.getDropdownItems()){
                 this.renderButton(item);
             }
         }
     }
 
     public void renderHealth(int hp){
-        final float height    = ResourceManager.STATE_VARIABLES.get("hpHeartHeight");
-        final float width     = ResourceManager.STATE_VARIABLES.get("hpHeartWidth");
+        final float height    = ResourceManager.STATE_VARIABLES.getOrDefault("hpHeartHeight", 10.0f);
+        final float width     = ResourceManager.STATE_VARIABLES.getOrDefault("hpHeartWidth", 1.0f);
 
         // Render in top middle
         final float y         = 100.0f - height;
@@ -167,13 +172,12 @@ public class Renderer
         return this.matrixMultiplication3x3(m0, scaleM);
     }
 
-
     public void renderEntity(Entity entity){
-        if(ResourceManager.STATE_VARIABLES.containsKey("debug") && ResourceManager.STATE_VARIABLES.get("debug").intValue() == 1){
+        if(ResourceManager.STATE_VARIABLES.getOrDefault("debug", 0.0f).intValue() == 1){
             if(entity.hp > 0){
-                float spaceSize = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall");
-                float fontSize = ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall");
-                renderText(String.format("%d",entity.hp), entity.x, entity.y + entity.height / 2 + fontSize, spaceSize, fontSize, Color.YELLOW, true);
+                float spaceSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeSmall", 5.0f);
+                float fontSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeSmall", 3.0f);
+                renderTextCenteredAt(String.format("%d",entity.hp), entity.x, entity.y + entity.height / 2 + fontSize, spaceSize, fontSize, Color.YELLOW);
 
             }
         }

@@ -4,10 +4,10 @@ import java.awt.*;
 
 public class GameRunningUI extends UI{
     public UIState render(InputState inputState, Renderer renderer, long window, int score, int hp) {
-        final float fontSize = ResourceManager.STATE_VARIABLES.get("fontFontSizeMedium");
-        final float spaceSize = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium");
+        final float fontSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeMedium", 6.0f);
+        final float spaceSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeMedium", 10.0f);
 
-        renderer.renderText(String.format("Score: %d", score), -100.0f, 100.0f - fontSize, spaceSize, fontSize, Color.WHITE, false);
+        renderer.renderTextStartsAt(String.format("Score: %d", score), -100.0f, 100.0f - fontSize, spaceSize, fontSize, Color.WHITE);
         renderer.renderHealth(hp);
         return UIState.GAME_RUNNING;
 

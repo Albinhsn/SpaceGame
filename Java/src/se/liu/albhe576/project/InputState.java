@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_SPACE;
 
 public class InputState
 {
@@ -43,7 +42,6 @@ public class InputState
         this.initInputHandling();
         Arrays.fill(this.keyboardStatePressed, false);
     }
-
     public void setMouse_1_Pressed(boolean val){
         this.Mouse_1_Pressed = val;
     }
@@ -55,37 +53,31 @@ public class InputState
         this.mouseX = mouseX;
         this.mouseY = mouseY;
     }
-
     public boolean[] getKeyboardStateReleased(){
         return this.keyboardStateReleased;
     }
+    public boolean isKeyPressed(int key){
+        if(key < 256){
+            return this.keyboardStatePressed[key];
+        }
+        return false;
+    }
+    public boolean isKeyReleased(int key){
+        if(key < 256){
+            return this.keyboardStateReleased[key];
+        }
+        if(key == GLFW_KEY_ESCAPE){
+            return this.escapeReleased;
+        }
+        if(key == GLFW_KEY_ENTER){
+            return this.enterReleased;
+        }
+        if(key == GLFW_KEY_BACKSPACE){
+            return this.backspaceReleased;
+        }
 
-    public boolean isEscapeReleased(){
-        return this.escapeReleased;
-    }
-    public boolean isEnterReleased(){
-        return this.enterReleased;
-    }
-    public boolean isBackspaceReleased(){
-        return this.backspaceReleased;
-    }
+        return false;
 
-    public boolean isWPressed(){
-        return this.keyboardStatePressed[GLFW_KEY_W]; }
-    public boolean isCReleased(){
-        return this.keyboardStateReleased[GLFW_KEY_C];
-    }
-    public boolean isAPressed(){
-        return this.keyboardStatePressed[GLFW_KEY_A];
-    }
-    public boolean isSPressed(){
-        return this.keyboardStatePressed[GLFW_KEY_S];
-    }
-    public boolean isDPressed(){
-        return this.keyboardStatePressed[GLFW_KEY_D];
-    }
-    public boolean isSpacePressed(){
-        return this.keyboardStatePressed[GLFW_KEY_SPACE];
     }
     public Point getMousePosition(){return new Point(this.mouseX, this.mouseY);}
     public boolean isMouse1Pressed(){
@@ -93,9 +85,6 @@ public class InputState
     }
     public boolean isMouse1Released(){
         return this.Mouse_1_Released;
-    }
-    public boolean isPPressed(){
-        return this.keyboardStatePressed[(byte)'P'];
     }
     public void initInputHandling(){
         glfwSetMouseButtonCallback(this.window,(window2, button, action, mods) -> {

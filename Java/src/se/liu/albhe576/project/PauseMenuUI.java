@@ -1,7 +1,5 @@
 package se.liu.albhe576.project;
 
-import java.awt.*;
-
 public class PauseMenuUI extends UI {
     private final ButtonUIComponent playButton;
     private final ButtonUIComponent mainMenuButton;
@@ -27,10 +25,10 @@ public class PauseMenuUI extends UI {
 
     }
     public PauseMenuUI(){
-        final float buttonWidth     = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumWidth");
-        final float buttonHeight    = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumHeight");
-        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.get("fontFontSizeMedium");
-        final float buttonSpaceSize  = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium");
+        final float buttonWidth     = ResourceManager.STATE_VARIABLES.getOrDefault("buttonSizeMediumWidth", 32.0f);
+        final float buttonHeight    = ResourceManager.STATE_VARIABLES.getOrDefault("buttonSizeMediumHeight", 10.0f);
+        final float buttonFontSize  = ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeMedium", 6.0f);
+        final float buttonSpaceSize  = ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeMedium", 10.0f);
 
         this.playButton             = new ButtonUIComponent(0.0f, 2.0f * buttonHeight, buttonWidth, buttonHeight, "PLAY",buttonSpaceSize, buttonFontSize);
         this.settingsButton         = new ButtonUIComponent(0.0f, 0.0f, buttonWidth, buttonHeight, "SETTINGS",  buttonSpaceSize, buttonFontSize);

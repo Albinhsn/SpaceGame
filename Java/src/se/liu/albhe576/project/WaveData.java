@@ -7,14 +7,14 @@ public class WaveData {
     float spawnPositionX;
     float spawnPositionY;
     int pathId;
-    public static WaveData parseFromByteArray(byte[] data, int fileIndex){
-        final int enemyType 	   = ResourceManager.parseIntFromByteArray(data, fileIndex + 0);
-        final long spawnTime	   = ResourceManager.parseLongFromByteArray(data, fileIndex + 4);
-        final float spawnPositionX = ResourceManager.parseFloatFromByteArray(data, fileIndex + 12);
-        final float spawnPositionY = ResourceManager.parseFloatFromByteArray(data, fileIndex + 16);
-        final int pathId 		   = ResourceManager.parseIntFromByteArray(data, fileIndex + 20);
-
-        return new WaveData(enemyType, spawnTime, spawnPositionX, spawnPositionY, pathId);
+    public static WaveData parseFromFileBuffer(FileBuffer fileBuffer){
+        return new WaveData(
+                fileBuffer.parseIntFromByteBuffer(),
+                fileBuffer.parseLongFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer(),
+                fileBuffer.parseFloatFromByteBuffer(),
+                fileBuffer.parseIntFromByteBuffer()
+        );
     }
     public WaveData(int t, long st, float spx, float spy, int p){
         this.enemyType = t;

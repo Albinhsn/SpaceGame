@@ -5,23 +5,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.lwjgl.opengl.GL40.*;
 
-/**
- *
- */
 public class Font {
-    public Texture fontTexture;
+    public final Texture fontTexture;
     public int dynamicVertexArrayId;
     public int dynamicVertexBufferId;
-    public static final int textMaxLength = 32;
+    public static final int TEXT_MAX_LENGTH = 32;
+    private final Logger logger = Logger.getLogger("Font");
     static class FontType{
-        @Override
-        public String toString() {
-            return String.format("%f %f %d", left,right, size);
-        }
-
         float left;
         float right;
         int size;
@@ -34,9 +28,9 @@ public class Font {
     private final FontType[] types = new FontType[256];
     private void createTextBuffers(){
 
-       int vertexCount = Font.textMaxLength * 4;
-       int []indices = new int[Font.textMaxLength * 6];
-       for(int i = 0, idx = 0; idx < Font.textMaxLength * 6; idx += 6, i+=4){
+        // Create indices for max length quads
+       int []indices = new int[Font.TEXT_MAX_LENGTH * 6];
+       for(int i = 0, idx = 0; idx < Font.TEXT_MAX_LENGTH * 6; idx += 6, i+=4){
            indices[idx + 0] = i + 0;
            indices[idx + 1] = i + 1;
            indices[idx + 2] = i + 2;
@@ -45,6 +39,7 @@ public class Font {
            indices[idx + 5] = i + 1;
        }
 
+       int vertexCount = Font.TEXT_MAX_LENGTH * 4;
        float[]vertices = new float[vertexCount];
        Arrays.fill(vertices, 0);
 
@@ -57,6 +52,7 @@ public class Font {
 
        glEnableVertexAttribArray(0);
        glEnableVertexAttribArray(1);
+
        glVertexAttribPointer(0, 3, GL_FLOAT, false, 4 * 5, 0);
        glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * 5, 3 * 4);
 
@@ -67,7 +63,7 @@ public class Font {
        glBindVertexArray(0);
     }
     public void updateText(String text, float x, float y, float spaceSize, float fontSize, boolean centered){
-        int vertexCount = Font.textMaxLength * 4 * 5;
+        int vertexCount = Font.TEXT_MAX_LENGTH * 4 * 5;
 
         glBindVertexArray(this.dynamicVertexArrayId);
         float [] vertices = this.buildUpdatedTextVertexArray(vertexCount, text, x, y, spaceSize, fontSize, centered);
@@ -89,6 +85,10 @@ public class Font {
         float sizeModifier = 0.5f;
 
         int numLetters = text.length();
+        if(numLetters > Font.TEXT_MAX_LENGTH){
+            this.logger.severe(String.format("Trying to write text with %d characters, %d is max", numLetters, Font.TEXT_MAX_LENGTH));
+            numLetters = Font.TEXT_MAX_LENGTH;
+        }
 
         if(centered){
             float totalSize = 0;
@@ -96,7 +96,6 @@ public class Font {
                 float addedSize = this.types[(byte)c].size * 0.01f * sizeModifier;
                 totalSize += addedSize != 0 ? addedSize : spaceSize * 0.01f;
             }
-
             drawX -= totalSize / 2.0f;
         }
 
@@ -141,44 +140,49 @@ public class Font {
         }
         return vertices;
     }
+    private int skipWhiteSpace(String line,int index){
+        while(line.charAt(index) == ' '){
+            index++;
+        }
+        return index;
+    }
+    private int skipNonWhiteSpace( String line, int index){
+        while(line.charAt(index) != ' '){
+            index++;
+        }
+        return index;
+    }
     private void parseFontType(String fontTypeFileLocation){
         List<String> lines;
         try{
             lines = Files.readAllLines(Path.of(fontTypeFileLocation));
         }catch(IOException e){
             e.printStackTrace();
+            logger.severe(String.format("Failed to parse font type from '%s'", fontTypeFileLocation));
+            System.exit(1);
             return;
         }
         for(String line : lines){
-            int idx = 0;
-            while(line.charAt(idx) != ' '){
-                idx++;
-            }
+            int idx = this.skipNonWhiteSpace(line, 0);
             int index = Integer.parseInt(line.substring(0, idx));
+
             // Skip whitespace, character and another whitespace
             idx+= 3;
+
             int startIdx =idx;
-            while(line.charAt(idx) != ' '){
-                idx++;
-            }
+            idx = this.skipNonWhiteSpace(line, idx);
             float left = (float)Double.parseDouble(line.substring(startIdx, idx));
-            while (line.charAt(idx) == ' '){
-                idx++;
-            }
+
+            idx = this.skipWhiteSpace(line, idx);
+
             startIdx = idx;
-            while(line.charAt(idx) != ' '){
-                idx++;
-            }
+            idx = skipNonWhiteSpace(line, idx);
             float right = (float) Double.parseDouble(line.substring(startIdx, idx));
-            while (line.charAt(idx) == ' '){
-                idx++;
-            }
+
+            idx = this.skipWhiteSpace(line, idx);
             int size = Integer.parseInt(line.substring(idx));
-
             this.types[index] = new FontType(left, right, size);
-
         }
-
     }
 
     public Font(ResourceManager resourceManager, String fontFileLocation){
@@ -189,7 +193,6 @@ public class Font {
         Font font = new Font(resourceManager, fontFileLocation);
         font.parseFontType(fontTypeFileLocation);
         font.createTextBuffers();
-
 
         return font;
     }

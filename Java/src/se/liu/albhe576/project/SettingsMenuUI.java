@@ -30,46 +30,48 @@ public class SettingsMenuUI extends UI {
             return this.parentState;
         }
 
-        renderer.renderText("vsync", -25.0f, 0, ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium"), ResourceManager.STATE_VARIABLES.get("fontFontSizeSmall"), Color.WHITE, true);
-        renderer.renderCheckbox(this.vsyncCheckbox);
+        renderer.renderTextCenteredAt("vsync", -25.0f, 0, ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeMedium", 10.0f), ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeSmall", 3.0f), Color.WHITE);
         if(vsyncCheckbox.isReleased(inputState)){
             vsyncCheckbox.toggled = !vsyncCheckbox.toggled;
             glfwSwapInterval(vsyncCheckbox.toggled ? 1 : 0);
         }
+        renderer.renderCheckbox(this.vsyncCheckbox);
 
         if(this.screenSizeDropdown.toggled){
-            for(int i = 0; i < this.screenSizeDropdown.dropdownData.length; i++){
-                ButtonUIComponent item = this.screenSizeDropdown.dropdownItems.get(i);
+            Point [] dropdownData = this.screenSizeDropdown.getDropdownData();
+            int index = 0;
+            for(ButtonUIComponent item : this.screenSizeDropdown.getDropdownItems()){
                 if(item.isReleased(inputState)){
-                    this.updateWindowSize(window, this.screenSizeDropdown.dropdownData[i]);
+                    this.updateWindowSize(window, dropdownData[index]);
                     this.screenSizeDropdown.toggled = false;
                     break;
                 }
+                index++;
             }
         }
 
         // This happens after we attempt to render the items to avoid bugs with 1 click accidentally choosing the first item instantly
-        renderer.renderDropdown(screenSizeDropdown.dropdownButton, screenSizeDropdown.toggled, screenSizeDropdown.dropdownItems);
-        if(this.screenSizeDropdown.dropdownButton.isReleased(inputState)){
+        if(this.screenSizeDropdown.getDropdownButton().isReleased(inputState)){
             this.screenSizeDropdown.toggled = !this.screenSizeDropdown.toggled;
         }
+        renderer.renderDropdown(screenSizeDropdown);
 
-        renderer.renderSlider(this.audioSlider);
         if(this.audioSlider.isPressed(inputState)){
             this.audioSlider.updateSliderPosition(inputState.getMousePosition().x);
         }
+        renderer.renderSlider(this.audioSlider);
 
 
         return UIState.SETTINGS_MENU;
     }
     public SettingsMenuUI(){
-        final float buttonWidth                     = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeWidth");
-        final float buttonHeight                    = ResourceManager.STATE_VARIABLES.get("buttonSizeLargeHeight");
-        final float spaceSizeSmall                  = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeSmall");
-        final float fontSize                        = ResourceManager.STATE_VARIABLES.get("fontFontSizeMedium");
-        final float spaceSize                       = ResourceManager.STATE_VARIABLES.get("fontSpaceSizeMedium");
-        final float dropdownButtonWidth             = ResourceManager.STATE_VARIABLES.get("buttonSizeMediumWidth");
-        final float dropdownButtonHeight            = ResourceManager.STATE_VARIABLES.get("buttonSizeSmallHeight");
+        final float buttonWidth                     = ResourceManager.STATE_VARIABLES.getOrDefault("buttonSizeLargeWidth", 40.0f);
+        final float buttonHeight                    = ResourceManager.STATE_VARIABLES.getOrDefault("buttonSizeLargeHeight", 10.0f);
+        final float spaceSizeSmall                  = ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeSmall", 5.0f);
+        final float fontSize                        = ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeMedium", 6.0f);
+        final float spaceSize                       = ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeMedium", 10.0f);
+        final float dropdownButtonWidth             = ResourceManager.STATE_VARIABLES.getOrDefault("buttonSizeMediumWidth", 32.0f);
+        final float dropdownButtonHeight            = ResourceManager.STATE_VARIABLES.getOrDefault("buttonSizeSmallHeight", 6.0f);
 
         Animation returnButtonAnimation = new Animation(buttonWidth, buttonHeight, 500, 2.0f, Animation.easeOutCubic);
         this.returnButton                           = new ButtonUIComponent(0.0f, -40.0f, buttonWidth, buttonHeight, "RETURN", spaceSize, fontSize, returnButtonAnimation);

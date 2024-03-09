@@ -31,9 +31,9 @@ public class BinaryDataConverterScript
        public WaveData(int t, float st, float spx, float spy, int p){
            this.enemyType = t;
            this.spawnTime      = (long)(1000 *st);
-           this.spawnPositionX = spx;
-           this.spawnPositionY = spy;
-           this.pathId         = p;
+           this.spawnPositionX = spx * 100.0f;
+           this.spawnPositionY = (spy == 1.4f ? 1.4f : 1.2f) * 100.0f;
+           this.pathId         = p == 3 ? 3 : p - 4;
        }
        byte[] waveDataToBytes(){
            ByteBuffer buffer = ByteBuffer.allocate(WaveData.waveDataSize);
@@ -51,30 +51,30 @@ public class BinaryDataConverterScript
 
     public static void createWaveData(){
         WaveData[] data = new WaveData[]{
-            new WaveData(1, 0.2f, 1.2f, -0.7f, 5),
-            new WaveData(1, 0.6f, 1.2f, 0.6f, 5),
-            new WaveData(3, 0.6f, -0.1f, -1.4f, 3),
-            new WaveData(3, 1.5f, 0.1f, -1.4f, 3),
-            new WaveData(2, 1.5f,  -1.2f,0.5f, 6),
-            new WaveData(2, 4.0f, 1.2f,-0.5f,  6),
-            new WaveData(1, 4.2f,-1.2f, 0.0f,  5),
-            new WaveData(0, 4.2f, 1.2f,-0.2f, 4),
-            new WaveData(1, 5.5f, -1.2f,0.4f,  5),
-            new WaveData(3, 5.7f, 0.0f,-1.4f,  3),
-            new WaveData(2, 8.0f, 1.2f,-0.3f,  6),
-            new WaveData(1, 8.5f, 1.2f,0.4f,  5),
-            new WaveData(1, 9.0f, -1.2f,-0.1f,  5),
-            new WaveData(3, 9.2f, 0.3f,-1.4f,  3),
-            new WaveData(3, 12.0f,-0.3f,-1.4f,  3),
-            new WaveData(2, 12.1f, -1.2f,-0.2f,  6),
-            new WaveData(0, 13.0f,1.2f,0.4f,  4),
-            new WaveData(1, 13.2f, 1.2f,-0.5f,  5),
-            new WaveData(3, 13.5f,-0.4f,-1.4f,  3),
-            new WaveData(2, 15.0f,-1.2f,0.6f,  6),
-            new WaveData(1, 15.2f,1.2f,0.2f,  5),
-            new WaveData(0, 15.2f,-1.2f,0.4f,  4),
-            new WaveData(3, 15.2f,0.2f, -1.4f,  3),
-            new WaveData(3, 20.0f, -0.2f, -1.4f, 3)
+            new WaveData(1, 0.2f, 0.7f, 0.7f, 5),
+            new WaveData(1, 0.6f, -0.6f, -0.6f, 5),
+            new WaveData(3, 0.6f, -0.1f, 1.4f, 3),
+            new WaveData(3, 1.5f, 0.1f, 1.4f, 3),
+            new WaveData(2, 1.5f,  -0.5f,-0.5f, 6),
+            new WaveData(2, 4.0f, 0.5f,0.5f,  6),
+            new WaveData(1, 4.2f,-0.0f, -0.0f,  5),
+            new WaveData(0, 4.2f, 0.2f,0.2f, 4),
+            new WaveData(1, 5.5f, -0.4f,-0.4f,  5),
+            new WaveData(3, 5.7f, 0.0f,1.4f,  3),
+            new WaveData(2, 8.0f, 0.3f,0.3f,  6),
+            new WaveData(1, 8.5f, -0.4f,-0.4f,  5),
+            new WaveData(1, 9.0f, -0.1f,0.1f,  5),
+            new WaveData(3, 9.2f, 0.3f,1.4f,  3),
+            new WaveData(3, 12.0f,-0.3f,1.4f,  3),
+            new WaveData(2, 12.1f, 0.2f,0.2f,  6),
+            new WaveData(0, 13.0f,-0.4f,-0.4f,  4),
+            new WaveData(1, 13.2f, 0.5f,0.5f,  5),
+            new WaveData(3, 13.5f,-0.4f,1.4f,  3),
+            new WaveData(2, 15.0f,-0.6f,-0.6f,  6),
+            new WaveData(1, 15.2f,-0.2f,-0.2f,  5),
+            new WaveData(0, 15.2f,-0.4f,-0.4f,  4),
+            new WaveData(3, 15.2f,0.2f, 1.4f,  3),
+            new WaveData(3, 20.0f, -0.2f, 1.4f, 3)
         };
         final int size = 24;
         assert(data.length == size);
@@ -119,15 +119,11 @@ public class BinaryDataConverterScript
         float bulletHeight;
         int score;
         float movementSpeed;
-        public EntityData(int hp, int ti, float w, float h, int bti, float bs, float bw, float bh, int score, float ms){
+        public EntityData(int hp, int ti, float w, float h, int score, float ms){
             this.hp = hp;
             this.textureIdx = ti;
             this.width = w;
             this.height = h;
-            this.bulletTextureIdx = bti;
-            this.bulletSpeed = bs;
-            this.bulletWidth = bw;
-            this.bulletHeight = bh;
             this.score = score;
             this.movementSpeed = ms;
         }
@@ -151,22 +147,19 @@ public class BinaryDataConverterScript
         }
     }
     public static void createEntityData(){
-        final float origScreenWidth  = 620.0f;
-        final float origScreenHeight = 480.0f;
        EntityData[] data = new EntityData[]{
-               new EntityData(1,2, 0.03f, 0.06f, 6, 3.0f / origScreenHeight, 8.0f / origScreenWidth, 16.0f / origScreenHeight, 100, 0.2f),
-               new EntityData(1,3, 0.03f, 0.06f, 7, 10.0f / origScreenHeight, 7.0f / origScreenWidth, 20.0f / origScreenHeight, 125, 0.3f),
-               new EntityData(1,4, 0.03f, 0.06f, 8, 5.0f / origScreenHeight, 7.0f / origScreenWidth, 21.0f / origScreenHeight, 150, 0.1f),
-               new EntityData(10, 5, 0.3f, 0.2f, 9, 15.0f / origScreenHeight, 30.0f / origScreenWidth, 30.0f / origScreenHeight, 500, 0.4f),
-               new EntityData(3,0, 0.05f, 0.1f, 1, 5.0f / origScreenHeight, 10.0f / origScreenWidth, 10.0f / origScreenHeight, 0, 1.0f),
+               new EntityData(1,2, 3.0f, 6.0f, 100, 0.2f),
+               new EntityData(1,3, 3.0f, 6.0f, 125, 0.3f),
+               new EntityData(1,4, 3.0f, 6.0f, 150, 0.1f),
+               new EntityData(10, 5, 30.0f, 20.0f,500, 0.4f),
+               new EntityData(3,0, 5.0f, 10.0f,0, 1.0f),
        };
        final int size = 5;
         ByteBuffer buffer = ByteBuffer.allocate(EntityData.size * size);
         for(int idx = 0; idx < size; idx++){
-            System.out.println(data[idx]);
             buffer.put(EntityData.size * idx,  data[idx].entityDataToBytes());
         }
-        final int id = 3;
+        final int id = 4;
 
         byte[] out = new byte[EntityData.size * size];
         buffer.get(0, out);
@@ -174,22 +167,21 @@ public class BinaryDataConverterScript
     }
 
     public static void createBulletData(){
-        final float origScreenWidth  = 620.0f;
-        final float origScreenHeight = 480.0f;
         BulletData[] data = new BulletData[]{
-                new BulletData(6,7,  3.0f / origScreenHeight, 8.0f / origScreenWidth, 16.0f / origScreenHeight),
-                new BulletData(7,7,  10.0f / origScreenHeight, 7.0f / origScreenWidth, 20.0f / origScreenHeight),
-                new BulletData(8,8,  5.0f / origScreenHeight, 7.0f / origScreenWidth, 21.0f / origScreenHeight),
-                new BulletData(9, 7, 15.0f / origScreenHeight, 30.0f / origScreenWidth, 30.0f / origScreenHeight),
-                new BulletData(1,7,  5.0f / origScreenHeight, 10.0f / origScreenWidth, 10.0f / origScreenHeight),
+                new BulletData(6,7,  0.6f, 1.3f, 3.3f),
+                new BulletData(7,7,  2.0f, 1.1f,   4.2f),
+                new BulletData(8,8,  1.0f, 1.1f, 4.4f),
+                new BulletData(9, 7, 3.0f, 4.8f, 6.25f),
+                new BulletData(1,7,  1.0f, 1.6f, 2.0f),
         };
 
         final int size = 5;
+
         ByteBuffer buffer = ByteBuffer.allocate(BulletData.size * size);
         for(int idx = 0; idx < size; idx++){
             buffer.put(BulletData.size * idx,  data[idx].bulletDataToBytes());
         }
-        final int id = 1;
+        final int id = 2;
 
         byte[] out = new byte[BulletData.size * size];
         buffer.get(0, out);
@@ -198,6 +190,8 @@ public class BinaryDataConverterScript
     }
 
     public static void main(String[] args) {
-        BinaryDataConverterScript.createBulletData();
+        //BinaryDataConverterScript.createBulletData();
+        //BinaryDataConverterScript.createEntityData();
+        BinaryDataConverterScript.createWaveData();;
     }
 }

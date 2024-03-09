@@ -2,26 +2,11 @@
 
 ## ToDo
 * Create the kamikaze pilot thingy
-* Cleanup console commands
-* Sound
+* Check lines and set goals to minimize it to
+* figure out better way to create multiple bullets
+  * Figure out if you can just make them mutate the bullets list
+* try to remove * 0.01 and stuff in text rendering
+* player ms and gcd can be changed easily to use state variable or not
+* ends at text function
+
 * fix docs
-
-### Game things
-
-### Random
-
-### Rendering
-* Create one large image and be able to parse it
-* font bitmap
-    * differentiate between static and dynamic text rendering
-    * fix to text actually looks good
-
-### Data
-* Figure out how we parse UI data from file
-    * hoist out pretty much every data to a file :)
-* add x and y acceleration to entitydata
-
-### UI
-* Layout
-  * Able to render lists of element
-  * Implicit rendering of element

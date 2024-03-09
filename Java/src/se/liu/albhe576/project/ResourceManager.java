@@ -167,13 +167,7 @@ public class ResourceManager
 	}
 
 
-	public static int parseIntFromByteArray(byte [] data, int idx){
-		return ByteBuffer.wrap(data, idx, 4).getInt();
-	}
-	public static long parseLongFromByteArray(byte [] data, int idx){
-		return ByteBuffer.wrap(data, idx, 8).getLong();
-	}
-	public static float parseFloatFromByteArray(byte [] data, int idx){return ByteBuffer.wrap(data, idx, 4).getFloat();}
+	// Also just load this from file?
     private final Map<Integer, String> TEXTURE_LOCATIONS= new HashMap<>()
 	{
 		{
@@ -197,37 +191,7 @@ public class ResourceManager
 			put(Texture.GREY_BUTTON_14, "./resources/UI/grey_button14.png");
 		}
     };
-	public static final Map<String, Float> STATE_VARIABLES = new HashMap<>()
-	{
-		{
-			put("numberOfMeteors", 30.0f);
-			put("playerEntityIdx", 4.0f);
-			put("vsync", 1.0f);
-			put("SCREEN_WIDTH", 620.0f);
-			put("SCREEN_HEIGHT", 480.0f);
-			put("waveIdx", 0.0f);
-			put("scorePerEnemy", 100.0f);
-			put("updateTimerMS", 16.0f);
-			put("enemyGCDMin", 400.0f);
-			put("enemyGCDMax", 1000.0f);
-			put("playerGCDMS", 500.0f);
-			put("buttonSizeSmallWidth", 18.0f);
-			put("buttonSizeSmallHeight", 6.0f);
-			put("buttonSizeMediumWidth", 32.0f);
-			put("buttonSizeMediumHeight", 10.0f);
-			put("buttonSizeLargeWidth", 40.0f);
-			put("buttonSizeLargeHeight", 10.0f);
-			put("fontSizeSmall", 2.0f);
-			put("fontSizeMedium", 4.0f);
-			put("fontSizeLarge", 8.0f);
-			put("checkboxWidth", 6.0f);
-			put("checkboxHeight", 8.0f);
-			put("hpHeartWidth", 10.0f);
-			put("hpHeartHeight", 10.0f);
-		}
-	};
-	// No reason not to have this in a text file
-
+	public static final Map<String, Float> STATE_VARIABLES = new HashMap<>();
 	private String getShaderSource(String fileLocation) throws IOException {
 		return Files.readString(Paths.get(fileLocation));
 	}

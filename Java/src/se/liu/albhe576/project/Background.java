@@ -33,13 +33,13 @@ public class Background {
     }
 
     public void updateAndRender(Renderer renderer){
-        final int numberOfMeteors = ResourceManager.STATE_VARIABLES.get("numberOfMeteors").intValue();
+        final int numberOfMeteors = ResourceManager.STATE_VARIABLES.getOrDefault("numberOfMeteors", 100.0f).intValue();
         this.updateNumberOfMeteors(numberOfMeteors);
 
         this.timer.updateTimer();
         long tick = this.timer.getLastTick();
 
-        if(this.lastUpdate + 16 <= tick){
+        if(this.lastUpdate + ResourceManager.STATE_VARIABLES.getOrDefault("updateTimerMS", 16.0f) <= tick){
             for(Meteor meteor : this.meteors){
                 if(!meteor.isWithinScreen()){
                     this.resetMeteor(meteor);
@@ -91,7 +91,7 @@ public class Background {
         return new Meteor(x,y,width,height,textureIdx, movementSpeed);
     }
     private void initMeteors(){
-        final int numberOfMeteors = ResourceManager.STATE_VARIABLES.get("numberOfMeteors").intValue();
+        final int numberOfMeteors = ResourceManager.STATE_VARIABLES.getOrDefault("numberOfMeteors", 100.0f).intValue();
 
         for(int i = 0; i < numberOfMeteors; i++){
             this.meteors.add(this.createRandomMeteor());
@@ -99,10 +99,11 @@ public class Background {
     }
     public Background(){
         this.meteors    = new ArrayList<>();
-        this.initMeteors();
         this.timer      = new Timer();
-        this.timer.startTimer();
         this.lastUpdate = 0;
+
+        this.initMeteors();
+        this.timer.startTimer();
     }
 
 }

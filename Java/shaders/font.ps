@@ -10,9 +10,6 @@ uniform vec4 pixelColor;
 
 void main(void)
 {
-	vec4 color = texture(fontTexture, texCoord);
-
-    color = color * pixelColor;
-	outputColor = color;
+	outputColor = texture(fontTexture, texCoord) * pixelColor;
 
 }

@@ -9,47 +9,35 @@ import java.util.logging.Logger;
 
 public class EntityManager {
     private         List<EntityData>        entityData;
-    private 		List<Wave> 				waves;
+    private 		List<List<WaveData>> 				waves;
     private final   AccelerationFunctions     accelerationFunctions;
     private final   BulletFactory             bulletFactory;
     private final   Logger                    logger          = Logger.getLogger("Entity Manager");
-    private final String []WAVE_LOCATIONS= new String[]{
-            "./resources/binaryData/wave22024-03-05 23:08:09.345.bin",
-            "./resources/binaryData/wave22024-03-06 16:21:02.01.bin"
-    };
     public Player getPlayer(){
-        EntityData playerData = this.entityData.get(4);
-        float width = playerData.width * 100.0f;
-        float height = playerData.height * 100.0f;
-
-        return new Player(playerData.hp, 0,0, width, height, playerData.textureIdx);
+        EntityData playerData = this.entityData.get(ResourceManager.STATE_VARIABLES.getOrDefault("playerEntityIdx", 4.0f).intValue());
+        return new Player(playerData.hp, 0,0, playerData.width, playerData.height, playerData.textureIdx);
     }
 
     public List<Bullet> getBullets(Entity parent){
         return this.bulletFactory.makeBullets(parent);
     }
 
-    private BulletData[] loadBulletData(ResourceManager resourceManager){
+    private BulletData[] loadBulletData(){
         final String bulletDataLocation = "./resources/entities/bulletData.txt";
         try{
             List<String> bulletFileData = Files.readAllLines(Path.of(bulletDataLocation));
             int count = Integer.parseInt(bulletFileData.get(0));
-
-
             BulletData [] bulletData = new BulletData[count];
 
-            byte[] binaryData = Files.readAllBytes(Path.of(bulletFileData.get(1)));
-            int idx = 0;
+            FileBuffer bulletDataBuffer = new FileBuffer(Files.readAllBytes(Path.of(bulletFileData.get(1))));
             for(int i = 0; i < count; i++){
                 BulletData data = new BulletData(
-                    ResourceManager.parseIntFromByteArray(binaryData, idx + 0),
-                    ResourceManager.parseIntFromByteArray(binaryData, idx + 4),
-                    ResourceManager.parseFloatFromByteArray(binaryData, idx + 8),
-                    ResourceManager.parseFloatFromByteArray(binaryData, idx + 12),
-                    ResourceManager.parseFloatFromByteArray(binaryData, idx + 16)
+                    bulletDataBuffer.parseIntFromByteBuffer(),
+                    bulletDataBuffer.parseIntFromByteBuffer(),
+                    bulletDataBuffer.parseFloatFromByteBuffer(),
+                    bulletDataBuffer.parseFloatFromByteBuffer(),
+                    bulletDataBuffer.parseFloatFromByteBuffer()
                 );
-
-                idx += BulletData.size;
                 bulletData[i] = data;
             }
 
@@ -70,29 +58,12 @@ public class EntityManager {
         try{
             List<String> data = Files.readAllLines(Path.of(entityDataLocation));
             int count = Integer.parseInt(data.get(0));
-
-
             this.entityData = new ArrayList<>(count);
 
-            byte[] binaryData = Files.readAllBytes(Path.of(data.get(1)));
-            int idx = 0;
+            FileBuffer fileBuffer =new FileBuffer(Files.readAllBytes(Path.of(data.get(1))));
 
             for(int i = 0; i < count; i++){
-                EntityData entityData = new EntityData(
-                        ResourceManager.parseIntFromByteArray(binaryData, idx),
-                        ResourceManager.parseIntFromByteArray(binaryData, idx + 4),
-                        ResourceManager.parseFloatFromByteArray(binaryData, idx + 8),
-                        ResourceManager.parseFloatFromByteArray(binaryData, idx + 12),
-                        ResourceManager.parseIntFromByteArray(binaryData, idx + 16),
-                        ResourceManager.parseFloatFromByteArray(binaryData, idx + 20),
-                        ResourceManager.parseFloatFromByteArray(binaryData, idx + 24),
-                        ResourceManager.parseFloatFromByteArray(binaryData, idx + 28),
-                        ResourceManager.parseIntFromByteArray(binaryData, idx + 32),
-                        ResourceManager.parseFloatFromByteArray(binaryData, idx + 36)
-                );
-                idx += EntityData.size;
-
-                this.entityData.add(i, entityData);
+                this.entityData.add(i, EntityData.parseFromFileBuffer(fileBuffer));
             }
 
         }catch(IOException e){
@@ -100,55 +71,42 @@ public class EntityManager {
             System.exit(1);
         }
     }
-    private void loadWaveData(){
-        this.waves = new ArrayList<>();
-
-        for(String waveFileLocation : this.WAVE_LOCATIONS){
-            ArrayList<Enemy> enemies = new ArrayList<>();
-            final byte[] fileData;
-
-            try{
-                fileData = Files.readAllBytes(Path.of(waveFileLocation));
-            }catch(IOException e){
-                logger.warning(String.format("Failed to load wave from '%s'\n", waveFileLocation));
-                continue;
-            }
-
-            for(int fileIndex = 0; fileIndex < fileData.length;){
-                WaveData enemyWaveData = WaveData.parseFromByteArray(fileData, fileIndex);
-                fileIndex += WaveData.size;
-
-                EntityData enemyEntityData = this.entityData.get(enemyWaveData.enemyType);
-                AccelerationFunction[] accelerationFunctions = this.accelerationFunctions.getPath(enemyWaveData.pathId);
-
-                float x = 100.0f * enemyWaveData.spawnPositionX;
-
-                float movementSpeed;
-                if(x < 100.0f && x > -100.0f){
-                    movementSpeed = enemyEntityData.movementSpeed;
-                }else{
-                    movementSpeed = x < 0 ? enemyEntityData.movementSpeed : -enemyEntityData.movementSpeed;
-                }
-
-                Enemy enemy = new Enemy(
-                        enemyEntityData.hp,
-                        enemyWaveData.enemyType,
-                        x,
-                        -100.0f * enemyWaveData.spawnPositionY,
-                        100.0f * enemyEntityData.width,
-                        100.0f * enemyEntityData.height,
-                        enemyEntityData.textureIdx,
-                        enemyWaveData.spawnTime,
-                        enemyEntityData.score,
-                        movementSpeed,
-                        accelerationFunctions[0],
-                        accelerationFunctions[1]
-
-                );
-                enemies.add(enemy);
-            }
-            this.waves.add(new Wave(enemies, -1));
+    private List<WaveData> parseWaveData(String fileLocation){
+        FileBuffer fileBuffer;
+        try{
+            fileBuffer = new FileBuffer(Files.readAllBytes(Path.of(fileLocation)));
+        }catch(IOException e){
+            logger.warning(String.format("Failed to read waveData from '%s'", fileLocation));
+            return null;
         }
+        ArrayList<WaveData> waveData = new ArrayList<>();
+
+        while (fileBuffer.index  < fileBuffer.data.length) {
+            waveData.add(WaveData.parseFromFileBuffer(fileBuffer));
+        }
+        return waveData;
+
+    }
+    private void loadWaveData(){
+        final String waveFileLocation = "./resources/entities/waveData.txt";
+        List<String> data;
+        this.waves = new ArrayList<>();
+        try{
+            data = Files.readAllLines(Path.of(waveFileLocation));
+        }catch(IOException e){
+            logger.severe(String.format("Failed to read parse waveData from '%s'", waveFileLocation));
+            return;
+        }
+
+        for(int i = 0; i < Integer.parseInt(data.get(0)); i++){
+            List<WaveData> waveData = this.parseWaveData(data.get(i + 1));
+            if(waveData != null){
+                this.waves.add(waveData);
+            }
+        }
+
+
+
     }
 
     public Wave getWave(int index, long timeWaveStarted){
@@ -158,17 +116,42 @@ public class EntityManager {
         }
 
         ArrayList<Enemy> enemies = new ArrayList<>();
+        for(WaveData enemyWaveData : this.waves.get(index)){
 
-        Wave wave = this.waves.get(index);
-        for(Enemy enemy : wave.getEnemies()){
-            enemies.add(enemy.copyEnemy());
+            EntityData enemyEntityData                      = this.entityData.get(enemyWaveData.enemyType);
+            IAccelerationFunction[] IAccelerationFunctions = this.accelerationFunctions.getPath(enemyWaveData.pathId);
+
+            float movementSpeed;
+            if(enemyWaveData.spawnPositionX < 100.0f && enemyWaveData.spawnPositionX > -100.0f){
+                movementSpeed = enemyEntityData.movementSpeed;
+            }else{
+                movementSpeed = enemyWaveData.spawnPositionX < 0 ? enemyEntityData.movementSpeed : -enemyEntityData.movementSpeed;
+            }
+
+            Enemy enemy = new Enemy(
+                    enemyEntityData.hp,
+                    enemyWaveData.enemyType,
+                    enemyWaveData.spawnPositionX,
+                    enemyWaveData.spawnPositionY,
+                    enemyEntityData.width,
+                    enemyEntityData.height,
+                    enemyEntityData.textureIdx,
+                    enemyWaveData.spawnTime,
+                    enemyEntityData.score,
+                    movementSpeed,
+                    IAccelerationFunctions[0],
+                    IAccelerationFunctions[1]
+
+            );
+            enemies.add(enemy);
         }
+
         return new Wave(enemies, timeWaveStarted);
     }
-    public EntityManager(ResourceManager resourceManager){
+    public EntityManager(){
         this.accelerationFunctions = new AccelerationFunctions();
         this.loadEntityData();
         this.loadWaveData();
-        this.bulletFactory = new BulletFactory(this.loadBulletData(resourceManager));
+        this.bulletFactory = new BulletFactory(this.loadBulletData());
     }
 }

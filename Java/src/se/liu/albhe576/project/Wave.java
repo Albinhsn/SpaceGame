@@ -7,8 +7,8 @@ import java.util.Random;
 public class Wave {
     private final List<Enemy> enemies;
     private final long timeWaveStarted;
-    public List<Enemy> getEnemies(){
-        return this.enemies;
+    public boolean isOver(){
+        return this.enemies.isEmpty();
     }
 
     private boolean isOutOfBounds(Enemy enemy){
@@ -21,11 +21,15 @@ public class Wave {
         // This should be given from the wave data or something
         return (minEntityX < -160.0f || maxEntityX > 160.0f|| minEntityY < -160.0f || maxEntityY > 160.0f);
     }
-    public void removeKilledEnemies() {
+    private void removeKilledEnemies() {
         this.enemies.removeIf(enemy -> !enemy.alive);
     }
-    public void removeOutOfBoundsEnemies() {
+    private void removeOutOfBoundsEnemies() {
         this.enemies.removeIf(this::isOutOfBounds);
+    }
+    public void removeDeadOrOutOfBoundsEnemies(){
+        this.removeKilledEnemies();
+        this.removeOutOfBoundsEnemies();
     }
     public List<Entity> getEnemiesAsEntities() {
         return this.enemies.stream().map(x -> (Entity)x).toList();

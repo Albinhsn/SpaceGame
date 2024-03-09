@@ -23,6 +23,7 @@ public class Animation {
         if(this.startedAnimation == 0){
             this.startedAnimation = tick;
         }
+
         long tickDifference = tick - this.startedAnimation;
         float increasePerMs = this.maxSize / (float)this.animationTimer;
         float increase = this.inFunction.apply(Math.min(increasePerMs * tickDifference, 1));
@@ -36,23 +37,13 @@ public class Animation {
     }
 
     private float[]animateOut(){
-        long tick = System.currentTimeMillis();
-        float width     = this.initialWidth;
-        float height    = this.initialHeight;
-        if(this.endedAnimation != 0){
-            long tickDifference = tick - this.endedAnimation;
-            float increasePerMs = maxSize / (float)this.animationTimer;
-            float increase = this.outFunction.apply(1.0f - Math.min(increasePerMs * tickDifference, 1));
-
-            if(increase <= 0){
-                this.endedAnimation = 0;
-            }
-
-            width  += maxSize * increase;
-            height += maxSize * increase;
-        }
+        long tickDifference = System.currentTimeMillis() - this.endedAnimation;
+        float increasePerMs = this.maxSize / (float)this.animationTimer;
+        float increase = this.outFunction.apply(1.0f - Math.min(increasePerMs * tickDifference, 1));
 
         this.startedAnimation = 0;
+        float width  = this.initialWidth  + maxSize * increase;
+        float height = this.initialHeight + maxSize * increase;
         return new float[]{width, height};
     }
 

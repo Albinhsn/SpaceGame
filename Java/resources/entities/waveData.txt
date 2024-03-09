@@ -1,1 +1,3 @@
 2
+./resources/binaryData/wave22024-03-08 16:16:45.249.bin
+./resources/binaryData/wave22024-03-08 16:07:15.983.bin
