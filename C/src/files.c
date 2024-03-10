@@ -1,84 +1,7 @@
 #include "files.h"
 #include "lodepng.h"
-#include "sdl.h"
-#include <ctype.h>
 #include <string.h>
 
-static void parseIntFromString(int* dest, char* source, u8* length)
-{
-  char number[32];
-  memset(number, 0, 32);
-
-  for (int i = 0; i < 32; i++)
-  {
-    number[i] = 0;
-  }
-  u8 pos = 0;
-  while (isdigit(source[pos]))
-  {
-    pos++;
-  }
-  memcpy(number, source, pos);
-  *dest   = atoi(number) * 2;
-  *length = pos;
-}
-
-static void parseFloatFromString(float* dest, char* source, u8* length)
-{
-  char number[32];
-  u8   pos = 0;
-  while (source[pos] != ' ')
-  {
-    pos++;
-  }
-  memcpy(number, source, pos);
-  *dest   = atof(number);
-  *length = pos;
-}
-
-void parseFontTypes(struct Font* font, const char* fileLocation)
-{
-  font->type = (struct FontType*)malloc(sizeof(struct FontType) * 95);
-
-  char* buffer;
-  int   len;
-  readFile(&buffer, &len, fileLocation);
-  FILE* file;
-  file = fopen(fileLocation, "r");
-  char line[256];
-  char number[32];
-  for (int i = 0; i < 95; i++)
-  {
-    memset(number, 0, 32);
-    fgets(line, sizeof(line), file);
-    u8 pos = 0;
-    u8 inc = 0;
-    // remove number
-    while (line[pos] != ' ')
-    {
-      pos++;
-    }
-    // remove whitespace, number and another whitespace
-    pos += 3;
-    parseFloatFromString(&font->type[i].left, &line[pos], &inc);
-    pos += inc;
-
-    // This should always be the start of the number
-    // parse whitespace again
-    while (line[pos] == ' ')
-    {
-      pos++;
-    }
-
-    parseFloatFromString(&font->type[i].right, &line[pos], &inc);
-    pos += inc;
-    while (line[pos] == ' ')
-    {
-      pos++;
-    }
-    parseIntFromString(&font->type[i].size, &line[pos], &inc);
-  }
-}
 
 bool parsePNG(u8** data, u32* width, u32* height, const char* filename)
 {
@@ -130,23 +53,6 @@ bool readFile(char** buffer, int* len, const char* fileName)
   return true;
 }
 
-void initFont(struct Font* font, GLuint* textureId)
-{
-
-  // parsePNG(&font->image, FONT_IMAGE_LOCATION);
-
-  glActiveTexture(GL_TEXTURE0);
-  glGenTextures(1, textureId);
-  glBindTexture(GL_TEXTURE_2D, *textureId);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, font->image.width, font->image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, font->image.data);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  sta_glGenerateMipmap(GL_TEXTURE_2D);
-
-  font->spaceSize = 10;
-  font->height    = 128.0f;
-  parseFontTypes(font, FONT_DATA_LOCATION);
-}
 
 void parseTarga(u8** data, u32* width, u32* height, const char* filename)
 {

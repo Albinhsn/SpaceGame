@@ -243,7 +243,11 @@ void clearMat3x3(Matrix3x3* m)
 void getTransformationMatrix(Matrix3x3* res, f32 x, f32 y, f32 width, f32 height, f32 rotation)
 {
   f32       r            = (rotation * M_PI) / 180.0f;
-  Matrix3x3 rotationM    = {(f32)cos(r), (f32)sin(r), 0, (f32)-sin(r), (f32)cos(r), 0, 0, 0, 1};
+  Matrix3x3 rotationM    = {
+    (f32)cos(r), (f32)sin(r), 0, //
+    (f32)-sin(r), (f32)cos(r), 0, //
+    0, 0, 1 //
+  };
 
   f32       transformX   = x * 0.01f;
   f32       transformY   = y * 0.01f;
@@ -262,6 +266,7 @@ void getTransformationMatrix(Matrix3x3* res, f32 x, f32 y, f32 width, f32 height
       0,      0,      1  //
   };
   Matrix3x3 m0;
+  clearMat3x3(&m0);
   MatMul3x3(&m0, &translationM, &rotationM);
   MatMul3x3(res, &m0, &scaleM);
 }

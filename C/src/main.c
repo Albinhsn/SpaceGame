@@ -4,7 +4,8 @@
 
 i32 main()
 {
-  initRenderer();
+  Font font;
+  initRenderer(&font);
 
   InputState inputState;
   initInputState(&inputState);
@@ -27,6 +28,7 @@ i32 main()
     initNewFrame();
 
     renderTexture(&entity);
+    renderText("Hello World!", &RED, 0, 0);
 
     SDL_GL_SwapWindow(g_renderer.window);
   }

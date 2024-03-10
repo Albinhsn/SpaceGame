@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "entity.h"
+#include "font.h"
 #include "sdl.h"
 
 #define TEXT_MAX_LENGTH 32
@@ -13,8 +14,7 @@ struct Renderer
   SDL_GLContext context;
   GLuint        textureProgramId;
   GLuint        textureVertexId;
-  GLuint        fontProgramId;
-  GLuint        fontVertexId;
+  Font*         font;
 };
 
 enum TextureModel
@@ -37,15 +37,17 @@ enum TextureModel
   TEXTURE_GREY_SLIDER_UP,
   TEXTURE_GREY_SLIDER_HORIZONTAL,
   TEXTURE_GREY_BUTTON_14,
+  TEXTURE_FONT
 };
 
 typedef struct Renderer Renderer;
 
 extern Renderer         g_renderer;
 
-void                    initRenderer();
+void                    initRenderer(Font* font);
 void                    renderTexture(Entity* entity);
 void                    renderTextCentered();
+void                    renderText(const char* text, Color* color, f32 x, f32 y);
 void                    renderTextStartsAt();
 void                    renderTextEndsAt();
 u32                     getTextureId(enum TextureModel textureModel);

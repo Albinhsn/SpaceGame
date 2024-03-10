@@ -3,6 +3,7 @@
 #include "files.h"
 #include "sdl.h"
 #include "texture.h"
+#include "vector.h"
 #include <string.h>
 
 Renderer g_renderer;
@@ -14,39 +15,38 @@ u32      getTextureId(enum TextureModel textureModel)
   return textures[textureModel].textureId;
 }
 
-static const char* textureLocations[18] = {
-    "./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
-    "./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
-    "./resources/images/PNG/Default/enemy_B.png",
-    "./resources/images/PNG/Default/enemy_E.png",
-    "./resources/images/PNG/Default/enemy_C.png",
-    "./resources/images/PNG/Default/satellite_C.png",
-    "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-    "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-    "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-    "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
-    "./resources/images/PNG/Default/meteor_detailedLarge.png",
-    "./resources/images/PNG/Default/tile_0044.png",
-    "./resources/UI/grey_button05.png",
-    "./resources/UI/grey_box.png",
-    "./resources/UI/grey_checkmarkGrey.png",
-    "./resources/UI/grey_sliderUp.png",
-    "./resources/UI/grey_sliderHorizontal.png",
-    "./resources/UI/grey_button14.png",
-};
+static const char* textureLocations[19] = {"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
+                                           "./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
+                                           "./resources/images/PNG/Default/enemy_B.png",
+                                           "./resources/images/PNG/Default/enemy_E.png",
+                                           "./resources/images/PNG/Default/enemy_C.png",
+                                           "./resources/images/PNG/Default/satellite_C.png",
+                                           "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+                                           "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+                                           "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+                                           "./resources/images/PNG/Sprites/Missiles/spaceMissiles_022.png",
+                                           "./resources/images/PNG/Default/meteor_detailedLarge.png",
+                                           "./resources/images/PNG/Default/tile_0044.png",
+                                           "./resources/UI/grey_button05.png",
+                                           "./resources/UI/grey_box.png",
+                                           "./resources/UI/grey_checkmarkGrey.png",
+                                           "./resources/UI/grey_sliderUp.png",
+                                           "./resources/UI/grey_sliderHorizontal.png",
+                                           "./resources/UI/grey_button14.png",
+                                           "./resources/fonts/font01.png"};
 
-void generateTextures()
+void               generateTextures()
 {
   glActiveTexture(GL_TEXTURE0);
-  for (u32 i = 0; i < 18; i++)
+  for (u32 i = 0; i < 19; i++)
   {
     Texture* texture = &textures[i];
     glGenTextures(1, &texture->textureId);
     glBindTexture(GL_TEXTURE_2D, texture->textureId);
 
     const char* location = textureLocations[i];
-
     u32         len      = strlen(textureLocations[i]);
+
     parsePNG(&texture->data, &texture->width, &texture->height, textureLocations[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
 
@@ -103,6 +103,23 @@ void createAndCompileShader(GLuint* shaderId, int glShaderMacro, const char* sou
 
   sta_glCompileShader(*shaderId);
 
+  int result;
+  sta_glGetShaderiv(*shaderId, GL_COMPILE_STATUS, &result);
+  if (result != 1)
+  {
+    int logSize;
+
+    sta_glGetShaderiv(*shaderId, GL_INFO_LOG_LENGTH, &logSize);
+    logSize++;
+    char infoLog[logSize];
+    infoLog[logSize - 1] = '\0';
+
+    sta_glGetShaderInfoLog(*shaderId, logSize, NULL, infoLog);
+    printf("Failed to compile shader\n");
+    printf("%s\n", infoLog);
+    exit(1);
+  }
+
   free(buffer);
 }
 
@@ -122,14 +139,15 @@ void createTextShaderProgram()
   createAndCompileVertexShader(&vShader, "shaders/font.vs");
   createAndCompileFragmentShader(&fShader, "shaders/font.ps");
 
-  g_renderer.fontProgramId = sta_glCreateProgram();
-  sta_glAttachShader(g_renderer.fontProgramId, vShader);
-  sta_glAttachShader(g_renderer.fontProgramId, fShader);
+  Font* font      = g_renderer.font;
+  font->programId = sta_glCreateProgram();
+  sta_glAttachShader(font->programId, vShader);
+  sta_glAttachShader(font->programId, fShader);
 
-  sta_glBindAttribLocation(g_renderer.fontProgramId, 0, "inputPosition");
-  sta_glBindAttribLocation(g_renderer.fontProgramId, 1, "inputTexCoord");
+  sta_glBindAttribLocation(font->programId, 0, "inputPosition");
+  sta_glBindAttribLocation(font->programId, 1, "inputTexCoord");
 
-  sta_glLinkProgram(g_renderer.fontProgramId);
+  sta_glLinkProgram(font->programId);
 }
 
 void createTextureShaderProgram()
@@ -148,14 +166,17 @@ void createTextureShaderProgram()
   sta_glLinkProgram(g_renderer.textureProgramId);
 }
 
-void initRenderer()
+void initRenderer(Font* font)
 {
   g_renderer.window = initSDLWindow(&g_renderer.context, DEFAULT_SCREENWIDTH, DEFAULT_SCREENHEIGHT);
+  g_renderer.font   = font;
+
+  generateTextures();
+  createTextShaderProgram();
+  initFont(font);
+
   createTextureShaderProgram();
   createTextureVertexArray();
-
-  createTextShaderProgram();
-  generateTextures();
 }
 
 void renderTexture(Entity* entity)
@@ -181,4 +202,37 @@ void renderTexture(Entity* entity)
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   sta_glBindVertexArray(0);
+}
+
+static void setTextShaderParams(Font* font, Color* color)
+{
+  sta_glUseProgram(font->programId);
+
+  i32 location = sta_glGetUniformLocation(font->programId, "fontTexture");
+  if (location == -1)
+  {
+    printf("Failed to get fontTexture location\n");
+    exit(1);
+  }
+  sta_glUniform1i(location, 0);
+
+  location = sta_glGetUniformLocation(font->programId, "pixelColor");
+  if (location == -1)
+  {
+    printf("Failed to get pixel color location\n");
+    exit(1);
+  }
+  f32 c[4] = {color->r, color->g, color->b, color->a};
+  sta_glUniform4fv(location, 1, &c[0]);
+}
+
+void renderText(const char* text, Color* color, f32 x, f32 y)
+{
+  Font* font = g_renderer.font;
+  updateText(font, x, y, text);
+  setTextShaderParams(font, color);
+  sta_glBindVertexArray(font->vertexArrayId);
+  glBindTexture(GL_TEXTURE_2D, font->textureId);
+
+  glDrawElements(GL_TRIANGLES, TEXT_MAX_LENGTH * 4, GL_UNSIGNED_INT, 0);
 }

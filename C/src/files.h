@@ -30,25 +30,6 @@ struct Image
 };
 typedef struct Image Image;
 
-struct FontType
-{
-  float left, right;
-  int   size;
-};
-typedef struct FontType FontType;
-struct Font
-{
-  FontType* type;
-  Image     image;
-  float     height;
-  int       spaceSize;
-  u32       vertexArrayId;
-  u32       vertexBufferId;
-  u32       programId;
-  u32       textureId;
-};
-typedef struct Font Font;
-
 struct TargaHeader
 {
   unsigned char  data1[12];
@@ -59,8 +40,6 @@ struct TargaHeader
 };
 typedef struct TargaHeader TargaHeader;
 
-void                       parseFontTypes(struct Font* font, const char* fileLocation);
-void                       initFont(struct Font* font, GLuint* textureId);
 void                       parseTarga(u8** data, u32* width, u32* height, const char* filename);
 bool                       readFile(char** buffer, int* len, const char* fileName);
 bool                       parsePNG(u8** data, u32* width, u32* height, const char* filename);

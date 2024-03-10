@@ -98,6 +98,7 @@ struct Vec3f32
   };
 };
 typedef struct Vec3f32 Vec3f32;
+typedef struct Vec4f32 Color;
 
 struct Vec2f32
 {
