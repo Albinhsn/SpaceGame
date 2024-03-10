@@ -46,10 +46,9 @@ extern Renderer         g_renderer;
 
 void                    initRenderer(Font* font);
 void                    renderTexture(Entity* entity);
-void                    renderTextCentered();
-void                    renderText(const char* text, Color* color, f32 x, f32 y);
-void                    renderTextStartsAt();
-void                    renderTextEndsAt();
+void                    renderTextCentered(const char * text, Color * color, f32 x, f32 y);
+void                    renderTextStartsAt(const char* text, Color* color, f32 x, f32 y);
+void                    renderTextEndsAt(const char* text, Color* color, f32 x, f32 y);
 u32                     getTextureId(enum TextureModel textureModel);
 
 static inline void      initNewFrame()

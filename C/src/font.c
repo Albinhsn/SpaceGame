@@ -73,7 +73,6 @@ static void parseFontTypes(struct Font* font, const char* fileLocation)
       pos++;
     }
     parseIntFromString(&font->type[idx].size, &line[pos], &inc);
-    //printf("%d %f %f %d\n",idx, font->type[idx].left, font->type[idx].right, font->type[idx].size);
   }
 }
 
@@ -111,10 +110,8 @@ static void createTextBuffers(Font* font)
   sta_glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(GLfloat) * 5, 0);
   sta_glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(GLfloat) * 5, (unsigned char*)NULL + (3 * sizeof(float)));
 
-  // Generate an ID for the index buffer.
   sta_glGenBuffers(1, &indexBufferId);
 
-  // Bind the index buffer and load the index data into it.
   sta_glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
   sta_glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexCount * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
@@ -128,7 +125,7 @@ void initFont(Font* font)
   font->textureId = getTextureId(TEXTURE_FONT);
 }
 
-void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, const char* text, f32 x, f32 y, f32 spaceSize, f32 fontSize)
+void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, const char* text, f32 x, f32 y, f32 spaceSize, f32 fontSize, TextIndentation indentation)
 {
   f32 drawX        = x * 0.01f;
   f32 drawY        = (y + fontSize) * 0.01f;
@@ -136,11 +133,27 @@ void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, con
 
   f32 sizeModifier = 0.5f;
 
-  i32 numLetters   = strlen(text);
+  i32 numLetters   = strlen(text) - 1;
   if (numLetters > TEXT_MAX_LENGTH)
   {
     printf("WARNING: Trying to write text with %d characters, %d is max", numLetters, TEXT_MAX_LENGTH);
     numLetters = TEXT_MAX_LENGTH;
+  }
+
+  f32 totalSize = 0;
+  for (u32 i = 0; i < numLetters; i++)
+  {
+    char letter    = text[i];
+    f32  addedSize = font->type[letter].size * 0.01f * sizeModifier;
+    totalSize += addedSize != 0 ? addedSize : spaceSize * 0.01f;
+  }
+  if (indentation == TEXT_INDENTATION_CENTERED)
+  {
+    drawX -= totalSize / 2.0f;
+  }
+  else if (indentation == TEXT_INDENTATION_END)
+  {
+    drawX -= totalSize;
   }
 
   for (i32 letterIdx = 0, vertexIdx = 0; letterIdx < numLetters; letterIdx++)
@@ -188,17 +201,20 @@ void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, con
   }
 }
 
-void updateText(Font* font, f32 x, f32 y, const char* text)
+void updateText(Font* font, f32 x, f32 y, const char* text, TextIndentation indentation)
 {
   u32 vertexCount = TEXT_MAX_LENGTH * 4 * 5;
   f32 spaceSize   = 10.0f;
   f32 fontSize    = 10.0f;
   f32 vertices[vertexCount];
-  memset(vertices, 0, vertexCount);
+  for (int i = 0; i < vertexCount; i++)
+  {
+    vertices[i] = 0.0f;
+  }
 
   sta_glBindVertexArray(font->vertexArrayId);
 
-  buildUpdatedTextVertexArray(font, vertices, vertexCount, text, x, y, spaceSize, fontSize);
+  buildUpdatedTextVertexArray(font, vertices, vertexCount, text, x, y, spaceSize, fontSize, indentation);
 
   sta_glBindBuffer(GL_ARRAY_BUFFER, font->vertexArrayId);
   sta_glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(f32), vertices, GL_DYNAMIC_DRAW);

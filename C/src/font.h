@@ -23,8 +23,16 @@ struct Font
 };
 typedef struct Font Font;
 
-void                initFont(Font* font);
-void                buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, const char* text, f32 x, f32 y, f32 spaceSize, f32 fontSize);
-void updateText(Font* font, f32 x, f32 y, const char* text);
+enum TextIndentation
+{
+  TEXT_INDENTATION_START,
+  TEXT_INDENTATION_CENTERED,
+  TEXT_INDENTATION_END,
+};
+typedef enum TextIndentation TextIndentation;
+
+void initFont(Font* font);
+void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, const char* text, f32 x, f32 y, f32 spaceSize, f32 fontSize, TextIndentation indentation);
+void updateText(Font* font, f32 x, f32 y, const char* text, TextIndentation indentation);
 
 #endif

@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "common.h"
 #include "files.h"
+#include "font.h"
 #include "sdl.h"
 #include "texture.h"
 #include "vector.h"
@@ -225,14 +226,31 @@ static void setTextShaderParams(Font* font, Color* color)
   f32 c[4] = {color->r, color->g, color->b, color->a};
   sta_glUniform4fv(location, 1, &c[0]);
 }
-
-void renderText(const char* text, Color* color, f32 x, f32 y)
+static void renderText(Font* font, Color* color)
 {
-  Font* font = g_renderer.font;
-  updateText(font, x, y, text);
   setTextShaderParams(font, color);
   sta_glBindVertexArray(font->vertexArrayId);
   glBindTexture(GL_TEXTURE_2D, font->textureId);
 
   glDrawElements(GL_TRIANGLES, TEXT_MAX_LENGTH * 4, GL_UNSIGNED_INT, 0);
+}
+void renderTextCentered(const char* text, Color* color, f32 x, f32 y)
+{
+  Font* font = g_renderer.font;
+  updateText(font, x, y, text, TEXT_INDENTATION_CENTERED);
+  renderText(font, color);
+}
+
+void renderTextStartsAt(const char* text, Color* color, f32 x, f32 y)
+{
+  Font* font = g_renderer.font;
+  updateText(font, x, y, text, TEXT_INDENTATION_START);
+  renderText(font, color);
+}
+
+void renderTextEndsAt(const char* text, Color* color, f32 x, f32 y)
+{
+  Font* font = g_renderer.font;
+  updateText(font, x, y, text, TEXT_INDENTATION_END);
+  renderText(font, color);
 }

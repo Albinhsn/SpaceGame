@@ -28,7 +28,7 @@ i32 main()
     initNewFrame();
 
     renderTexture(&entity);
-    renderText("Hello World!", &RED, 0, 0);
+    renderTextCentered("Hello World!", &RED, 0, 0);
 
     SDL_GL_SwapWindow(g_renderer.window);
   }
