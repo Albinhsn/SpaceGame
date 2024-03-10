@@ -1,6 +1,8 @@
 #include "common.h"
 #include "input.h"
 #include "renderer.h"
+#include "ui.h"
+
 
 i32 main()
 {
@@ -18,7 +20,19 @@ i32 main()
   entity.rotation   = 0.0f;
   entity.textureIdx = 0;
 
-  while (true)
+  u32 score = 0;
+  u8 hp = 3;
+
+  UI ui;
+  ui.state = UI_MAIN_MENU;
+  ConsoleUI      console;
+  GameOverUI     gameOver;
+  MainMenuUI     mainMenu;
+  PauseMenuUI    pauseMenu;
+  SettingsMenuUI settingsMenu;
+  initUI(&ui, &console, &gameOver, &mainMenu, &pauseMenu, &settingsMenu);
+
+  while (ui.state != UI_EXIT)
   {
 
     if (handleInput(&inputState))
@@ -27,8 +41,8 @@ i32 main()
     }
     initNewFrame();
 
-    renderTexture(&entity);
-    renderTextCentered("Hello World!", &RED, 0, 0);
+    renderEntity(&entity);
+    renderUI(&ui, &inputState, score, hp);
 
     SDL_GL_SwapWindow(g_renderer.window);
   }

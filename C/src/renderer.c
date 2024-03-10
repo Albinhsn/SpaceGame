@@ -46,9 +46,8 @@ void               generateTextures()
     glBindTexture(GL_TEXTURE_2D, texture->textureId);
 
     const char* location = textureLocations[i];
-    u32         len      = strlen(textureLocations[i]);
 
-    parsePNG(&texture->data, &texture->width, &texture->height, textureLocations[i]);
+    parsePNG(&texture->data, &texture->width, &texture->height, location);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -180,18 +179,21 @@ void initRenderer(Font* font)
   createTextureVertexArray();
 }
 
-void renderTexture(Entity* entity)
+void renderEntity(Entity* entity)
 {
-  Texture texture = textures[entity->textureIdx];
-
-  sta_glUseProgram(g_renderer.textureProgramId);
-  sta_glBindVertexArray(g_renderer.textureVertexId);
-
-  glBindTexture(GL_TEXTURE_2D, texture.textureId);
 
   Matrix3x3 transMatrix;
   clearMat3x3(&transMatrix);
   getTransformationMatrix(&transMatrix, entity->x, entity->y, entity->width, entity->height, entity->rotation);
+}
+
+void renderTexture(Matrix3x3* transMatrix, u32 textureIdx)
+{
+  sta_glUseProgram(g_renderer.textureProgramId);
+  sta_glBindVertexArray(g_renderer.textureVertexId);
+
+  Texture texture = textures[textureIdx];
+  glBindTexture(GL_TEXTURE_2D, texture.textureId);
 
   i32 location = sta_glGetUniformLocation(g_renderer.textureProgramId, "transMatrix");
   if (location == -1)
@@ -199,7 +201,7 @@ void renderTexture(Entity* entity)
     printf("failed to set transMatrix\n");
     exit(1);
   }
-  sta_glUniformMatrix3fv(location, 1, true, (f32*)&transMatrix);
+  sta_glUniformMatrix3fv(location, 1, true, (f32*)transMatrix);
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   sta_glBindVertexArray(0);
@@ -253,4 +255,49 @@ void renderTextEndsAt(const char* text, Color* color, f32 x, f32 y)
   Font* font = g_renderer.font;
   updateText(font, x, y, text, TEXT_INDENTATION_END);
   renderText(font, color);
+}
+
+void renderComponent(UIComponent* comp)
+{
+  Matrix3x3 transMatrix;
+  clearMat3x3(&transMatrix);
+  getTransformationMatrix(&transMatrix, comp->x, comp->y, comp->width, comp->height, 0.0f);
+
+  renderTexture(&transMatrix, comp->textureIdx);
+}
+
+void renderButton(ButtonUIComponent* button)
+{
+  renderComponent(&button->component);
+  renderTextCentered(button->text, &button->color, button->component.x, button->component.y);
+}
+void renderSlider(SliderUIComponent* slider)
+{
+  renderComponent(&slider->background);
+  renderComponent(&slider->bar);
+  renderComponent(&slider->slider);
+}
+
+void renderCheckbox(CheckboxUIComponent* checkbox)
+{
+  renderComponent(&checkbox->background);
+  if (checkbox->toggled)
+  {
+    renderComponent(&checkbox->background);
+  }
+}
+
+void renderDropdown(DropdownUIComponent* dropdown)
+{
+  renderButton(&dropdown->dropdownButton);
+  if (dropdown->toggled)
+  {
+    for (u32 i = 0; i < dropdown->itemCount; i++)
+    {
+      renderButton(&dropdown->items[i]);
+    }
+  }
+}
+void renderHealth(u8 hp)
+{
 }

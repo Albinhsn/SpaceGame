@@ -5,6 +5,7 @@
 #include "entity.h"
 #include "font.h"
 #include "sdl.h"
+#include "ui.h"
 
 #define TEXT_MAX_LENGTH 32
 
@@ -45,11 +46,18 @@ typedef struct Renderer Renderer;
 extern Renderer         g_renderer;
 
 void                    initRenderer(Font* font);
-void                    renderTexture(Entity* entity);
-void                    renderTextCentered(const char * text, Color * color, f32 x, f32 y);
+void                    renderEntity(Entity* entity);
+void                    renderComponent(UIComponent* comp);
+void                    renderTexture(Matrix3x3* transMatrix, u32 textureIdx);
+void                    renderButton(ButtonUIComponent* button);
+void                    renderSlider(SliderUIComponent* slider);
+void                    renderCheckbox(CheckboxUIComponent* checkbox);
+void                    renderDropdown(DropdownUIComponent* dropdown);
+void                    renderTextCentered(const char* text, Color* color, f32 x, f32 y);
 void                    renderTextStartsAt(const char* text, Color* color, f32 x, f32 y);
 void                    renderTextEndsAt(const char* text, Color* color, f32 x, f32 y);
 u32                     getTextureId(enum TextureModel textureModel);
+void                    renderHealth(u8 hp);
 
 static inline void      initNewFrame()
 {

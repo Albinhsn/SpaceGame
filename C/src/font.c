@@ -133,7 +133,7 @@ void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, con
 
   f32 sizeModifier = 0.5f;
 
-  i32 numLetters   = strlen(text) - 1;
+  i32 numLetters   = strlen(text);
   if (numLetters > TEXT_MAX_LENGTH)
   {
     printf("WARNING: Trying to write text with %d characters, %d is max", numLetters, TEXT_MAX_LENGTH);
