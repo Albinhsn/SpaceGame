@@ -1,7 +1,8 @@
 #include "input.h"
+#include "common.h"
 #include <SDL2/SDL.h>
 
-void getKeyboardInputCharacters(struct InputState* inputState, struct String* string)
+void getKeyboardInputCharacters(InputState* inputState, String* string)
 {
   for (int i = 0; i < INPUT_STATE_LENGTH; i++)
   {
@@ -15,7 +16,7 @@ void getKeyboardInputCharacters(struct InputState* inputState, struct String* st
       {
         if (string->len == string->capacity)
         {
-          string->buffer = realloc(string->buffer, string->capacity * 2);
+          string->buffer = (u8*)realloc(string->buffer, string->capacity * 2);
         }
         string->buffer[string->len] = i;
         string->len++;
@@ -36,7 +37,7 @@ static inline void handleKeyRelease(bool* key, bool* previousDown, bool down)
   }
 }
 
-static inline void handleMouseInput(struct InputState* inputState, bool down, ui8 button)
+static inline void handleMouseInput(InputState* inputState, bool down, u8 button)
 {
   switch (button)
   {
@@ -57,7 +58,7 @@ static inline void handleMouseInput(struct InputState* inputState, bool down, ui
   }
 }
 
-static inline void handleKeyboardInput(struct InputState* inputState, bool down, SDL_KeyCode sym)
+static inline void handleKeyboardInput(InputState* inputState, bool down, i32 sym)
 {
   if (sym >= INPUT_STATE_LENGTH)
   {
@@ -70,7 +71,7 @@ static inline void handleKeyboardInput(struct InputState* inputState, bool down,
   inputState->keyboardStateDown[sym] = down;
 }
 
-bool handleInput(struct InputState* inputState)
+bool handleInput(InputState* inputState)
 {
   SDL_Event event;
   bool      mouseEvent = false;
@@ -134,5 +135,5 @@ bool handleInput(struct InputState* inputState)
     SDL_GetMouseState(&inputState->mouseX, &inputState->mouseY);
   }
 
-  return false;
+  return inputState->keyboardStateRelease[ASCII_ESCAPE];
 }

@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <string.h>
 
-static void parseIntFromString(int* dest, char* source, ui8* length)
+static void parseIntFromString(int* dest, char* source, u8* length)
 {
   char number[32];
   memset(number, 0, 32);
@@ -13,7 +13,7 @@ static void parseIntFromString(int* dest, char* source, ui8* length)
   {
     number[i] = 0;
   }
-  ui8 pos = 0;
+  u8 pos = 0;
   while (isdigit(source[pos]))
   {
     pos++;
@@ -23,10 +23,10 @@ static void parseIntFromString(int* dest, char* source, ui8* length)
   *length = pos;
 }
 
-static void parseFloatFromString(float* dest, char* source, ui8* length)
+static void parseFloatFromString(float* dest, char* source, u8* length)
 {
   char number[32];
-  ui8  pos = 0;
+  u8   pos = 0;
   while (source[pos] != ' ')
   {
     pos++;
@@ -42,7 +42,7 @@ void parseFontTypes(struct Font* font, const char* fileLocation)
 
   char* buffer;
   int   len;
-  read_file(&buffer, &len, fileLocation);
+  readFile(&buffer, &len, fileLocation);
   FILE* file;
   file = fopen(fileLocation, "r");
   char line[256];
@@ -51,8 +51,8 @@ void parseFontTypes(struct Font* font, const char* fileLocation)
   {
     memset(number, 0, 32);
     fgets(line, sizeof(line), file);
-    ui8 pos = 0;
-    ui8 inc = 0;
+    u8 pos = 0;
+    u8 inc = 0;
     // remove number
     while (line[pos] != ' ')
     {
@@ -80,12 +80,11 @@ void parseFontTypes(struct Font* font, const char* fileLocation)
   }
 }
 
-bool parsePNG(struct Image* png, const char* filename)
+bool parsePNG(u8** data, u32* width, u32* height, const char* filename)
 {
   unsigned error;
-  png->bpp = 4;
 
-  error    = lodepng_decode32_file(&png->data, &png->width, &png->height, filename);
+  error = lodepng_decode32_file(data, width, height, filename);
   if (error != 0)
   {
     printf("Failed to decode png '%s'\n", filename);
@@ -95,7 +94,7 @@ bool parsePNG(struct Image* png, const char* filename)
   return true;
 }
 
-bool read_file(char** buffer, int* len, const char* fileName)
+bool readFile(char** buffer, int* len, const char* fileName)
 {
   FILE* filePtr;
   long  fileSize, count;
@@ -104,7 +103,7 @@ bool read_file(char** buffer, int* len, const char* fileName)
   filePtr = fopen(fileName, "r");
   if (!filePtr)
   {
-    return NULL;
+    return false;
   }
 
   fileSize            = fseek(filePtr, 0, SEEK_END);
@@ -134,7 +133,7 @@ bool read_file(char** buffer, int* len, const char* fileName)
 void initFont(struct Font* font, GLuint* textureId)
 {
 
-  parsePNG(&font->image, FONT_IMAGE_LOCATION);
+  // parsePNG(&font->image, FONT_IMAGE_LOCATION);
 
   glActiveTexture(GL_TEXTURE0);
   glGenTextures(1, textureId);
@@ -149,10 +148,9 @@ void initFont(struct Font* font, GLuint* textureId)
   parseFontTypes(font, FONT_DATA_LOCATION);
 }
 
-struct Image* LoadTarga(const char* filename)
+void parseTarga(u8** data, u32* width, u32* height, const char* filename)
 {
 
-  struct Image*      image = (struct Image*)malloc(sizeof(struct Image));
   struct TargaHeader targaFileHeader;
 
   FILE*              filePtr;
@@ -165,7 +163,7 @@ struct Image* LoadTarga(const char* filename)
   if (filePtr == NULL)
   {
     printf("ERROR: file doesn't exist %s\n", filename);
-    return NULL;
+    return;
   }
 
   // Read in the file header.
@@ -173,26 +171,25 @@ struct Image* LoadTarga(const char* filename)
   if (count != 1)
   {
     printf("ERROR: Failed to read into header\n");
-    return NULL;
+    return;
   }
 
   // Get the important information from the header.
-  image->width  = (int)targaFileHeader.width;
-  image->height = (int)targaFileHeader.height;
-  image->bpp    = (int)targaFileHeader.bpp;
+  *width  = (u32)targaFileHeader.width;
+  *height = (u32)targaFileHeader.height;
 
   // Calculate the size of the 32 bit image data.
-  if (image->bpp == 32)
+  if (targaFileHeader.bpp == 32)
   {
-    imageSize = image->width * image->height * 4;
+    imageSize = targaFileHeader.width * targaFileHeader.height * 4;
   }
-  else if (image->bpp == 24)
+  else if (targaFileHeader.bpp == 24)
   {
-    imageSize = image->width * image->height * 3;
+    imageSize = targaFileHeader.width * targaFileHeader.height * 3;
   }
   else
   {
-    printf("Dont't know how to parse targa image with bpp of '%d'\n", image->bpp);
+    printf("Dont't know how to parse targa image with bpp of '%d'\n", targaFileHeader.bpp);
     exit(2);
   }
 
@@ -204,18 +201,19 @@ struct Image* LoadTarga(const char* filename)
   if (count != imageSize)
   {
     printf("ERROR: count read doesn't equal imageSize\n");
-    return NULL;
+    return;
   }
 
   if (fclose(filePtr) != 0)
   {
-    return NULL;
+    return;
   }
 
-  targaData  = (unsigned char*)malloc(sizeof(unsigned char) * imageSize);
-  bool bit32 = image->bpp == 32;
+  targaData   = (u8*)malloc(sizeof(u8) * imageSize);
+  bool bit32  = targaFileHeader.bpp == 32;
 
-  for (int idx = 0; idx < image->height * image->width; idx++)
+  u32  maxIdx = targaFileHeader.height * targaFileHeader.width;
+  for (u32 idx = 0; idx < maxIdx; idx++)
   {
     targaData[idx]     = targaImage[idx + 2]; // Red
     targaData[idx + 1] = targaImage[idx + 1]; // Green
@@ -227,7 +225,5 @@ struct Image* LoadTarga(const char* filename)
   }
 
   free(targaImage);
-  image->data = targaData;
-
-  return image;
+  *data = targaData;
 }

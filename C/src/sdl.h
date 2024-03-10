@@ -5,26 +5,6 @@
 #include <GL/gl.h>
 #include <SDL2/SDL.h>
 
-#define TEXT_MAX_LENGTH 32
-
-void               updateQuadVertexArray(GLuint vertexArrayId, GLuint vertexBufferId, struct Vec2f32 xPositions, struct Vec2f32 yPositions);
-SDL_Window*        initSDLWindow(SDL_GLContext* context, int screenWidth, int screenHeight);
-void               createGLProgram();
-void               initializeTexture(GLuint* textureId);
-void               createQuadVertexArray(GLuint* vertexArrayId, GLuint* vertexBufferId, struct Vec2f32 xPositions, struct Vec2f32 yPositions);
-void               createTextureShaderProgram(GLuint* program);
-void               createTextShaderProgram(GLuint* program);
-void               createUnfilledQuadProgram(GLuint* program);
-void renderQuad(GLuint vertexArrayId, struct Image image);
-void renderText(struct Font* font, const char* text, f32 x, f32 y, struct Vec4f32* color, f32 size);
-void               createTextBuffers(GLuint* vertexArrayId, GLuint* vertexBufferId);
-
-static inline void initNewFrame()
-{
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-}
-
 typedef GLuint(APIENTRY* PFNGLCREATESHADERPROC)(GLenum type);
 typedef void(APIENTRY* PFNGLCOMPILESHADERPROC)(GLuint shader);
 typedef void(APIENTRY* PFNGLGETSHADERIVPROC)(GLuint shader, GLenum pname, GLint* params);
@@ -77,6 +57,7 @@ typedef void(APIENTRYP PFNGLDRAWBUFFERSPROC)(GLint n, const GLenum* bufs);
 typedef void(APIENTRYP PFNGLDELETERENDERBUFFERSPROC)(GLsizei n, const GLuint* renderbuffers);
 typedef void(APIENTRYP PFNGLGENERATEMIPMAPPROC)(GLuint n);
 
+SDL_Window * initSDLWindow(SDL_GLContext * context, i32 screenWidth, i32 screenHeight);
 void      TurnZBufferOn();
 void      TurnZBufferOff();
 void      EnableAlphaBlending();
@@ -96,7 +77,9 @@ void      sta_glDeleteProgram(GLuint program);
 void      sta_glUseProgram(GLuint program);
 GLint     sta_glGetUniformLocation(GLuint program, const char* name);
 void      sta_glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+void      sta_glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
 void      sta_glGenVertexArrays(GLsizei n, GLuint* arrays);
+void      sta_glGenTextures();
 void      sta_glBindVertexArray(GLuint array);
 void      sta_glGenBuffers(GLsizei n, GLuint* buffers);
 void      sta_glBindBuffer(GLenum target, GLuint buffer);

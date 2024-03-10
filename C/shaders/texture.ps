@@ -9,9 +9,6 @@ uniform sampler2D shaderTexture;
 void main(void)
 {
   vec4 color = texture(shaderTexture, texCoord);
-  if(color.a < 0.01f){
-  	discard;
-  }
   outputColor = color;
 }
 

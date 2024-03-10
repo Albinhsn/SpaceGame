@@ -20,6 +20,7 @@ struct InputState
   bool keyboardStateRelease[INPUT_STATE_LENGTH];
   bool keyboardStateDown[INPUT_STATE_LENGTH];
 };
+typedef struct InputState InputState;
 
 bool        handleInput(struct InputState* inputState);
 inline void initInputState(struct InputState* inputState)

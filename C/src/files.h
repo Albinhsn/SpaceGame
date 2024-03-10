@@ -1,9 +1,9 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 #include "common.h"
-#include <GL/gl.h>
-#include "vector.h"
 #include "string.h"
+#include "vector.h"
+#include <GL/gl.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -15,50 +15,39 @@
 
 struct PNG
 {
-  unsigned int   width;
-  unsigned int   height;
-  unsigned char* data;
-  unsigned int   bpp;
+  u32 width;
+  u32 height;
+  u8* data;
+  u8  bpp;
 };
+typedef struct PNG PNG;
 
 struct Image
 {
-  unsigned int   width, height;
-  unsigned int   bpp;
-  unsigned char* data;
+  u32 width, height;
+  u8  bpp;
+  u8* data;
 };
+typedef struct Image Image;
 
-struct BufferData
-{
-  struct Vec3 vertices;
-  struct Vec3 indices;
-};
-
-struct Mesh
-{
-  int                bufferDatalength;
-  struct BufferData* bufferData;
-};
-
-struct Texture
-{
-  GLuint textureUnit;
-  GLuint textureId;
-};
 struct FontType
 {
   float left, right;
   int   size;
 };
+typedef struct FontType FontType;
 struct Font
 {
-  struct FontType* type;
-  struct Image     image;
-  float            height;
-  int              spaceSize;
+  FontType* type;
+  Image     image;
+  float     height;
+  int       spaceSize;
+  u32       vertexArrayId;
+  u32       vertexBufferId;
+  u32       programId;
+  u32       textureId;
 };
-
-
+typedef struct Font Font;
 
 struct TargaHeader
 {
@@ -68,11 +57,12 @@ struct TargaHeader
   unsigned char  bpp;
   unsigned char  data2;
 };
+typedef struct TargaHeader TargaHeader;
 
-void parseFontTypes(struct Font* font, const char* fileLocation);
-void               initFont(struct Font* font, GLuint* textureId);
-struct Image* LoadTarga(const char* filename);
-bool read_file(char** buffer, int* len, const char* fileName);
-bool          parsePNG(struct Image* png, const char* filename);
+void                       parseFontTypes(struct Font* font, const char* fileLocation);
+void                       initFont(struct Font* font, GLuint* textureId);
+void                       parseTarga(u8** data, u32* width, u32* height, const char* filename);
+bool                       readFile(char** buffer, int* len, const char* fileName);
+bool                       parsePNG(u8** data, u32* width, u32* height, const char* filename);
 
 #endif

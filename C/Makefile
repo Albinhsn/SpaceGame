@@ -4,7 +4,6 @@ TARGET := main
 LDFLAGS := -ldl -lSDL2 -lm -lz -lGL
 
 SRCS := $(wildcard ./src/*.c)
-LIBS := $(wildcard ./lib/*.c) 
 OBJS := $(patsubst ./src/%.c,./obj/%.o,$(SRCS)) $(patsubst ./lib/%.c,./obj/%.o,$(LIBS))
 
 all: $(TARGET)

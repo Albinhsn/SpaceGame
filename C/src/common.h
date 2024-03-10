@@ -4,59 +4,37 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/time.h>
+
 #define DEBUG_INPUT false
 #define DEBUG_PLAYER false
 
-#define DEBUG_BOUNDS false
-
-
-#define SCREENWIDTH 1024
-#define SCREENHEIGHT 780
-
-
-#define ONE_DIVIDED_BY_SCREENWIDTH 1.0f / (float)SCREENWIDTH
-#define ONE_DIVIDED_BY_SCREENHEIGHT 1.0f / (float)SCREENHEIGHT
-
-#define INBOUNDS(fst, snd) (MAX(MIN(fst, snd), -snd))
+#define DEFAULT_SCREENWIDTH 1024
+#define DEFAULT_SCREENHEIGHT 780
 
 #define MIN(fst, snd) (fst < snd ? fst : snd)
 #define MAX(fst, snd) (fst > snd ? fst : snd)
 
-#define WORLDSPACEX_TO_VIEWSPACE(x) (((float)(x) * ONE_DIVIDED_BY_SCREENWIDTH))
-#define WORLDSPACEY_TO_VIEWSPACE(y) (((float)(y) * ONE_DIVIDED_BY_SCREENHEIGHT))
+#define M_PI 3.14159265359
 
-#define MOUSEX_TO_VIEWSPACE(x)                                                 \
-  ((float)(2.0f * x - SCREENWIDTH) / (float)SCREENWIDTH)
-#define MOUSEY_TO_VIEWSPACE(x)                                                 \
-  ((float)(2.0f * x - SCREENHEIGHT) / (float)SCREENHEIGHT)
-
-#define ANIMATION_UPDATE_TIMER 100
-
-#define FONT_IMAGE_LOCATION "./resources/fonts/font01.png"
-#define FONT_DATA_LOCATION "./resources/fonts/font01.txt"
-#define PLAYER_FILE_LOCATION                                                   \
-  "./resources/images/PNG/Sprites/Ships/spaceShips_001.png"
-
-#define ABS_F(x) ((x < 0.0f ? -x : x))
+#define RED (( Vec4f32){1.0f, 0.0f, 0.0f, 1.0f})
+#define YELLOW (( Vec4f32){1.0f, 1.0f, 0.0f, 1.0f})
+#define GREEN (( Vec4f32){0.0f, 1.0f, 0.0f, 1.0f})
+#define CYAN (( Vec4f32){0.0f, 1.0f, 1.0f, 1.0f})
+#define PURPLE (( Vec4f32){1.0f, 0.0f, 1.0f, 1.0f})
+#define BLUE (( Vec4f32){1.0f, 0.0f, 0.0f, 1.0f})
 
 #define ASCII_ESCAPE 27
 #define ASCII_RETURN 13
 #define ASCII_SPACE 32
 #define ASCII_BACKSPACE 8
 
-#define TEXT_PROGRAM_VALUE 3
-#define TEXT_TEXTURE_VALUE 1
-#define TEXT_VAO_VALUE 1
-#define TEXT_VBO_VALUE 1
+#define FONT_IMAGE_LOCATION "./resources/fonts/font01.png"
+#define FONT_DATA_LOCATION "./resources/fonts/font01.txt"
 
-#define TEXTURE_PROGRAM_VALUE 6
-#define PLAYER_VAO_VALUE 2
-#define PLAYER_VBO_VALUE 3
-
-
-typedef uint8_t ui8;
-typedef uint16_t ui16;
-typedef uint32_t ui32;
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
 typedef float f32;
 typedef double f64;
