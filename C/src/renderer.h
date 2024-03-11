@@ -53,9 +53,10 @@ void                    renderButton(ButtonUIComponent* button);
 void                    renderSlider(SliderUIComponent* slider);
 void                    renderCheckbox(CheckboxUIComponent* checkbox);
 void                    renderDropdown(DropdownUIComponent* dropdown);
-void                    renderTextCentered(const char* text, Color* color, f32 x, f32 y);
-void                    renderTextStartsAt(const char* text, Color* color, f32 x, f32 y);
-void                    renderTextEndsAt(const char* text, Color* color, f32 x, f32 y);
+void                    renderTextCentered(const char* text, Color* color, f32 x, f32 y, f32 fontSize, f32 spaceSize);
+void                    renderTextEndsAt(const char* text, Color* color, f32 x, f32 y, f32 fontSize, f32 spaceSize);
+void                    renderTextStartsAt(const char* text, Color* color, f32 x, f32 y, f32 fontSize, f32 spaceSize);
+void                    renderTextEndsAt(const char* text, Color* color, f32 x, f32 y, f32 fontSize, f32 spaceSize);
 u32                     getTextureId(enum TextureModel textureModel);
 void                    renderHealth(u8 hp);
 

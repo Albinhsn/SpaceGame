@@ -4,7 +4,23 @@
 #include "common.h"
 #include "font.h"
 #include "input.h"
+#include <stdbool.h>
 #include "vector.h"
+
+#define CONSOLE_NUMBER_OF_COMMANDS_VISIBLE 6
+
+struct Animation
+{
+  u64 startedAnimation;
+  u64 endedAnimation;
+  u64 animationTimer;
+  f32 initialWidth;
+  f32 initialHeight;
+  f32 maxSize;
+  u32 functionIdx;
+};
+
+typedef struct Animation Animation;
 
 enum UIState
 {
@@ -30,11 +46,12 @@ typedef struct UIComponent UIComponent;
 
 struct ButtonUIComponent
 {
+  const char* text;
   f32         fontSize;
   f32         spaceSize;
   Color       color;
   UIComponent component;
-  const char* text;
+  Animation  animation;
 };
 typedef struct ButtonUIComponent ButtonUIComponent;
 
@@ -67,7 +84,6 @@ struct SliderUIComponent
 };
 typedef struct SliderUIComponent SliderUIComponent;
 
-#define CONSOLE_NUMBER_OF_COMMANDS_VISIBLE 6
 struct ConsoleUI
 {
   UIState     parent;
@@ -124,6 +140,7 @@ struct UI
 };
 typedef struct UI UI;
 
+void animate(f32* width, f32* height, Animation* animation, bool hovers);
 UIState           renderUI(UI* ui, InputState* inputState, u32 score, u8 hp);
 void              initUI(UI* ui, ConsoleUI* console, GameOverUI* gameOver, MainMenuUI* mainMenu, PauseMenuUI* pauseMenu, SettingsMenuUI* settings);
 

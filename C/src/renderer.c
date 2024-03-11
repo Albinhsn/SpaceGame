@@ -237,24 +237,24 @@ static void renderText(Font* font, Color* color)
 
   glDrawElements(GL_TRIANGLES, TEXT_MAX_LENGTH * 4, GL_UNSIGNED_INT, 0);
 }
-void renderTextCentered(const char* text, Color* color, f32 x, f32 y)
+void renderTextCentered(const char* text, Color* color, f32 x, f32 y, f32 fontSize, f32 spaceSize)
 {
   Font* font = g_renderer.font;
-  updateText(font, x, y, text, TEXT_INDENTATION_CENTERED);
+  updateText(font, text, x, y, fontSize, spaceSize, TEXT_INDENTATION_CENTERED);
   renderText(font, color);
 }
 
-void renderTextStartsAt(const char* text, Color* color, f32 x, f32 y)
+void renderTextStartsAt(const char* text, Color* color, f32 x, f32 y, f32 fontSize, f32 spaceSize)
 {
   Font* font = g_renderer.font;
-  updateText(font, x, y, text, TEXT_INDENTATION_START);
+  updateText(font, text, x, y, fontSize, spaceSize, TEXT_INDENTATION_START);
   renderText(font, color);
 }
 
-void renderTextEndsAt(const char* text, Color* color, f32 x, f32 y)
+void renderTextEndsAt(const char* text, Color* color, f32 x, f32 y, f32 fontSize, f32 spaceSize)
 {
   Font* font = g_renderer.font;
-  updateText(font, x, y, text, TEXT_INDENTATION_END);
+  updateText(font, text, x, y, fontSize, spaceSize, TEXT_INDENTATION_END);
   renderText(font, color);
 }
 
@@ -270,7 +270,7 @@ void renderComponent(UIComponent* comp)
 void renderButton(ButtonUIComponent* button)
 {
   renderComponent(&button->component);
-  renderTextCentered(button->text, &button->color, button->component.x, button->component.y);
+  renderTextCentered(button->text, &button->color, button->component.x, button->component.y, button->fontSize, button->spaceSize);
 }
 void renderSlider(SliderUIComponent* slider)
 {

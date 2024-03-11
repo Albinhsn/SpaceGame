@@ -1,6 +1,7 @@
 #include "common.h"
 #include "entity.h"
 #include "input.h"
+#include "background.h"
 #include "renderer.h"
 #include "timer.h"
 #include "ui.h"
@@ -159,8 +160,8 @@ static void renderInfoStrings(u64* prevTick)
   memset(fpsString, 0, 32);
   sprintf(fpsString, "fps:%d", (u32)MIN(1000.0f / ms, 999));
 
-  renderTextStartsAt(fpsString, &WHITE, x, y - 20.0f);
-  renderTextStartsAt(msString, &WHITE, x, y);
+  renderTextStartsAt(fpsString, &WHITE, x, y - 20.0f, fontSize, spaceSize);
+  renderTextStartsAt(msString, &WHITE, x, y, fontSize, spaceSize);
 
   *prevTick = SDL_GetTicks();
 }
@@ -171,6 +172,8 @@ i32 main()
   loadEntityData();
   loadWaves();
   loadBulletData();
+  loadStateVariables();
+
   Timer timer;
   resetTimer(&timer);
   startTimer(&timer);
@@ -203,10 +206,15 @@ i32 main()
   Wave wave;
   getWave(&wave, 0);
 
+  Background background;
+  initBackground(&background);
+
   while (ui.state != UI_EXIT)
   {
 
     initNewFrame();
+
+    updateBackground(&background);
 
     if (inputState.keyboardStateRelease['c'] && ui.state != UI_CONSOLE)
     {

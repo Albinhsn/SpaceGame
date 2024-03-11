@@ -21,6 +21,12 @@ static bool withinScreen(Entity* entity)
   return !(entity->x <= -x || entity->x >= x || entity->y <= -y || entity->y >= y);
 }
 
+static f32 (*animationFuncs[][2])(f32) = {
+    {easeLinearly, easeLinearly},
+    { easeInCubic,  easeInCubic},
+    {easeOutCubic, easeOutCubic},
+};
+
 void updateBullets()
 {
   for (u32 i = 0; i < g_bulletCount; i++)
@@ -28,6 +34,7 @@ void updateBullets()
     Bullet bullet = g_bullets[i];
     if (bullet.entity != 0)
     {
+
       bullet.entity->y += bullet.entity->rotation == 0 ? bullet.entity->movementSpeed : -bullet.entity->movementSpeed;
     }
   }
@@ -78,7 +85,7 @@ void createNewBullet(Entity* entity, u64 entityIdx)
   BulletData bulletData = g_bulletData[entityIdx];
 
   f32        y          = entity->y + entity->height;
-  initEntity(bullet->entity, entity->x, entity->y, bulletData.width, bulletData.height, bulletData.textureIdx, entityIdx == 4 ? 0 : 180.0f, bulletData.movementSpeed);
+  initEntity(bullet->entity, entity->x, y, bulletData.width, bulletData.height, bulletData.textureIdx, entityIdx == 4 ? 0 : 180.0f, bulletData.movementSpeed);
   bullet->playerBullet = entity == getPlayerEntity();
   bullet->hp           = 1;
 }
@@ -143,7 +150,7 @@ void initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 texture
 void createBullet(Bullet* bullet, Entity* parent)
 {
   f32 y = parent->y + parent->height;
-  initEntity(bullet->entity, parent->x, parent->y, 2.0f, 4.0f, TEXTURE_PLAYER_BULLET, 0.0f, 0.5f);
+  initEntity(bullet->entity, parent->x, y, 2.0f, 4.0f, TEXTURE_PLAYER_BULLET, 0.0f, 0.5f);
   bullet->playerBullet = parent == getPlayerEntity();
   bullet->hp           = 1;
 }
@@ -197,7 +204,7 @@ void loadBulletData()
   printf("INFO: Reading data from '%s'\n", line);
 
   memset(g_bulletData, 0, sizeof(BulletData) * numberOfBullets);
-  u32 count = fread(g_bulletData, 1, sizeof(BulletData) * numberOfBullets, entityDataFile);
+  fread(g_bulletData, 1, sizeof(BulletData) * numberOfBullets, entityDataFile);
 
   // printf("%d\n", numberOfBullets);
 
@@ -230,7 +237,7 @@ void loadEntityData()
   FILE* entityDataFile = fopen(line, "rb");
   printf("INFO: Reading data from '%s'\n", line);
   memset(g_entityData, 0, sizeof(EntityData) * numberOfEntities);
-  u32 count = fread(g_entityData, 1, sizeof(EntityData) * numberOfEntities, entityDataFile);
+  fread(g_entityData, 1, sizeof(EntityData) * numberOfEntities, entityDataFile);
   for (u32 i = 0; i < numberOfEntities; i++)
   {
     EntityData d    = g_entityData[i];

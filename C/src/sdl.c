@@ -1,4 +1,5 @@
 #include "sdl.h"
+#include "common.h"
 
 PFNGLCREATESHADERPROC             glCreateShader             = NULL;
 PFNGLCOMPILESHADERPROC            glCompileShader            = NULL;
@@ -301,13 +302,15 @@ SDL_Window* initSDLWindow(SDL_GLContext* context, int screenWidth, int screenHei
   *context = SDL_GL_CreateContext(window);
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetSwapInterval(0);
+  f32 vsyncStateVariable = getStateVariable("vsync");
+  printf("Init vsync with %f\n", vsyncStateVariable);
+  SDL_GL_SetSwapInterval((i32)vsyncStateVariable);
 
   loadExtensions();
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glViewport(0,0,screenWidth, screenHeight);
+  glViewport(0, 0, screenWidth, screenHeight);
 
   return window;
 }

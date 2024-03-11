@@ -42,8 +42,9 @@ typedef struct Player Player;
 struct Bullet
 {
   Entity* entity;
-  bool    playerBullet;
+  i32 accelerationFunctionIndex;
   u8      hp;
+  bool    playerBullet;
 };
 typedef struct Bullet Bullet;
 
@@ -84,6 +85,7 @@ void                 updateBullets();
 void                 createNewBullet(Entity* entity, u64 entityIdx);
 bool                 entitiesCollided(Entity* e1, Entity* e2);
 void                 debugPlayer(Player* player);
+void                 debugEntity(Entity* entity);
 void                 createPlayer(Player* player);
 void                 createBullet(Bullet* bullet, Entity* parent);
 void                 initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 textureIdx, f32 rotation, f32 movementSpeed);

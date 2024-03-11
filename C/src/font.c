@@ -1,38 +1,6 @@
 #include "font.h"
 #include "renderer.h"
 
-static void parseIntFromString(int* dest, char* source, u8* length)
-{
-  char number[32];
-  memset(number, 0, 32);
-
-  for (int i = 0; i < 32; i++)
-  {
-    number[i] = 0;
-  }
-  u8 pos = 0;
-  while (isdigit(source[pos]))
-  {
-    pos++;
-  }
-  memcpy(number, source, pos);
-  *dest   = atoi(number);
-  *length = pos;
-}
-
-static void parseFloatFromString(float* dest, char* source, u8* length)
-{
-  char number[32];
-  u8   pos = 0;
-  while (source[pos] != ' ')
-  {
-    pos++;
-  }
-  memcpy(number, source, pos);
-  *dest   = atof(number);
-  *length = pos;
-}
-
 static void parseFontTypes(struct Font* font, const char* fileLocation)
 {
 
@@ -201,11 +169,9 @@ void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, con
   }
 }
 
-void updateText(Font* font, f32 x, f32 y, const char* text, TextIndentation indentation)
+void updateText(Font* font, const char* text, f32 x, f32 y, f32 fontSize, f32 spaceSize, TextIndentation indentation)
 {
   u32 vertexCount = TEXT_MAX_LENGTH * 4 * 5;
-  f32 spaceSize   = 10.0f;
-  f32 fontSize    = 10.0f;
   f32 vertices[vertexCount];
   for (int i = 0; i < vertexCount; i++)
   {

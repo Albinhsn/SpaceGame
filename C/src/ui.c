@@ -23,9 +23,9 @@ static void initSlider(SliderUIComponent* slider, f32 initialValue, f32 minValue
   initUIComponent(&slider->slider, x, y, width * 0.1f, height * 0.9f, TEXTURE_GREY_SLIDER_UP);
 }
 
-static void initCheckbox(CheckboxUIComponent* checkbox, f32 x, f32 y, f32 width, f32 height)
+static void initCheckbox(CheckboxUIComponent* checkbox, f32 x, f32 y, f32 width, f32 height, bool toggled)
 {
-  checkbox->toggled = false;
+  checkbox->toggled = toggled;
   initUIComponent(&checkbox->background, x, y, width, height, TEXTURE_GREY_BOX);
   initUIComponent(&checkbox->checkmark, x, y, width, height, TEXTURE_GREY_CHECKMARK_GREY);
 }
@@ -58,6 +58,53 @@ static void initDropdown(DropdownUIComponent* slider, u32 itemCount, const char*
     y -= 2.0f * height;
     initButton(&slider->items[i], color, itemText[i], fontSize, spaceSize, x, y, width, height, TEXTURE_GREY_BOX);
   }
+}
+
+static void initAnimation(Animation* animation, f32 initialWidth, f32 initialHeight, u64 animationTimer, f32 maxSize, u32 functionIdx)
+{
+  animation->initialWidth     = initialWidth;
+  animation->initialHeight    = initialHeight;
+  animation->animationTimer   = animationTimer;
+  animation->startedAnimation = 0;
+  animation->endedAnimation   = 0;
+  animation->maxSize          = maxSize;
+  animation->functionIdx      = functionIdx;
+}
+
+
+static f32  (*animationFuncs[])(float) = {easeLinearly, easeInCubic, easeOutCubic};
+
+static void animateIn(f32* width, f32* height, Animation* animation)
+{
+  u32 tick = getTimeInMilliseconds();
+  if (animation->startedAnimation == 0)
+  {
+    animation->startedAnimation = tick;
+  }
+
+  u64 tickDifference        = tick - animation->startedAnimation;
+  f32 increasePerMs         = animation->maxSize / animation->animationTimer;
+  f32 increase              = animationFuncs[animation->functionIdx](MIN(increasePerMs * tickDifference, 1));
+
+  *width                    = animation->initialWidth + animation->maxSize * increase;
+  *height                   = animation->initialHeight + animation->maxSize * increase;
+  animation->endedAnimation = tick;
+}
+
+static void animateOut(f32* width, f32* height, Animation* animation)
+{
+  u64 tickDifference = getTimeInMilliseconds() - animation->endedAnimation;
+  f32 increasePerMs  = animation->maxSize / (f32)animation->animationTimer;
+  f32 increase                = animationFuncs[animation->functionIdx](1.0f - MIN(increasePerMs * tickDifference, 1));
+
+  animation->startedAnimation = 0;
+  *width                      = animation->initialWidth + animation->maxSize * increase;
+  *height                     = animation->initialHeight + animation->maxSize * increase;
+}
+
+void animate(f32* width, f32* height, Animation* animation, bool hovers)
+{
+  hovers ? animateIn(width, height, animation) : animateOut(width, height, animation);
 }
 
 static bool hovers(UIComponent component, InputState* inputState)
@@ -93,16 +140,21 @@ static bool componentIsPressed(UIComponent component, InputState* inputState)
 
 static UIState renderMainMenu(MainMenuUI* mainMenu, InputState* inputState)
 {
+  animate(&mainMenu->playButton.component.width, &mainMenu->playButton.component.height, &mainMenu->playButton.animation, hovers(mainMenu->playButton.component, inputState));
   renderButton(&mainMenu->playButton);
   if (componentIsReleased(mainMenu->playButton.component, inputState))
   {
     return UI_GAME_RUNNING;
   }
+
+  animate(&mainMenu->settingsButton.component.width, &mainMenu->settingsButton.component.height, &mainMenu->settingsButton.animation, hovers(mainMenu->settingsButton.component, inputState));
   renderButton(&mainMenu->settingsButton);
   if (componentIsReleased(mainMenu->settingsButton.component, inputState))
   {
     return UI_SETTINGS_MENU;
   }
+
+  animate(&mainMenu->exitButton.component.width, &mainMenu->exitButton.component.height, &mainMenu->exitButton.animation, hovers(mainMenu->exitButton.component, inputState));
   renderButton(&mainMenu->exitButton);
   if (componentIsReleased(mainMenu->exitButton.component, inputState))
   {
@@ -142,6 +194,8 @@ static void updateSliderValue(SliderUIComponent* slider)
 
 static UIState renderSettingsMenu(SettingsMenuUI* settingsMenu, InputState* inputState)
 {
+  f32 fontSize  = getStateVariable("fontFontSizeSmall");
+  f32 spaceSize = getStateVariable("fontSpaceSizeSmall");
 
   // RETURN
   if (componentIsReleased(settingsMenu->returnButton.component, inputState))
@@ -157,7 +211,7 @@ static UIState renderSettingsMenu(SettingsMenuUI* settingsMenu, InputState* inpu
     SDL_GL_SetSwapInterval(settingsMenu->vsyncCheckbox.toggled);
   }
   f32 endX = settingsMenu->vsyncCheckbox.background.x - settingsMenu->vsyncCheckbox.background.width;
-  renderTextEndsAt("vsync", &WHITE, endX, 0);
+  renderTextEndsAt("vsync", &WHITE, endX, 0, fontSize, spaceSize);
   renderCheckbox(&settingsMenu->vsyncCheckbox);
 
   // SCREEN SIZE DROPDOWN
@@ -194,13 +248,14 @@ static UIState renderSettingsMenu(SettingsMenuUI* settingsMenu, InputState* inpu
 
 static UIState renderGameOver(GameOverUI* gameOver, InputState* inputState, u32 score)
 {
-  f32 fontSize = FONT_FONT_SIZE_LARGE;
-  renderTextCentered(gameOver->lostGame ? "GAME OVER" : "GAME WON", &WHITE, 0, 90.0f - FONT_FONT_SIZE_LARGE);
+  f32 fontSize  = FONT_FONT_SIZE_LARGE;
+  f32 spaceSize = FONT_SPACE_SIZE_LARGE;
+  renderTextCentered(gameOver->lostGame ? "GAME OVER" : "GAME WON", &WHITE, 0, 90.0f - FONT_FONT_SIZE_LARGE, fontSize, spaceSize);
 
   char scoreText[32];
   memset(scoreText, 0, 32);
   sprintf(scoreText, "Score: %d", score);
-  renderTextCentered(scoreText, &WHITE, 0, 90.0f - 3 * fontSize);
+  renderTextCentered(scoreText, &WHITE, 0, 90.0f - 3 * fontSize, fontSize, spaceSize);
 
   renderButton(&gameOver->restartButton);
   if (componentIsReleased(gameOver->restartButton.component, inputState))
@@ -216,19 +271,20 @@ static UIState renderGameOver(GameOverUI* gameOver, InputState* inputState, u32 
   return UI_GAME_OVER;
 }
 
-static UIState renderGameRunning(InputState * inputState, u32 score, u8 hp)
+static UIState renderGameRunning(InputState* inputState, u32 score, u8 hp)
 {
-  f32  fontSize = FONT_FONT_SIZE_MEDIUM;
+  f32  fontSize  = FONT_FONT_SIZE_MEDIUM;
+  f32  spaceSize = FONT_SPACE_SIZE_MEDIUM;
   char scoreText[32];
   memset(scoreText, 0, 32);
   sprintf(scoreText, "Score: %d", score);
-  renderTextStartsAt(scoreText, &WHITE, -100.0f, 100.0f - fontSize);
+  renderTextStartsAt(scoreText, &WHITE, -100.0f, 100.0f - fontSize, fontSize, spaceSize);
   renderHealth(hp);
 
-  if(inputState->keyboardStateRelease[ASCII_ESCAPE]){
+  if (inputState->keyboardStateRelease[ASCII_ESCAPE])
+  {
     return UI_PAUSE_MENU;
   }
-
 
   return UI_GAME_RUNNING;
 }
@@ -256,7 +312,7 @@ static UIState renderPauseMenu(PauseMenuUI* pauseMenu, InputState* inputState)
   return UI_PAUSE_MENU;
 }
 
-static UIState handleInputConsole(ConsoleUI* console, InputState* inputState)
+static UIState handleConsoleInput(ConsoleUI* console, InputState* inputState)
 {
   if (inputState->keyboardStateRelease[ASCII_ESCAPE])
   {
@@ -264,11 +320,16 @@ static UIState handleInputConsole(ConsoleUI* console, InputState* inputState)
   }
   for (i32 i = 0; i < 127; i++)
   {
-    if (inputState->keyboardStateRelease[i] && isalpha(i))
+    if (inputState->keyboardStateRelease[i] && (isalpha(i) || isdigit(i)))
     {
       console->input[console->inputLength] = (char)i;
       console->inputLength++;
     }
+  }
+  if (inputState->keyboardStateRelease[ASCII_SPACE])
+  {
+    console->input[console->inputLength] = ' ';
+    console->inputLength++;
   }
 
   if (inputState->keyboardStateRelease[ASCII_BACKSPACE] && console->inputLength > 0)
@@ -283,6 +344,19 @@ static UIState handleInputConsole(ConsoleUI* console, InputState* inputState)
     if (strncmp((char*)console->input, "exit", 4) == 0)
     {
       return UI_EXIT;
+    }
+    if (strncmp((char*)console->input, "meteor", 6) == 0)
+    {
+      u8 idx = 6;
+      while (console->input[idx] == ' ')
+      {
+        idx++;
+      }
+      i32 res;
+      u8  l;
+      parseIntFromString(&res, (char*)&console->input[idx], &l);
+      setStateVariable("numberOfMeteors", res);
+      printf("Setting %d\n", res);
     }
 
     for (i32 i = CONSOLE_NUMBER_OF_COMMANDS_VISIBLE - 2; i >= 0; i--)
@@ -299,15 +373,16 @@ static UIState handleInputConsole(ConsoleUI* console, InputState* inputState)
 
 static void renderSentCommandsConsole(ConsoleUI* console)
 {
-  f32 fontSize = FONT_FONT_SIZE_MEDIUM;
-  f32 x        = console->consoleInput.x - console->consoleInput.width;
-  f32 y        = console->consoleInput.y;
+  f32 fontSize  = FONT_FONT_SIZE_MEDIUM;
+  f32 spaceSize = FONT_SPACE_SIZE_MEDIUM;
+  f32 x         = console->consoleInput.x - console->consoleInput.width;
+  f32 y         = console->consoleInput.y;
 
-  renderTextStartsAt((const char*)console->input, &BLACK, x, y);
+  renderTextStartsAt((const char*)console->input, &BLACK, x, y, fontSize, spaceSize);
   for (u32 i = 0; i < CONSOLE_NUMBER_OF_COMMANDS_VISIBLE; i++)
   {
     y += 15.0f;
-    renderTextStartsAt((const char*)console->sentCommands[i], &RED, x, y);
+    renderTextStartsAt((const char*)console->sentCommands[i], &RED, x, y, fontSize, spaceSize);
   }
 }
 
@@ -317,7 +392,7 @@ static UIState renderConsole(ConsoleUI* console, InputState* inputState)
   renderComponent(&console->consoleInput);
   renderSentCommandsConsole(console);
 
-  UIState state = handleInputConsole(console, inputState);
+  UIState state = handleConsoleInput(console, inputState);
   if (state != UI_CONSOLE)
   {
     for (i32 i = 0; i < CONSOLE_NUMBER_OF_COMMANDS_VISIBLE; i++)
@@ -410,38 +485,19 @@ void initGameOverUI(GameOverUI* gameOver)
 
 void initMainMenuUI(MainMenuUI* mainMenu)
 {
-  mainMenu->playButton.text                     = "PLAY";
-  mainMenu->playButton.color                    = RED;
-  mainMenu->playButton.fontSize                 = 6.0f;
-  mainMenu->playButton.spaceSize                = 10.0f;
+  f32 buttonWidth  = getStateVariable("buttonSizeLargeWidth");
+  f32 buttonHeight = getStateVariable("buttonSizeLargeHeight");
+  f32 fontSize     = getStateVariable("fontFontSizeMedium");
+  f32 spaceSize    = getStateVariable("fontSpaceSizeMedium");
 
-  mainMenu->playButton.component.x              = 0.0f;
-  mainMenu->playButton.component.y              = 31.0f;
-  mainMenu->playButton.component.width          = 40.0f;
-  mainMenu->playButton.component.height         = 10.0f;
-  mainMenu->playButton.component.textureIdx     = TEXTURE_GREY_BOX;
+  initButton(&mainMenu->playButton, RED, "PLAY", fontSize, spaceSize, 0.0f, 31.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initAnimation(&mainMenu->playButton.animation, buttonWidth, buttonHeight, 500, 2.0f, 0);
 
-  mainMenu->settingsButton.text                 = "SETTINGS";
-  mainMenu->settingsButton.color                = RED;
-  mainMenu->settingsButton.fontSize             = 6.0f;
-  mainMenu->settingsButton.spaceSize            = 10.0f;
+  initButton(&mainMenu->settingsButton, RED, "SETTINGS", fontSize, spaceSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initAnimation(&mainMenu->settingsButton.animation, buttonWidth, buttonHeight, 500, 2.0f, 1);
 
-  mainMenu->settingsButton.component.x          = 0.0f;
-  mainMenu->settingsButton.component.y          = 0.0f;
-  mainMenu->settingsButton.component.width      = 40.0f;
-  mainMenu->settingsButton.component.height     = 10.0f;
-  mainMenu->settingsButton.component.textureIdx = TEXTURE_GREY_BOX;
-
-  mainMenu->exitButton.text                     = "EXIT";
-  mainMenu->exitButton.color                    = RED;
-  mainMenu->exitButton.fontSize                 = 6.0f;
-  mainMenu->exitButton.spaceSize                = 10.0f;
-
-  mainMenu->exitButton.component.x              = 0.0f;
-  mainMenu->exitButton.component.y              = -31.0f;
-  mainMenu->exitButton.component.width          = 40.0f;
-  mainMenu->exitButton.component.height         = 10.0f;
-  mainMenu->exitButton.component.textureIdx     = TEXTURE_GREY_BOX;
+  initButton(&mainMenu->exitButton, RED, "EXIT", fontSize, spaceSize, 0.0f, -31.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initAnimation(&mainMenu->exitButton.animation, buttonWidth, buttonHeight, 500, 2.0f, 2);
 }
 
 void initPauseMenuUI(PauseMenuUI* menu)
@@ -482,7 +538,7 @@ void initSettingsUI(SettingsMenuUI* settings)
   };
 
   initDropdown(&settings->screenSizeDropdown, itemCount, dropdownText, (void*)pairs, RED, "Resolution", fontSize, spaceSize, 60.0f, 20.0f, dropdownButtonWidth, dropdownButtonHeight);
-  initCheckbox(&settings->vsyncCheckbox, 0.0f, 0.0f, 6.0f, 8.0f);
+  initCheckbox(&settings->vsyncCheckbox, 0.0f, 0.0f, 6.0f, 8.0f, getStateVariable("vsync") != 0);
 
   settings->parentState = UI_MAIN_MENU;
 }

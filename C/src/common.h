@@ -65,10 +65,19 @@ typedef int16_t  i16;
 typedef int      i32;
 typedef int64_t  i64;
 
+void             parseFloatFromString(float* dest, char* source, u8* length);
+void             parseIntFromString(int* dest, char* source, u8* length);
+f32              getRandomFloat(f32 min, f32 max);
 u64              getScreenWidth();
 u64              getScreenHeight();
 f32              convertFloatToBE(f32 f);
-long long        timeInMilliseconds(void);
+u32              getTimeInMilliseconds();
+void             loadStateVariables();
+void             setStateVariable(const char* key, f32 value);
+f32              getStateVariable(const char* key);
 void             getInfoStrings(char* fpsString, char* msString, long long* lastTick, long long* previousTick);
+f32 easeInCubic(f32 x);
+f32 easeOutCubic(f32 x);
+f32 easeLinearly(f32 x);
 
 #endif

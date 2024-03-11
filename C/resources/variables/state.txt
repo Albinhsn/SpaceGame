@@ -1,5 +1,5 @@
 playerEntityIdx 4
-vsync 0
+vsync 1
 screenWidth 620
 screenHeight 480
 waveIdx 0
