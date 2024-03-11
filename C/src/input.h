@@ -24,6 +24,7 @@ typedef struct InputState InputState;
 
 bool                      handleInput(struct InputState* inputState);
 void                      resetInputState(InputState* inputState);
+void                      debugInputState(InputState* inputState);
 inline void               initInputState(struct InputState* inputState)
 {
   for (i8 i = 0; i < INPUT_STATE_LENGTH; i++)

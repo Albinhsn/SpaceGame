@@ -2,7 +2,31 @@
 #include "input.h"
 #include "renderer.h"
 #include "timer.h"
+#include <endian.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+u32         entityCount = 1;
+u32         bulletCount = 0;
+Bullet      bullets[256];
+Entity      entities[256];
+EntityData* entityData = 0;
+
+Entity*     getPlayer()
+{
+  return &entities[0];
+}
+
+Entity* getNewEntity()
+{
+  return &entities[entityCount++];
+}
+
+Bullet* getNewBullet()
+{
+  return &bullets[bulletCount++];
+}
 
 static bool withinScreen(Entity* player)
 {
@@ -13,7 +37,6 @@ static bool withinScreen(Entity* player)
 
 bool playerCanShoot(Player* player, Timer* timer)
 {
-  printf("%d %d\n", player->lastShot, timer->lastTick);
   if (player->lastShot > timer->lastTick)
   {
     return false;
@@ -55,7 +78,7 @@ bool updatePlayer(InputState* inputState, Player* player, Timer* timer)
     entity->y -= yAcc;
   }
 
-  return inputState->keyboardStateRelease[ASCII_SPACE] && playerCanShoot(player, timer);
+  return inputState->keyboardStateDown[ASCII_SPACE] && playerCanShoot(player, timer);
 }
 
 void initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 textureIdx, f32 rotation)
@@ -74,4 +97,77 @@ void createBullet(Bullet* bullet, Entity* parent)
   initEntity(bullet->entity, parent->x, parent->y, 2.0f, 4.0f, TEXTURE_PLAYER_BULLET, 0.0f);
   bullet->parent = parent;
   bullet->hp     = 1;
+}
+
+static inline f32 convertFloatToBE(f32 f)
+{
+  f32   retVal;
+  char* toConvert   = (char*)&f;
+  char* returnFloat = (char*)&retVal;
+
+  returnFloat[0]    = toConvert[3];
+  returnFloat[1]    = toConvert[2];
+  returnFloat[2]    = toConvert[1];
+  returnFloat[3]    = toConvert[0];
+
+  return retVal;
+}
+
+void debugEntity(Entity* entity)
+{
+
+  printf("%f %f %f %f %f %d\n", entity->x, entity->y, entity->width, entity->height, entity->rotation, entity->textureIdx);
+}
+
+void debugEntityData(EntityData* entityData)
+{
+  printf("%d %d %f %f %d %f\n", entityData->hp, entityData->textureIdx, entityData->width, entityData->height, entityData->score, entityData->movementSpeed);
+}
+
+void debugPlayer(Player* player)
+{
+  printf("%d %ld, ", player->hp, player->lastShot);
+  debugEntity(player->entity);
+}
+
+void createPlayer(Player* player)
+{
+  player->entity  = getPlayer();
+  EntityData data = entityData[4];
+  debugEntityData(&data);
+  initEntity(player->entity, 0.0f, 0.0f, data.width, data.height, data.textureIdx, 0.0f);
+  player->hp       = data.hp;
+  player->lastShot = 0;
+  debugPlayer(player);
+}
+
+void loadEntityData()
+{
+  const char* fileLocation = "./resources/entities/entityData.txt";
+  FILE*       file;
+  char        line[256];
+
+  file = fopen(fileLocation, "rb");
+  fgets(line, sizeof(line), file);
+  i32 numberOfEntities = atoi(line);
+  entityData           = (EntityData*)malloc(sizeof(EntityData) * numberOfEntities);
+
+  fgets(line, sizeof(line), file);
+  fclose(file);
+
+  FILE* entityDataFile = fopen(line, "rb");
+  printf("INFO: Reading data from '%s'\n", line);
+  memset(entityData, 0, sizeof(EntityData) * numberOfEntities);
+  u32 count = fread(entityData, 1, sizeof(EntityData) * numberOfEntities, entityDataFile);
+  for (u32 i = 0; i < numberOfEntities; i++)
+  {
+    EntityData d    = entityData[i];
+    d.hp            = htobe32(d.hp);
+    d.textureIdx    = htobe32(d.textureIdx);
+    d.score         = htobe32(d.score);
+    d.width         = convertFloatToBE(d.width);
+    d.height        = convertFloatToBE(d.height);
+    d.movementSpeed = convertFloatToBE(d.movementSpeed);
+    entityData[i]   = d;
+  }
 }

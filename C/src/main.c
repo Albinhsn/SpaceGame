@@ -5,23 +5,6 @@
 #include "timer.h"
 #include "ui.h"
 
-Entity                entities[100];
-Bullet                bullets[256];
-u32                   bulletCount;
-
-static inline Entity* getPlayer()
-{
-  return &entities[0];
-}
-
-static inline void initPlayer(Player* player)
-{
-  player->entity = getPlayer();
-  initEntity(player->entity, 0.0f, 0.0f, 10.0f, 10.0f, TEXTURE_PLAYER_MODEL, 0.0f);
-  player->hp       = INITIAL_HP;
-  player->lastShot = 0;
-}
-
 static void updateUIState(UI* ui, UIState newState)
 {
 
@@ -55,15 +38,27 @@ static bool shouldHandleUpdates(Timer* timer, u64* lastUpdated)
   return false;
 }
 
-static void gameLoop(InputState* inputState, Player* player, Timer* timer, u64* lastUpdated)
+static void gameLoop(UIState* state, InputState* inputState, Player* player, Timer* timer, u64* lastUpdated)
 {
   updateTimer(timer);
   if (shouldHandleUpdates(timer, lastUpdated))
   {
+    if (handleInput(inputState))
+    {
+      *state = UI_EXIT;
+    }
+
+    debugInputState(inputState);
     if (updatePlayer(inputState, player, timer))
     {
-      createBullet(&bullets[bulletCount], player->entity);
-      bulletCount++;
+      Entity* parent = player->entity;
+      Bullet* bullet = getNewBullet();
+      bullet->entity = getNewEntity();
+
+      f32 y          = parent->y + parent->height;
+      initEntity(bullet->entity, parent->x, parent->y, 2.0f, 4.0f, TEXTURE_PLAYER_BULLET, 0.0f);
+      bullet->parent = parent;
+      bullet->hp     = 1;
     }
   }
   renderEntity(player->entity);
@@ -97,6 +92,7 @@ static void renderInfoStrings(u64* prevTick)
 
 i32 main()
 {
+  loadEntityData();
   Timer timer;
   resetTimer(&timer);
   startTimer(&timer);
@@ -122,17 +118,15 @@ i32 main()
   u64 lastUpdated = 0;
   u64 prevTick    = 0;
   bulletCount     = 0;
+  entityCount     = 1;
 
   Player player;
-  initPlayer(&player);
+  createPlayer(&player);
+  debugPlayer(&player);
 
   while (ui.state != UI_EXIT)
   {
 
-    if (handleInput(&inputState))
-    {
-      break;
-    }
     initNewFrame();
 
     if (inputState.keyboardStateRelease['c'] && ui.state != UI_CONSOLE)
@@ -147,7 +141,11 @@ i32 main()
       {
         updateUIState(&ui, UI_PAUSE_MENU);
       }
-      gameLoop(&inputState, &player, &timer, &lastUpdated);
+      gameLoop(&ui.state, &inputState, &player, &timer, &lastUpdated);
+    }
+    else if (handleInput(&inputState))
+    {
+      break;
     }
 
     UIState newState = renderUI(&ui, &inputState, score, hp);

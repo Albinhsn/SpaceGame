@@ -71,11 +71,16 @@ static inline void handleKeyboardInput(InputState* inputState, bool down, i32 sy
   inputState->keyboardStateDown[sym] = down;
 }
 
-void resetInputState(InputState * inputState){
+void resetInputState(InputState* inputState)
+{
   memset(&inputState->keyboardStateRelease[0], 0, INPUT_STATE_LENGTH);
   inputState->mr_1 = false;
   inputState->mr_3 = false;
-
+}
+void debugInputState(InputState* inputState)
+{
+  printf("w:%d a:%d s:%d d:%d space:%d\n", inputState->keyboardStateRelease['w'], inputState->keyboardStateRelease['a'], inputState->keyboardStateRelease['s'], inputState->keyboardStateRelease['d'],
+         inputState->keyboardStateRelease[ASCII_SPACE]);
 }
 
 bool handleInput(InputState* inputState)

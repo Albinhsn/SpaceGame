@@ -2,7 +2,6 @@
 
 ## ToDo 
 * fix handle updates orderings
-* shooting for player
 * read entityData
 * read waveData
 * enemies

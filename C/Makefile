@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -O2 -g -std=c11 -Wall -Wno-missing-braces
+CFLAGS := -O2 -g -std=c11 -Wall -Wno-missing-braces -D_DEFAULT_SOURCE
 TARGET := main 
 LDFLAGS := -ldl -lSDL2 -lm -lz -lGL
 
