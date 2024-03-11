@@ -42,7 +42,7 @@ typedef struct Player Player;
 struct Bullet
 {
   Entity* entity;
-  Entity* parent;
+  bool    playerBullet;
   u8      hp;
 };
 typedef struct Bullet Bullet;
@@ -75,13 +75,13 @@ extern BulletData*   g_bulletData;
 extern Entity        g_entities[256];
 extern Bullet        g_bullets[256];
 
-Entity*              getPlayer();
+Entity*              getPlayerEntity();
 Entity*              getNewEntity();
 Bullet*              getNewBullet();
 void                 loadEntityData();
 void                 loadBulletData();
 void                 updateBullets();
-void createNewBullet(Entity * entity, u64 entityIdx);
+void                 createNewBullet(Entity* entity, u64 entityIdx);
 bool                 entitiesCollided(Entity* e1, Entity* e2);
 void                 debugPlayer(Player* player);
 void                 createPlayer(Player* player);

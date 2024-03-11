@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "ui.h"
 #include "wave.h"
+#include <stdlib.h>
 
 static void updateUIState(UI* ui, UIState newState)
 {
@@ -67,19 +68,24 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* s
     Bullet* bullet = &bullets[i];
     if (bullet->entity != 0)
     {
-      if (entitiesCollided(bullet->entity, player->entity) && bullet->parent != player->entity)
+      if (entitiesCollided(bullet->entity, player->entity) && !bullet->playerBullet)
       {
         player->hp -= 1;
+        bullet->entity = 0;
+        bullet->hp     = 0;
         printf("Hit player!\n");
-        continue;
+        if (player->hp <= 0)
+        {
+          printf("YOU DIED\n");
+          exit(1);
+        }
       }
 
       for (u32 j = 0; j < wave->enemyCount; j++)
       {
-        if (enemyIsAlive(&enemies[j], wave->timeWaveStarted, currentTick) && entitiesCollided(bullet->entity, enemies[j].entity))
+        if (bullet->playerBullet && enemyIsAlive(&enemies[j], wave->timeWaveStarted, currentTick) && entitiesCollided(bullet->entity, enemies[j].entity))
         {
           bullet->entity = 0;
-          bullet->parent = 0;
           bullet->hp     = 0;
           enemies[j].hp -= 1;
           if (enemies[j].hp <= 0)
@@ -161,6 +167,7 @@ static void renderInfoStrings(u64* prevTick)
 
 i32 main()
 {
+  srand(NULL);
   loadEntityData();
   loadWaves();
   loadBulletData();
@@ -175,7 +182,6 @@ i32 main()
   initInputState(&inputState);
 
   u64 score = 0;
-  u8  hp    = 3;
 
   UI  ui;
   ui.state = UI_MAIN_MENU;

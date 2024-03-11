@@ -66,6 +66,17 @@ bool enemyIsAlive(Enemy* enemy, u64 timeWaveStarted, u64 currentTick)
   return enemy->entity != 0 && enemy->spawnTime <= currentTick * 0.1f - timeWaveStarted;
 }
 
+static inline bool enemyWillShoot(Enemy* enemy, u64 currentTick)
+{
+  f32 gcd = rand() % 500 + 500.0f;
+  if (enemy->lastShot <= currentTick)
+  {
+    enemy->lastShot = currentTick + gcd;
+    return true;
+  }
+  return false;
+}
+
 void updateWave(Wave* wave, u64 currentTick)
 {
   Enemy* enemies = wave->enemies;
@@ -73,7 +84,11 @@ void updateWave(Wave* wave, u64 currentTick)
   {
     if (enemyIsAlive(&enemies[i], wave->timeWaveStarted, currentTick))
     {
-      wave->enemies[i].entity->y -= 0.2f;
+      enemies[i].entity->y -= enemies[i].entity->movementSpeed;
+      if (enemyWillShoot(&enemies[i], currentTick))
+      {
+        createNewBullet(enemies[i].entity, enemies[i].type);
+      }
     }
   }
 }

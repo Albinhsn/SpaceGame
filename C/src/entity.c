@@ -79,8 +79,8 @@ void createNewBullet(Entity* entity, u64 entityIdx)
 
   f32        y          = entity->y + entity->height;
   initEntity(bullet->entity, entity->x, entity->y, bulletData.width, bulletData.height, bulletData.textureIdx, entityIdx == 4 ? 0 : 180.0f, bulletData.movementSpeed);
-  bullet->parent = entity;
-  bullet->hp     = 1;
+  bullet->playerBullet = entity == getPlayerEntity();
+  bullet->hp           = 1;
 }
 
 bool playerCanShoot(Player* player, Timer* timer)
@@ -144,8 +144,8 @@ void createBullet(Bullet* bullet, Entity* parent)
 {
   f32 y = parent->y + parent->height;
   initEntity(bullet->entity, parent->x, parent->y, 2.0f, 4.0f, TEXTURE_PLAYER_BULLET, 0.0f, 0.5f);
-  bullet->parent = parent;
-  bullet->hp     = 1;
+  bullet->playerBullet = parent == getPlayerEntity();
+  bullet->hp           = 1;
 }
 
 void debugEntity(Entity* entity)
