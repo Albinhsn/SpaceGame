@@ -58,7 +58,7 @@ static void renderGameEntities(Wave* wave, Player* player)
   }
 }
 
-static void handleCollisions(Wave* wave, Player* player, u64 currentTick)
+static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* score)
 {
   Bullet* bullets = g_bullets;
   Enemy*  enemies = wave->enemies;
@@ -84,7 +84,7 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick)
           enemies[j].hp -= 1;
           if (enemies[j].hp <= 0)
           {
-
+            *score += enemies[j].scoreGiven;
             enemies[j].entity = 0;
           }
           printf("Hit Enemy! %d\n", enemies[j].hp);
@@ -101,6 +101,7 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick)
       enemies[i].hp -= 1;
       if (enemies[i].hp <= 0)
       {
+        *score += enemies[i].scoreGiven;
         enemies[i].entity = 0;
       }
 
@@ -114,7 +115,7 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick)
   }
 }
 
-static void gameLoop(UIState* state, InputState* inputState, Wave* wave, Player* player, Timer* timer, u64* lastUpdated)
+static void gameLoop(UIState* state, InputState* inputState, Wave* wave, Player* player, Timer* timer, u64* lastUpdated, u64* score)
 {
   updateTimer(timer);
   if (shouldHandleUpdates(timer, lastUpdated))
@@ -126,18 +127,11 @@ static void gameLoop(UIState* state, InputState* inputState, Wave* wave, Player*
 
     if (updatePlayer(inputState, player, timer))
     {
-      Entity* parent = player->entity;
-      Bullet* bullet = getNewBullet();
-      bullet->entity = getNewEntity();
-
-      f32 y          = parent->y + parent->height;
-      initEntity(bullet->entity, parent->x, parent->y, 2.0f, 4.0f, TEXTURE_PLAYER_BULLET, 0.0f);
-      bullet->parent = parent;
-      bullet->hp     = 1;
+      createNewBullet(player->entity, 4);
     }
     updateWave(wave, timer->lastTick);
     updateBullets();
-    handleCollisions(wave, player, timer->lastTick);
+    handleCollisions(wave, player, timer->lastTick, score);
   }
 
   renderGameEntities(wave, player);
@@ -169,6 +163,7 @@ i32 main()
 {
   loadEntityData();
   loadWaves();
+  loadBulletData();
   Timer timer;
   resetTimer(&timer);
   startTimer(&timer);
@@ -179,7 +174,7 @@ i32 main()
   InputState inputState;
   initInputState(&inputState);
 
-  u32 score = 0;
+  u64 score = 0;
   u8  hp    = 3;
 
   UI  ui;
@@ -219,14 +214,14 @@ i32 main()
       {
         updateUIState(&ui, UI_PAUSE_MENU);
       }
-      gameLoop(&ui.state, &inputState, &wave, &player, &timer, &lastUpdated);
+      gameLoop(&ui.state, &inputState, &wave, &player, &timer, &lastUpdated, &score);
     }
     else if (handleInput(&inputState))
     {
       break;
     }
 
-    UIState newState = renderUI(&ui, &inputState, score, hp);
+    UIState newState = renderUI(&ui, &inputState, score, player.hp);
     updateUIState(&ui, newState);
 
     renderInfoStrings(&prevTick);

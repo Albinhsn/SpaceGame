@@ -301,4 +301,18 @@ void renderDropdown(DropdownUIComponent* dropdown)
 }
 void renderHealth(u8 hp)
 {
+  f32       height = 10.0f;
+  f32       width  = 10.0f;
+
+  f32       y      = 100.0f - height;
+  f32       x      = -hp * width / 2.0f;
+
+  f32       gap    = 1.5f;
+  Matrix3x3 transMatrix;
+  for (i32 i = 0; i < hp; i++, x += width * gap)
+  {
+    clearMat3x3(&transMatrix);
+    getTransformationMatrix(&transMatrix, x, y, width, height, 0.0f);
+    renderTexture(&transMatrix, TEXTURE_HP_HEART);
+  }
 }

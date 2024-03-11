@@ -14,14 +14,15 @@ void      getWave(Wave* res, u64 idx)
   res->enemies         = (Enemy*)malloc(sizeof(Enemy) * res->enemyCount);
   for (i32 i = 0; i < data.enemyCount; i++)
   {
-    WaveEnemyData enemyData   = data.enemyData[i];
-    EntityData    entityData  = g_entityData[enemyData.enemyType];
-    res->enemies[i].spawnTime = enemyData.spawnTime;
-    res->enemies[i].lastShot  = 0;
-    res->enemies[i].type      = enemyData.enemyType;
-    res->enemies[i].entity    = getNewEntity();
-    res->enemies[i].hp        = entityData.hp;
-    initEntity(res->enemies[i].entity, enemyData.spawnPositionX, enemyData.spawnPositionY, entityData.width, entityData.height, entityData.textureIdx, 180.0f);
+    WaveEnemyData enemyData    = data.enemyData[i];
+    EntityData    entityData   = g_entityData[enemyData.enemyType];
+    res->enemies[i].spawnTime  = enemyData.spawnTime;
+    res->enemies[i].lastShot   = 0;
+    res->enemies[i].type       = enemyData.enemyType;
+    res->enemies[i].entity     = getNewEntity();
+    res->enemies[i].hp         = entityData.hp;
+    res->enemies[i].scoreGiven = entityData.score;
+    initEntity(res->enemies[i].entity, enemyData.spawnPositionX, enemyData.spawnPositionY, entityData.width, entityData.height, entityData.textureIdx, 180.0f, entityData.movementSpeed);
   }
 }
 
