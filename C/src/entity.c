@@ -7,33 +7,68 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-u32         entityCount = 1;
-u32         bulletCount = 0;
-Bullet      bullets[256];
-Entity      entities[256];
-EntityData* entityData = 0;
+u32         g_entityCount = 1;
+u32         g_bulletCount = 0;
+Bullet      g_bullets[256];
+Entity      g_entities[256];
+EntityData* g_entityData = 0;
 
-Entity*     getPlayer()
+static bool withinScreen(Entity* entity)
 {
-  return &entities[0];
+  i32 x = (i32)(100.0f - entity->width / 2.0f);
+  i32 y = (i32)(100.0f - entity->height / 2.0f);
+  return !(entity->x <= -x || entity->x >= x || entity->y <= -y || entity->y >= y);
+}
+
+void        updateBullets()
+{
+  for (u32 i = 0; i < g_bulletCount; i++)
+  {
+    Bullet bullet = g_bullets[i];
+    if (bullet.entity != 0)
+    {
+      bullet.entity->y += bullet.entity->rotation == 0 ? 0.5f : -0.5f;
+    }
+  }
+}
+
+bool entitiesCollided(Entity* e1, Entity* e2)
+{
+  if (!withinScreen(e1) || !withinScreen(e2))
+  {
+    return false;
+  }
+  f32 minE1X = e1->x - e1->width;
+  f32 maxE1X = e1->x + e1->width;
+  f32 minE1Y = e1->y - e1->height;
+  f32 maxE1Y = e1->y + e1->height;
+
+  f32 minE2X = e2->x - e2->width;
+  f32 maxE2X = e2->x + e2->width;
+  f32 minE2Y = e2->y - e2->height;
+  f32 maxE2Y = e2->y + e2->height;
+
+  if (minE1X > maxE2X || maxE1X < minE2X)
+  {
+    return false;
+  }
+  return !(minE1Y > maxE2Y) && !(maxE1Y < minE2Y);
+}
+Entity* getPlayerEntity()
+{
+  return &g_entities[0];
 }
 
 Entity* getNewEntity()
 {
-  return &entities[entityCount++];
+  return &g_entities[g_entityCount++];
 }
 
 Bullet* getNewBullet()
 {
-  return &bullets[bulletCount++];
+  return &g_bullets[g_bulletCount++];
 }
 
-static bool withinScreen(Entity* player)
-{
-  i32 x = (i32)(100.0f - player->width / 2.0f);
-  i32 y = (i32)(100.0f - player->height / 2.0f);
-  return !(player->x <= -x || player->x >= x || player->y <= -y || player->y >= y);
-}
 
 bool playerCanShoot(Player* player, Timer* timer)
 {
@@ -99,20 +134,6 @@ void createBullet(Bullet* bullet, Entity* parent)
   bullet->hp     = 1;
 }
 
-static inline f32 convertFloatToBE(f32 f)
-{
-  f32   retVal;
-  char* toConvert   = (char*)&f;
-  char* returnFloat = (char*)&retVal;
-
-  returnFloat[0]    = toConvert[3];
-  returnFloat[1]    = toConvert[2];
-  returnFloat[2]    = toConvert[1];
-  returnFloat[3]    = toConvert[0];
-
-  return retVal;
-}
-
 void debugEntity(Entity* entity)
 {
 
@@ -132,8 +153,8 @@ void debugPlayer(Player* player)
 
 void createPlayer(Player* player)
 {
-  player->entity  = getPlayer();
-  EntityData data = entityData[4];
+  player->entity  = getPlayerEntity();
+  EntityData data = g_entityData[4];
   debugEntityData(&data);
   initEntity(player->entity, 0.0f, 0.0f, data.width, data.height, data.textureIdx, 0.0f);
   player->hp       = data.hp;
@@ -150,24 +171,24 @@ void loadEntityData()
   file = fopen(fileLocation, "rb");
   fgets(line, sizeof(line), file);
   i32 numberOfEntities = atoi(line);
-  entityData           = (EntityData*)malloc(sizeof(EntityData) * numberOfEntities);
+  g_entityData         = (EntityData*)malloc(sizeof(EntityData) * numberOfEntities);
 
   fgets(line, sizeof(line), file);
   fclose(file);
 
   FILE* entityDataFile = fopen(line, "rb");
   printf("INFO: Reading data from '%s'\n", line);
-  memset(entityData, 0, sizeof(EntityData) * numberOfEntities);
-  u32 count = fread(entityData, 1, sizeof(EntityData) * numberOfEntities, entityDataFile);
+  memset(g_entityData, 0, sizeof(EntityData) * numberOfEntities);
+  u32 count = fread(g_entityData, 1, sizeof(EntityData) * numberOfEntities, entityDataFile);
   for (u32 i = 0; i < numberOfEntities; i++)
   {
-    EntityData d    = entityData[i];
+    EntityData d    = g_entityData[i];
     d.hp            = htobe32(d.hp);
     d.textureIdx    = htobe32(d.textureIdx);
     d.score         = htobe32(d.score);
     d.width         = convertFloatToBE(d.width);
     d.height        = convertFloatToBE(d.height);
     d.movementSpeed = convertFloatToBE(d.movementSpeed);
-    entityData[i]   = d;
+    g_entityData[i] = d;
   }
 }

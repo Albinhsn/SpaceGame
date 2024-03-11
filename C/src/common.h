@@ -27,7 +27,7 @@
 
 #define INITIAL_HP                3
 
-#define PLAYER_GCD 500
+#define PLAYER_GCD                500
 #define PLAYER_MS                 1.0f
 
 #define MIN(fst, snd)             (fst < snd ? fst : snd)
@@ -67,6 +67,7 @@ typedef int64_t  i64;
 
 u64              getScreenWidth();
 u64              getScreenHeight();
+f32              convertFloatToBE(f32 f);
 long long        timeInMilliseconds(void);
 void             getInfoStrings(char* fpsString, char* msString, long long* lastTick, long long* previousTick);
 

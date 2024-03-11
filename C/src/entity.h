@@ -46,19 +46,32 @@ struct Bullet
 };
 typedef struct Bullet Bullet;
 
-extern u32            entityCount;
-extern u32            bulletCount;
-extern Entity         entities[256];
-extern Bullet         bullets[256];
+struct Enemy
+{
+  Entity* entity;
+  u64     spawnTime;
+  u64     lastShot;
+  i32     type;
+  i32      hp;
+};
+typedef struct Enemy Enemy;
 
-Entity*               getPlayer();
-Entity*               getNewEntity();
-Bullet*               getNewBullet();
-void                  loadEntityData();
-void debugPlayer(Player *player);
-void                  createPlayer(Player* player);
-void                  createBullet(Bullet* bullet, Entity* parent);
-void                  initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 textureIdx, f32 rotation);
-bool                  updatePlayer(InputState* inputState, Player* player, Timer* timer);
+extern u32           g_entityCount;
+extern u32           g_bulletCount;
+extern EntityData*   g_entityData;
+extern Entity        g_entities[256];
+extern Bullet        g_bullets[256];
+
+Entity*              getPlayer();
+Entity*              getNewEntity();
+Bullet*              getNewBullet();
+void                 loadEntityData();
+void                 updateBullets();
+bool                 entitiesCollided(Entity* e1, Entity* e2);
+void                 debugPlayer(Player* player);
+void                 createPlayer(Player* player);
+void                 createBullet(Bullet* bullet, Entity* parent);
+void                 initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 textureIdx, f32 rotation);
+bool                 updatePlayer(InputState* inputState, Player* player, Timer* timer);
 
 #endif

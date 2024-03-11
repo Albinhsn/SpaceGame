@@ -4,6 +4,20 @@
 #include <stdio.h>
 #include <string.h>
 
+f32 convertFloatToBE(f32 f)
+{
+  f32   retVal;
+  char* toConvert   = (char*)&f;
+  char* returnFloat = (char*)&retVal;
+
+  returnFloat[0]    = toConvert[3];
+  returnFloat[1]    = toConvert[2];
+  returnFloat[2]    = toConvert[1];
+  returnFloat[3]    = toConvert[0];
+
+  return retVal;
+}
+
 u64 getScreenWidth()
 {
   i32 w, h;

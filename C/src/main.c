@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "timer.h"
 #include "ui.h"
+#include "wave.h"
 
 static void updateUIState(UI* ui, UIState newState)
 {
@@ -38,7 +39,82 @@ static bool shouldHandleUpdates(Timer* timer, u64* lastUpdated)
   return false;
 }
 
-static void gameLoop(UIState* state, InputState* inputState, Player* player, Timer* timer, u64* lastUpdated)
+static void renderGameEntities(Wave* wave, Player* player)
+{
+  renderEntity(player->entity);
+  for (int i = 0; i < g_bulletCount; i++)
+  {
+    if (g_bullets[i].entity != 0)
+    {
+      renderEntity(g_bullets[i].entity);
+    }
+  }
+  for (int i = 0; i < wave->enemyCount; i++)
+  {
+    if (wave->enemies[i].entity != 0)
+    {
+      renderEntity(wave->enemies[i].entity);
+    }
+  }
+}
+
+static void handleCollisions(Wave* wave, Player* player, u64 currentTick)
+{
+  Bullet* bullets = g_bullets;
+  Enemy*  enemies = wave->enemies;
+  for (u32 i = 0; i < g_bulletCount; i++)
+  {
+    Bullet* bullet = &bullets[i];
+    if (bullet->entity != 0)
+    {
+      if (entitiesCollided(bullet->entity, player->entity) && bullet->parent != player->entity)
+      {
+        player->hp -= 1;
+        printf("Hit player!\n");
+        continue;
+      }
+
+      for (u32 j = 0; j < wave->enemyCount; j++)
+      {
+        if (enemyIsAlive(&enemies[j], wave->timeWaveStarted, currentTick) && entitiesCollided(bullet->entity, enemies[j].entity))
+        {
+          bullet->entity = 0;
+          bullet->parent = 0;
+          bullet->hp     = 0;
+          enemies[j].hp -= 1;
+          if (enemies[j].hp <= 0)
+          {
+
+            enemies[j].entity = 0;
+          }
+          printf("Hit Enemy! %d\n", enemies[j].hp);
+          break;
+        }
+      }
+    }
+  }
+
+  for (u32 i = 0; i < wave->enemyCount; i++)
+  {
+    if (enemyIsAlive(&enemies[i], wave->timeWaveStarted, currentTick) && entitiesCollided(player->entity, enemies[i].entity))
+    {
+      enemies[i].hp -= 1;
+      if (enemies[i].hp <= 0)
+      {
+        enemies[i].entity = 0;
+      }
+
+      player->hp -= 1;
+      if (player->hp <= 0)
+      {
+        printf("YOU DIED\n");
+        exit(1);
+      }
+    }
+  }
+}
+
+static void gameLoop(UIState* state, InputState* inputState, Wave* wave, Player* player, Timer* timer, u64* lastUpdated)
 {
   updateTimer(timer);
   if (shouldHandleUpdates(timer, lastUpdated))
@@ -48,7 +124,6 @@ static void gameLoop(UIState* state, InputState* inputState, Player* player, Tim
       *state = UI_EXIT;
     }
 
-    debugInputState(inputState);
     if (updatePlayer(inputState, player, timer))
     {
       Entity* parent = player->entity;
@@ -60,12 +135,12 @@ static void gameLoop(UIState* state, InputState* inputState, Player* player, Tim
       bullet->parent = parent;
       bullet->hp     = 1;
     }
+    updateWave(wave, timer->lastTick);
+    updateBullets();
+    handleCollisions(wave, player, timer->lastTick);
   }
-  renderEntity(player->entity);
-  for (int i = 0; i < bulletCount; i++)
-  {
-    renderEntity(bullets[i].entity);
-  }
+
+  renderGameEntities(wave, player);
 }
 
 static void renderInfoStrings(u64* prevTick)
@@ -93,6 +168,7 @@ static void renderInfoStrings(u64* prevTick)
 i32 main()
 {
   loadEntityData();
+  loadWaves();
   Timer timer;
   resetTimer(&timer);
   startTimer(&timer);
@@ -117,12 +193,14 @@ i32 main()
 
   u64 lastUpdated = 0;
   u64 prevTick    = 0;
-  bulletCount     = 0;
-  entityCount     = 1;
+  g_bulletCount   = 0;
+  g_entityCount   = 1;
 
   Player player;
   createPlayer(&player);
-  debugPlayer(&player);
+
+  Wave wave;
+  getWave(&wave, 0);
 
   while (ui.state != UI_EXIT)
   {
@@ -141,7 +219,7 @@ i32 main()
       {
         updateUIState(&ui, UI_PAUSE_MENU);
       }
-      gameLoop(&ui.state, &inputState, &player, &timer, &lastUpdated);
+      gameLoop(&ui.state, &inputState, &wave, &player, &timer, &lastUpdated);
     }
     else if (handleInput(&inputState))
     {
