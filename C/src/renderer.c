@@ -181,10 +181,11 @@ void initRenderer(Font* font)
 
 void renderEntity(Entity* entity)
 {
-
   Matrix3x3 transMatrix;
   clearMat3x3(&transMatrix);
   getTransformationMatrix(&transMatrix, entity->x, entity->y, entity->width, entity->height, entity->rotation);
+
+  renderTexture(&transMatrix, entity->textureIdx);
 }
 
 void renderTexture(Matrix3x3* transMatrix, u32 textureIdx)
@@ -283,7 +284,7 @@ void renderCheckbox(CheckboxUIComponent* checkbox)
   renderComponent(&checkbox->background);
   if (checkbox->toggled)
   {
-    renderComponent(&checkbox->background);
+    renderComponent(&checkbox->checkmark);
   }
 }
 

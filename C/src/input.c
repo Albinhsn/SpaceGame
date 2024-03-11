@@ -71,13 +71,18 @@ static inline void handleKeyboardInput(InputState* inputState, bool down, i32 sy
   inputState->keyboardStateDown[sym] = down;
 }
 
+void resetInputState(InputState * inputState){
+  memset(&inputState->keyboardStateRelease[0], 0, INPUT_STATE_LENGTH);
+  inputState->mr_1 = false;
+  inputState->mr_3 = false;
+
+}
+
 bool handleInput(InputState* inputState)
 {
   SDL_Event event;
   bool      mouseEvent = false;
-  memset(&inputState->keyboardStateRelease[0], 0, INPUT_STATE_LENGTH);
-  inputState->mr_1 = false;
-  inputState->mr_3 = false;
+  resetInputState(inputState);
 
   while (SDL_PollEvent(&event))
   {
@@ -135,5 +140,5 @@ bool handleInput(InputState* inputState)
     SDL_GetMouseState(&inputState->mouseX, &inputState->mouseY);
   }
 
-  return inputState->keyboardStateRelease[ASCII_ESCAPE];
+  return false;
 }

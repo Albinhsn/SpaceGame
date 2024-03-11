@@ -60,21 +60,22 @@ struct SliderUIComponent
 {
   UIComponent background;
   UIComponent bar;
-  UIComponent slider; 
-  f32 value;
-  f32 minValue;
-  f32 maxValue;
+  UIComponent slider;
+  f32         value;
+  f32         minValue;
+  f32         maxValue;
 };
 typedef struct SliderUIComponent SliderUIComponent;
 
-#define CONSOLE_NUMBER_OF_COMMANDS_VISIBLE 10
+#define CONSOLE_NUMBER_OF_COMMANDS_VISIBLE 6
 struct ConsoleUI
 {
   UIState     parent;
   UIComponent background;
   UIComponent consoleInput;
+  u8          inputLength;
   u8*         input;
-  u8*         sentCommands[CONSOLE_NUMBER_OF_COMMANDS_VISIBLE];
+  u8**        sentCommands;
 };
 typedef struct ConsoleUI ConsoleUI;
 
@@ -123,7 +124,7 @@ struct UI
 };
 typedef struct UI UI;
 
-void renderUI(UI* ui, InputState* inputState, u32 score, u8 hp);
+UIState           renderUI(UI* ui, InputState* inputState, u32 score, u8 hp);
 void              initUI(UI* ui, ConsoleUI* console, GameOverUI* gameOver, MainMenuUI* mainMenu, PauseMenuUI* pauseMenu, SettingsMenuUI* settings);
 
 #endif

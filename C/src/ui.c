@@ -2,6 +2,7 @@
 #include "common.h"
 #include "renderer.h"
 #include <SDL2/SDL_video.h>
+#include <string.h>
 
 static void initUIComponent(UIComponent* component, f32 x, f32 y, f32 width, f32 height, u32 textureIdx)
 {
@@ -61,8 +62,8 @@ static void initDropdown(DropdownUIComponent* slider, u32 itemCount, const char*
 
 static bool hovers(UIComponent component, InputState* inputState)
 {
-  f32 mouseX = ((inputState->mouseX / (f32)DEFAULT_SCREENWIDTH) * 2.0f - 1.0f) * 100.0f;
-  f32 mouseY = ((inputState->mouseY / (f32)DEFAULT_SCREENHEIGHT) * 2.0f - 1.0f) * -100.0f;
+  f32 mouseX = ((inputState->mouseX / (f32)getScreenWidth()) * 2.0f - 1.0f) * 100.0f;
+  f32 mouseY = ((inputState->mouseY / (f32)getScreenHeight()) * 2.0f - 1.0f) * -100.0f;
 
   f32 minX   = component.x - component.width;
   f32 maxX   = component.x + component.width;
@@ -125,7 +126,7 @@ static void                   updateWindowSize(i32 width, i32 height)
 
 static void updateSliderPosition(SliderUIComponent* slider, InputState* inputState)
 {
-  slider->slider.x = ((inputState->mouseX / (f32)DEFAULT_SCREENWIDTH) * 2.0f - 1.0f) * 100.0f;
+  slider->slider.x = ((inputState->mouseX / (f32)getScreenWidth()) * 2.0f - 1.0f) * 100.0f;
 
   f32 offset       = 10.0f;
   slider->slider.x = MAX(slider->slider.x, (slider->background.x - slider->background.width + offset));
@@ -215,15 +216,20 @@ static UIState renderGameOver(GameOverUI* gameOver, InputState* inputState, u32 
   return UI_GAME_OVER;
 }
 
-static UIState renderGameRunning(u32 score, u8 hp)
+static UIState renderGameRunning(InputState * inputState, u32 score, u8 hp)
 {
   f32  fontSize = FONT_FONT_SIZE_MEDIUM;
   char scoreText[32];
   memset(scoreText, 0, 32);
   sprintf(scoreText, "Score: %d", score);
   renderTextStartsAt(scoreText, &WHITE, -100.0f, 100.0f - fontSize);
-
   renderHealth(hp);
+
+  if(inputState->keyboardStateRelease[ASCII_ESCAPE]){
+    return UI_PAUSE_MENU;
+  }
+
+
   return UI_GAME_RUNNING;
 }
 
@@ -250,12 +256,44 @@ static UIState renderPauseMenu(PauseMenuUI* pauseMenu, InputState* inputState)
   return UI_PAUSE_MENU;
 }
 
-static UIState handleInputConsole(UIState parent, InputState* inputState)
+static UIState handleInputConsole(ConsoleUI* console, InputState* inputState)
 {
   if (inputState->keyboardStateRelease[ASCII_ESCAPE])
   {
-    return parent;
+    return console->parent;
   }
+  for (i32 i = 0; i < 127; i++)
+  {
+    if (inputState->keyboardStateRelease[i] && isalpha(i))
+    {
+      console->input[console->inputLength] = (char)i;
+      console->inputLength++;
+    }
+  }
+
+  if (inputState->keyboardStateRelease[ASCII_BACKSPACE] && console->inputLength > 0)
+  {
+    console->inputLength--;
+    console->input[console->inputLength] = 0;
+  }
+
+  if (inputState->keyboardStateRelease[ASCII_RETURN])
+  {
+
+    if (strncmp((char*)console->input, "exit", 4) == 0)
+    {
+      return UI_EXIT;
+    }
+
+    for (i32 i = CONSOLE_NUMBER_OF_COMMANDS_VISIBLE - 2; i >= 0; i--)
+    {
+      memcpy(console->sentCommands[i + 1], console->sentCommands[i], 32);
+    }
+    memcpy(console->sentCommands[0], console->input, 32);
+    memset(console->input, 0, 32);
+    console->inputLength = 0;
+  }
+
   return UI_CONSOLE;
 }
 
@@ -268,8 +306,8 @@ static void renderSentCommandsConsole(ConsoleUI* console)
   renderTextStartsAt((const char*)console->input, &BLACK, x, y);
   for (u32 i = 0; i < CONSOLE_NUMBER_OF_COMMANDS_VISIBLE; i++)
   {
-    y += fontSize * 2;
-    renderTextStartsAt((const char*)console->sentCommands[i], &BLACK, x, y);
+    y += 15.0f;
+    renderTextStartsAt((const char*)console->sentCommands[i], &RED, x, y);
   }
 }
 
@@ -279,84 +317,95 @@ static UIState renderConsole(ConsoleUI* console, InputState* inputState)
   renderComponent(&console->consoleInput);
   renderSentCommandsConsole(console);
 
-  UIState state = handleInputConsole(console->parent, inputState);
+  UIState state = handleInputConsole(console, inputState);
+  if (state != UI_CONSOLE)
+  {
+    for (i32 i = 0; i < CONSOLE_NUMBER_OF_COMMANDS_VISIBLE; i++)
+    {
+      memset(console->sentCommands[i], 0, 32);
+    }
+    memset(console->input, 0, 32);
+    console->inputLength = 0;
+  }
+
   return state;
 }
 
-void renderUI(UI* ui, InputState* inputState, u32 score, u8 hp)
+UIState renderUI(UI* ui, InputState* inputState, u32 score, u8 hp)
 {
+
   switch (ui->state)
   {
   case UI_MAIN_MENU:
   {
-    ui->state = renderMainMenu(ui->mainMenu, inputState);
-    break;
+    return renderMainMenu(ui->mainMenu, inputState);
   }
   case UI_SETTINGS_MENU:
   {
-    ui->state = renderSettingsMenu(ui->settingsMenu, inputState);
-    break;
+    return renderSettingsMenu(ui->settingsMenu, inputState);
   }
   case UI_GAME_OVER:
   {
-    ui->state = renderGameOver(ui->gameOver, inputState, score);
-    break;
+    return renderGameOver(ui->gameOver, inputState, score);
   }
   case UI_GAME_RUNNING:
   {
-    ui->state = renderGameRunning(score, hp);
-    break;
+    return renderGameRunning(inputState, score, hp);
   }
   case UI_PAUSE_MENU:
   {
-    ui->state = renderPauseMenu(ui->pauseMenu, inputState);
-    break;
+    return renderPauseMenu(ui->pauseMenu, inputState);
   }
   case UI_CONSOLE:
   {
-    ui->state = renderConsole(ui->console, inputState);
-    break;
+    return renderConsole(ui->console, inputState);
   }
   default:
   {
-    break;
   }
   }
+
+  return ui->state;
 }
 
 void initConsoleUI(ConsoleUI* console)
 {
-  console->input = (u8*)malloc(sizeof(u8) * TEXT_MAX_LENGTH);
+  console->inputLength = 0;
+  console->input       = (u8*)malloc(sizeof(u8) * TEXT_MAX_LENGTH);
+  memset(console->input, 0, TEXT_MAX_LENGTH);
+  console->sentCommands = (u8**)malloc(sizeof(u8*) * CONSOLE_NUMBER_OF_COMMANDS_VISIBLE);
   for (u32 i = 0; i < CONSOLE_NUMBER_OF_COMMANDS_VISIBLE; i++)
   {
     console->sentCommands[i] = (u8*)malloc(sizeof(u8) * TEXT_MAX_LENGTH);
+    memset(console->sentCommands[i], 0, TEXT_MAX_LENGTH);
   }
-  console->parent                = UI_CONSOLE;
+  console->parent                  = UI_CONSOLE;
 
-  console->background.x          = 0;
-  console->background.y          = 0;
-  console->background.width      = 50.0f;
-  console->background.height     = 50.0f;
-  console->background.textureIdx = TEXTURE_GREY_BOX;
+  console->background.x            = 0;
+  console->background.y            = 0;
+  console->background.width        = 50.0f;
+  console->background.height       = 50.0f;
+  console->background.textureIdx   = TEXTURE_GREY_BOX;
 
-  f32 fontSize                   = 10.0f;
+  f32 fontSize                     = 6.0f;
 
-  console->consoleInput.x        = -40.0f;
-  console->consoleInput.y        = 50.0f;
-  console->consoleInput.width    = 50.0f;
-  console->consoleInput.height   = fontSize * 1.5f;
+  console->consoleInput.textureIdx = TEXTURE_GREY_BUTTON_14;
+  console->consoleInput.x          = 0.0f;
+  console->consoleInput.y          = -42.0f;
+  console->consoleInput.width      = 50.0f;
+  console->consoleInput.height     = fontSize * 1.2f;
 }
 
-void initGameOverUI(GameOverUI* console)
+void initGameOverUI(GameOverUI* gameOver)
 {
   f32 buttonWidth  = BUTTON_SIZE_MEDIUM_WIDTH;
   f32 buttonHeight = BUTTON_SIZE_MEDIUM_HEIGHT;
   f32 fontSize     = FONT_FONT_SIZE_MEDIUM;
   f32 spaceSize    = FONT_SPACE_SIZE_MEDIUM;
 
-  initButton(&console->restartButton, RED, "RESTART", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
-  initButton(&console->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
-  console->lostGame = false;
+  initButton(&gameOver->restartButton, RED, "RESTART", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&gameOver->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  gameOver->lostGame = false;
 }
 
 void initMainMenuUI(MainMenuUI* mainMenu)
@@ -403,7 +452,7 @@ void initPauseMenuUI(PauseMenuUI* menu)
   f32 spaceSize    = FONT_SPACE_SIZE_MEDIUM;
 
   initButton(&menu->playButton, RED, "PLAY", spaceSize, fontSize, 0.0f, 2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
-  initButton(&menu->settingsButton, RED, "SETTINGS", spaceSize, fontSize, 0.0f, buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&menu->settingsButton, RED, "SETTINGS", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
   initButton(&menu->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
 }
 
@@ -421,10 +470,10 @@ void initSettingsUI(SettingsMenuUI* settings)
 
   u32             itemCount   = 4;
   ScreenSizePair* pairs       = (ScreenSizePair*)malloc(sizeof(ScreenSizePair) * itemCount);
-  pairs[0]                    = (ScreenSizePair){.h = 1920, .w = 1080};
-  pairs[1]                    = (ScreenSizePair){.h = 1600, .w = 900};
-  pairs[2]                    = (ScreenSizePair){.h = 1024, .w = 768};
-  pairs[3]                    = (ScreenSizePair){.h = 620, .w = 480};
+  pairs[0]                    = (ScreenSizePair){.w = 1920, .h = 1080};
+  pairs[1]                    = (ScreenSizePair){.w = 1600, .h = 900};
+  pairs[2]                    = (ScreenSizePair){.w = 1024, .h = 768};
+  pairs[3]                    = (ScreenSizePair){.w = 620, .h = 480};
   const char* dropdownText[4] = {
       "1920x1080",
       "1600x900",

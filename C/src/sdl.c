@@ -301,7 +301,7 @@ SDL_Window* initSDLWindow(SDL_GLContext* context, int screenWidth, int screenHei
   *context = SDL_GL_CreateContext(window);
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetSwapInterval(1);
+  SDL_GL_SetSwapInterval(0);
 
   loadExtensions();
 

@@ -1,6 +1,11 @@
 # Galaga clone
 
 ## ToDo 
-- [ ] Change position stuff to be 0 -> 100 (float still)
-
-
+* fix handle updates orderings
+* shooting for player
+* read entityData
+* read waveData
+* enemies
+* collision
+* Execute console commands
+* Animation

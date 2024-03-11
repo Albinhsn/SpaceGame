@@ -1,6 +1,24 @@
 #include "common.h"
+#include "renderer.h"
+#include <SDL2/SDL_video.h>
 #include <stdio.h>
 #include <string.h>
+
+u64 getScreenWidth()
+{
+  i32 w, h;
+  SDL_GetWindowSize(g_renderer.window, &w, &h);
+
+  return w;
+}
+
+u64 getScreenHeight()
+{
+  i32 w, h;
+  SDL_GetWindowSize(g_renderer.window, &w, &h);
+
+  return h;
+}
 
 long long timeInMilliseconds(void)
 {

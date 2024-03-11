@@ -9,10 +9,10 @@
 
 struct InputState
 {
-  i32 mouseX;
-  i32 mouseY;
-  i32 mouseXRel;
-  i32 mouseYRel;
+  i32  mouseX;
+  i32  mouseY;
+  i32  mouseXRel;
+  i32  mouseYRel;
   bool md_1;
   bool mr_1;
   bool md_3;
@@ -22,14 +22,15 @@ struct InputState
 };
 typedef struct InputState InputState;
 
-bool        handleInput(struct InputState* inputState);
-inline void initInputState(struct InputState* inputState)
+bool                      handleInput(struct InputState* inputState);
+void                      resetInputState(InputState* inputState);
+inline void               initInputState(struct InputState* inputState)
 {
   for (i8 i = 0; i < INPUT_STATE_LENGTH; i++)
   {
     inputState->keyboardStateDown[i] = false;
   }
 }
-void               getKeyboardInputCharacters(struct InputState* inputState, struct String* string);
+void getKeyboardInputCharacters(struct InputState* inputState, struct String* string);
 
 #endif

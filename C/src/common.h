@@ -25,6 +25,11 @@
 #define DEFAULT_SCREENWIDTH       1024
 #define DEFAULT_SCREENHEIGHT      780
 
+#define INITIAL_HP                3
+
+#define PLAYER_GCD 500
+#define PLAYER_MS                 1.0f
+
 #define MIN(fst, snd)             (fst < snd ? fst : snd)
 #define MAX(fst, snd)             (fst > snd ? fst : snd)
 
@@ -60,6 +65,8 @@ typedef int16_t  i16;
 typedef int      i32;
 typedef int64_t  i64;
 
+u64              getScreenWidth();
+u64              getScreenHeight();
 long long        timeInMilliseconds(void);
 void             getInfoStrings(char* fpsString, char* msString, long long* lastTick, long long* previousTick);
 
