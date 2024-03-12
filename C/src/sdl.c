@@ -293,28 +293,6 @@ void sta_glDrawBuffers(GLint n, const GLenum* bufs)
   glDrawBuffers(n, bufs);
 }
 
-SDL_Window* initSDLWindow(SDL_GLContext* context, int screenWidth, int screenHeight)
-{
-  SDL_Window* window;
-
-  SDL_Init(SDL_INIT_VIDEO);
-  window   = SDL_CreateWindow("client", 0, 0, screenWidth, screenHeight, SDL_WINDOW_OPENGL);
-  *context = SDL_GL_CreateContext(window);
-
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  f32 vsyncStateVariable = getStateVariable("vsync");
-  printf("Init vsync with %f\n", vsyncStateVariable);
-  SDL_GL_SetSwapInterval((i32)vsyncStateVariable);
-
-  loadExtensions();
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glViewport(0, 0, screenWidth, screenHeight);
-
-  return window;
-}
-
 void TurnZBufferOn()
 {
   glEnable(GL_DEPTH_TEST);
@@ -332,4 +310,24 @@ void EnableAlphaBlending()
 void DisableAlphaBlending()
 {
   glDisable(GL_BLEND);
+}
+
+SDL_Window* initSDLWindow(SDL_GLContext* context, int screenWidth, int screenHeight)
+{
+  SDL_Window* window;
+
+  SDL_Init(SDL_INIT_VIDEO);
+  window   = SDL_CreateWindow("client", 0, 0, screenWidth, screenHeight, SDL_WINDOW_OPENGL);
+  *context = SDL_GL_CreateContext(window);
+
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetSwapInterval((i32)getStateVariable("vsync"));
+
+  loadExtensions();
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glViewport(0, 0, screenWidth, screenHeight);
+
+  return window;
 }

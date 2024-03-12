@@ -49,7 +49,6 @@
 #define ASCII_SPACE               32
 #define ASCII_BACKSPACE           8
 
-#define FONT_IMAGE_LOCATION       "./resources/fonts/font01.png"
 #define FONT_DATA_LOCATION        "./resources/fonts/font01.txt"
 
 typedef uint8_t  u8;

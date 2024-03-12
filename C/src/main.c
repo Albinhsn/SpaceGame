@@ -12,6 +12,7 @@ struct Game
 {
   u64    score;
   u64    lastUpdated;
+  u64    waveIdx;
   Timer  timer;
   Player player;
   Wave   wave;
@@ -107,7 +108,6 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* s
         if (getStateVariable("god") != 1)
         {
           player->hp -= 1;
-          printf("Hit player!\n");
         }
       }
 
@@ -121,7 +121,6 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* s
           if (enemies[j].hp <= 0)
           {
             *score += enemies[j].scoreGiven;
-            enemies[j].entity = 0;
           }
           printf("Hit Enemy! %d\n", enemies[j].hp);
           break;
@@ -138,7 +137,6 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* s
       if (enemies[i].hp <= 0)
       {
         *score += enemies[i].scoreGiven;
-        enemies[i].entity = 0;
       }
 
       if (getStateVariable("god") != 1)
@@ -149,31 +147,41 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* s
   }
 }
 
-static void gameLoop(UIState* state, InputState* inputState, Wave* wave, Player* player, Timer* timer, u64* lastUpdated, u64* score)
+static void gameLoop(UIState* state, InputState* inputState, Game* game)
 {
-  updateTimer(timer);
-  if (shouldHandleUpdates(timer, lastUpdated))
+  updateTimer(&game->timer);
+  if (shouldHandleUpdates(&game->timer, &game->lastUpdated))
   {
     if (handleInput(inputState))
     {
       *state = UI_EXIT;
     }
 
-    if (updatePlayer(inputState, player, timer))
+    if (updatePlayer(inputState, &game->player, &game->timer))
     {
-      createNewBullet(player->entity, 4);
+      createNewBullet(game->player.entity, 4);
     }
-    updateWave(wave, timer->lastTick);
-    updateBullets(timer->lastTick);
-    handleCollisions(wave, player, timer->lastTick, score);
-    if (player->hp <= 0)
+    updateWave(&game->wave, game->timer.lastTick);
+    updateBullets(game->timer.lastTick);
+    handleCollisions(&game->wave, &game->player, game->timer.lastTick, &game->score);
+    removeOutOfBoundsEntities(&game->wave, game->timer.lastTick);
+    if (game->player.hp <= 0)
     {
       *state = UI_GAME_OVER;
     }
-    removeOutOfBoundsBullets(timer->lastTick);
+    else if (waveIsOver(&game->wave, game->timer.lastTick))
+    {
+      printf("Wave is Over!\n");
+      game->waveIdx++;
+      getWave(&game->wave, game->waveIdx);
+      if (game->wave.enemies == 0)
+      {
+        *state = UI_GAME_OVER;
+      }
+    }
   }
 
-  renderGameEntities(wave, player);
+  renderGameEntities(&game->wave, &game->player);
 }
 
 static void renderInfoStrings(u64* prevTick)
@@ -200,7 +208,7 @@ static void renderInfoStrings(u64* prevTick)
 
 i32 main()
 {
-  srand(NULL);
+  srand(0);
   loadEntityData();
   loadWaves();
   loadBulletData();
@@ -249,7 +257,7 @@ i32 main()
       {
         updateUIState(&ui, UI_PAUSE_MENU, &game, &game.timer);
       }
-      gameLoop(&ui.state, &inputState, &game.wave, &game.player, &game.timer, &game.lastUpdated, &game.score);
+      gameLoop(&ui.state, &inputState, &game);
     }
     else if (handleInput(&inputState))
     {

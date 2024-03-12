@@ -112,7 +112,7 @@ void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, con
   for (u32 i = 0; i < numLetters; i++)
   {
     char letter    = text[i];
-    f32  addedSize = font->type[letter].size * 0.01f * sizeModifier;
+    f32  addedSize = font->type[(u8)letter].size * 0.01f * sizeModifier;
     totalSize += addedSize != 0 ? addedSize : spaceSize * 0.01f;
   }
   if (indentation == TEXT_INDENTATION_CENTERED)
@@ -133,7 +133,7 @@ void buildUpdatedTextVertexArray(Font* font, f32* vertices, u32 vertexCount, con
     }
     else
     {
-      FontType type           = font->type[letter];
+      FontType type           = font->type[(u8)letter];
       f32      size           = type.size * 0.01f * sizeModifier;
 
       vertices[vertexIdx + 0] = drawX;

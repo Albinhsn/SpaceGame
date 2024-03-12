@@ -34,5 +34,7 @@ bool                enemyIsAlive(Enemy* enemy, u64 timeWaveStarted, u64 currentT
 void                loadWaves();
 void                getWave(Wave* res, u64 idx);
 void                updateWave(Wave* wave, u64 currentTick);
+bool                waveIsOver(Wave* wave, u64 currentTick);
+void               removeOutOfBoundsEntities(Wave* wave, u64 currentTick);
 
 #endif

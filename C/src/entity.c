@@ -153,18 +153,6 @@ Bullet* getNewBullet()
   return 0;
 }
 
-void removeOutOfBoundsBullets(u64 currentTick)
-{
-  Bullet* bullets = g_bullets;
-  for (u32 idx = 0; idx < MAX_BULLET_COUNT; idx++)
-  {
-    if (bullets[idx].entity != 0 && (bullets[idx].entity->y <= -120.0f || bullets[idx].entity->x >= 120.0f))
-    {
-      memset(bullets[idx].entity, 0, sizeof(Entity));
-      memset(&bullets[idx], 0, sizeof(Bullet));
-    }
-  }
-}
 
 void createNewBullet(Entity* entity, u64 entityIdx)
 {

@@ -4,18 +4,30 @@
 #include "string.h"
 #include <stdio.h>
 
-Wave      waves[16];
-WaveData* waveData;
+WaveData* g_waveData;
+u64       g_numberOfWaves = 0;
 
 void      getWave(Wave* res, u64 idx)
 {
-  WaveData data        = waveData[idx];
+  if (idx >= g_numberOfWaves)
+  {
+    if (res->enemies != 0)
+    {
+      free(res->enemies);
+    }
+    res->enemies    = 0;
+    res->enemyCount = 0;
+    return;
+  }
+
+  WaveData data        = g_waveData[idx];
   res->enemyCount      = data.enemyCount;
   res->timeWaveStarted = 0;
-  if(res->enemies != 0){
+  if (res->enemies != 0)
+  {
     free(res->enemies);
   }
-  res->enemies         = (Enemy*)malloc(sizeof(Enemy) * res->enemyCount);
+  res->enemies = (Enemy*)malloc(sizeof(Enemy) * res->enemyCount);
   for (i32 i = 0; i < data.enemyCount; i++)
   {
     WaveEnemyData enemyData    = data.enemyData[i];
@@ -28,12 +40,6 @@ void      getWave(Wave* res, u64 idx)
     res->enemies[i].scoreGiven = entityData.score;
     initEntity(res->enemies[i].entity, enemyData.spawnPositionX, enemyData.spawnPositionY, entityData.width, entityData.height, entityData.textureIdx, 180.0f, entityData.movementSpeed);
   }
-}
-
-static void debugWaveEnemyData(WaveEnemyData* data)
-{
-  // printf("%d\n", data->enemyType);
-  printf("%d %ld %f %f %d\n", data->enemyType, data->spawnTime, data->spawnPositionX, data->spawnPositionY, data->pathId);
 }
 
 static void loadWaveData(WaveData* data, const char* line)
@@ -82,6 +88,42 @@ static inline bool isOutOfBounds(Enemy* enemy)
   return minX <= -160.0f || maxX >= 160.0f || minY <= -160.0f || maxY >= 160.0f;
 }
 
+bool waveIsOver(Wave* wave, u64 currentTick)
+{
+  Enemy* enemies = wave->enemies;
+  for (u32 i = 0; i < wave->enemyCount; i++)
+  {
+    if (enemies[i].entity != 0)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+void removeOutOfBoundsEntities(Wave* wave, u64 currentTick)
+{
+  Bullet* bullets = g_bullets;
+  for (u32 idx = 0; idx < MAX_BULLET_COUNT; idx++)
+  {
+    if (bullets[idx].entity != 0 && (bullets[idx].entity->y <= -120.0f || bullets[idx].entity->x >= 120.0f))
+    {
+      memset(bullets[idx].entity, 0, sizeof(Entity));
+      memset(&bullets[idx], 0, sizeof(Bullet));
+    }
+  }
+
+  Enemy* enemies = wave->enemies;
+  for (u32 i = 0; i < wave->enemyCount; i++)
+  {
+    if (enemies[i].entity != 0 && (isOutOfBounds(&enemies[i]) || enemies[i].hp <= 0))
+    {
+      printf("Removed dead entity!\n");
+      memset(enemies[i].entity, 0, sizeof(Entity));
+      enemies[i].entity = 0;
+    }
+  }
+}
 
 void updateWave(Wave* wave, u64 currentTick)
 {
@@ -103,15 +145,15 @@ void loadWaves()
 
   file = fopen(waveLocation, "rb");
   fgets(line, sizeof(line), file);
-  i32 numberOfWaves = atoi(line);
-  waveData          = (WaveData*)malloc(sizeof(WaveData) * numberOfWaves);
+  g_numberOfWaves = atoi(line);
+  g_waveData      = (WaveData*)malloc(sizeof(WaveData) * g_numberOfWaves);
 
-  for (u32 i = 0; i < numberOfWaves; i++)
+  for (u32 i = 0; i < g_numberOfWaves; i++)
   {
     fgets(line, sizeof(line), file);
     line[strlen(line) - 1] = '\0';
     printf("INFO: Reading data from '%s'\n", line);
-    loadWaveData(&waveData[i], line);
+    loadWaveData(&g_waveData[i], line);
   }
 
   fclose(file);

@@ -80,7 +80,6 @@ Entity*            getPlayerEntity();
 Entity*            getNewEntity();
 Bullet*            getNewBullet();
 void               loadEntityData();
-void               removeOutOfBoundsBullets(u64 currentTick);
 void               loadBulletData();
 void               updateBullets(u64 lastTick);
 void               updateEnemy(Enemy* enemy, u64 currentTick);

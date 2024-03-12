@@ -71,7 +71,7 @@ void loadStateVariables()
     }
     g_stateVariables[g_stateVariableCounter].key = (char*)malloc(sizeof(char) * (idx + 1));
     memset(g_stateVariables[g_stateVariableCounter].key, 0, idx + 1);
-    strncpy(g_stateVariables[g_stateVariableCounter].key, buffer, idx);
+    memcpy(g_stateVariables[g_stateVariableCounter].key, buffer, idx);
 
     while (buffer[idx] == ' ')
     {

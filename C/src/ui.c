@@ -18,7 +18,7 @@ static void initSlider(SliderUIComponent* slider, f32 initialValue, f32 minValue
   slider->minValue = minValue;
   slider->maxValue = maxValue;
   slider->value    = initialValue;
-  initUIComponent(&slider->background, x, y, width, height, TEXTURE_GREY_BOX);
+  initUIComponent(&slider->background, x, y, width, height, TEXTURE_GREY_BUTTON_05);
   initUIComponent(&slider->bar, x, y, width * 0.9f, height, TEXTURE_GREY_SLIDER_HORIZONTAL);
   initUIComponent(&slider->slider, x, y, width * 0.1f, height * 0.9f, TEXTURE_GREY_SLIDER_UP);
 }
@@ -50,13 +50,13 @@ static void initDropdown(DropdownUIComponent* slider, u32 itemCount, const char*
   slider->itemCount    = itemCount;
   slider->dropdownData = dropdownData;
 
-  initButton(&slider->dropdownButton, color, text, fontSize, spaceSize, x, y, width, height, TEXTURE_GREY_BOX);
+  initButton(&slider->dropdownButton, color, text, fontSize, spaceSize, x, y, width, height, TEXTURE_GREY_BUTTON_05);
 
   slider->items = (ButtonUIComponent*)malloc(sizeof(ButtonUIComponent) * itemCount);
   for (u32 i = 0; i < itemCount; i++)
   {
     y -= 2.0f * height;
-    initButton(&slider->items[i], color, itemText[i], fontSize, spaceSize, x, y, width, height, TEXTURE_GREY_BOX);
+    initButton(&slider->items[i], color, itemText[i], fontSize, spaceSize, x, y, width, height, TEXTURE_GREY_BUTTON_05);
   }
 }
 
@@ -462,7 +462,7 @@ void initConsoleUI(ConsoleUI* console)
   console->background.y            = 0;
   console->background.width        = 50.0f;
   console->background.height       = 50.0f;
-  console->background.textureIdx   = TEXTURE_GREY_BOX;
+  console->background.textureIdx   = TEXTURE_GREY_BUTTON_05;
 
   f32 fontSize                     = 6.0f;
 
@@ -480,8 +480,8 @@ void initGameOverUI(GameOverUI* gameOver)
   f32 fontSize     = FONT_FONT_SIZE_MEDIUM;
   f32 spaceSize    = FONT_SPACE_SIZE_MEDIUM;
 
-  initButton(&gameOver->restartButton, RED, "RESTART", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
-  initButton(&gameOver->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&gameOver->restartButton, RED, "RESTART", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
+  initButton(&gameOver->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
 }
 
 void initMainMenuUI(MainMenuUI* mainMenu)
@@ -491,13 +491,13 @@ void initMainMenuUI(MainMenuUI* mainMenu)
   f32 fontSize     = getStateVariable("fontFontSizeMedium");
   f32 spaceSize    = getStateVariable("fontSpaceSizeMedium");
 
-  initButton(&mainMenu->playButton, RED, "PLAY", fontSize, spaceSize, 0.0f, 31.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&mainMenu->playButton, RED, "PLAY", fontSize, spaceSize, 0.0f, 31.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
   initAnimation(&mainMenu->playButton.animation, buttonWidth, buttonHeight, 500, 2.0f, 0);
 
-  initButton(&mainMenu->settingsButton, RED, "SETTINGS", fontSize, spaceSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&mainMenu->settingsButton, RED, "SETTINGS", fontSize, spaceSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
   initAnimation(&mainMenu->settingsButton.animation, buttonWidth, buttonHeight, 500, 2.0f, 1);
 
-  initButton(&mainMenu->exitButton, RED, "EXIT", fontSize, spaceSize, 0.0f, -31.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&mainMenu->exitButton, RED, "EXIT", fontSize, spaceSize, 0.0f, -31.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
   initAnimation(&mainMenu->exitButton.animation, buttonWidth, buttonHeight, 500, 2.0f, 2);
 }
 
@@ -508,9 +508,9 @@ void initPauseMenuUI(PauseMenuUI* menu)
   f32 fontSize     = FONT_FONT_SIZE_MEDIUM;
   f32 spaceSize    = FONT_SPACE_SIZE_MEDIUM;
 
-  initButton(&menu->playButton, RED, "PLAY", spaceSize, fontSize, 0.0f, 2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
-  initButton(&menu->settingsButton, RED, "SETTINGS", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
-  initButton(&menu->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&menu->playButton, RED, "PLAY", spaceSize, fontSize, 0.0f, 2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
+  initButton(&menu->settingsButton, RED, "SETTINGS", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
+  initButton(&menu->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
 }
 
 void initSettingsUI(SettingsMenuUI* settings)
@@ -522,7 +522,7 @@ void initSettingsUI(SettingsMenuUI* settings)
   f32 dropdownButtonWidth  = BUTTON_SIZE_MEDIUM_WIDTH;
   f32 dropdownButtonHeight = BUTTON_SIZE_MEDIUM_HEIGHT;
 
-  initButton(&settings->returnButton, RED, "RETURN", fontSize, spaceSize, 0.0f, -40.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
+  initButton(&settings->returnButton, RED, "RETURN", fontSize, spaceSize, 0.0f, -40.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BUTTON_05);
   initSlider(&settings->audioSlider, 50.0f, 0.0f, 100.0f, 0.0f, 60.0f, 65.0f, 8.0f);
 
   u32             itemCount   = 4;

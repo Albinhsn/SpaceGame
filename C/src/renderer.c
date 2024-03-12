@@ -34,7 +34,7 @@ static const char* textureLocations[19] = {"./resources/images/PNG/Sprites/Ships
                                            "./resources/UI/grey_sliderUp.png",
                                            "./resources/UI/grey_sliderHorizontal.png",
                                            "./resources/UI/grey_button14.png",
-                                           "./resources/fonts/font01.png"};
+                                           "./resources/fonts/font03.png"};
 
 void               generateTextures()
 {
@@ -99,7 +99,7 @@ void createAndCompileShader(GLuint* shaderId, int glShaderMacro, const char* sou
   int   len;
   readFile(&buffer, &len, source);
   *shaderId = sta_glCreateShader(glShaderMacro);
-  sta_glShaderSource(*shaderId, 1, &buffer, NULL);
+  sta_glShaderSource(*shaderId, 1, (const char**)&buffer, NULL);
 
   sta_glCompileShader(*shaderId);
 
