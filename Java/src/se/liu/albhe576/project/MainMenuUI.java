@@ -1,7 +1,7 @@
 package se.liu.albhe576.project;
 
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
-public class MainMenuUI extends UI{
+public class MainMenuUI implements UI{
     private final long window;
     private final ButtonUIComponent playButton;
     private final ButtonUIComponent exitButton;

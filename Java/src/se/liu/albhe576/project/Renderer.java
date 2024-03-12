@@ -19,7 +19,7 @@ public class Renderer
 
     public void renderButton(ButtonUIComponent button){
         this.renderUIComponent(button.textureId, button.x,button.y, button.width, button.height);
-        this.renderTextCenteredAt(button.getText(), button.x,button.y, button.getSpaceSize(), button.getFontSize(), button.getTextColor());
+        this.renderText(button.getText(), button.x,button.y, button.getSpaceSize(), button.getFontSize(), button.getTextColor(), TextLayoutEnum.CENTERED);
     }
 
     private int getShaderParamLocation(int programId, String name){
@@ -47,15 +47,8 @@ public class Renderer
         glUniform4fv(location, colorFloat);
     }
 
-    public void renderTextStartsAt(String text, float x, float y, float spaceSize, float fontSize, Color color){
-        this.font.updateText(text, x, y, spaceSize, fontSize, false);
-        this.renderText(color);
-    }
-    public void renderTextCenteredAt(String text, float x, float y, float spaceSize, float fontSize, Color color){
-        this.font.updateText(text, x, y, spaceSize, fontSize, true);
-        this.renderText(color);
-    }
-    private void renderText(Color color){
+    public void renderText(String text, float x, float y, float spaceSize, float fontSize, Color color, TextLayoutEnum textLayout){
+        this.font.updateText(text, x, y, spaceSize, fontSize, textLayout);
         this.setTextShaderParams(color);
         glBindVertexArray(this.font.dynamicVertexArrayId);
         glBindTexture(GL_TEXTURE_2D, this.font.fontTexture.textureId);
@@ -72,17 +65,6 @@ public class Renderer
     public void renderUIComponent(int textureId, float x, float y, float width, float height){
         float [] transMatrix = this.getTransformationMatrix(x, y, width, height, 0);
         this.renderTexture(transMatrix, textureId);
-    }
-
-    public void renderSlider(SliderUIComponent slider){
-        // This one is mostly for debugging/showcase purpose
-        renderTextCenteredAt(String.format("%d", (int)slider.value), slider.x, (int)(slider.y + slider.height * 1.5), ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeSmall", 5.0f),5f, Color.WHITE);
-
-        renderUIComponent(slider.textureId, slider.x, slider.y, slider.width, slider.height);
-        final int sliderTextureId = this.resourceManager.textureIdMap.get(Texture.GREY_SLIDER_HORIZONTAL).textureId;
-
-        renderUIComponent(sliderTextureId, slider.x, slider.y, slider.width - 10, slider.height / 10);
-        renderUIComponent(slider.sliderTextureId, slider.sliderX, slider.sliderY, slider.sliderWidth, slider.sliderHeight);
     }
 
     public void renderDropdown(DropdownUIComponent<?> dropdownUIComponent){
@@ -102,7 +84,7 @@ public class Renderer
         final float y         = 100.0f - height;
         float x               = -hp * width / 2;
 
-        Texture texture = this.resourceManager.textureIdMap.get(Texture.HP_HEART);
+        Texture texture = this.resourceManager.getTextureById(Texture.HP_HEART);;
 
         final float gap = 1.5f;
         for(int i = 0; i < hp; i++, x += width * gap){
@@ -174,15 +156,15 @@ public class Renderer
 
     public void renderEntity(Entity entity){
         if(ResourceManager.STATE_VARIABLES.getOrDefault("debug", 0.0f).intValue() == 1){
-            if(entity.hp > 0){
+            if(entity.health > 0){
                 float spaceSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeSmall", 5.0f);
                 float fontSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeSmall", 3.0f);
-                renderTextCenteredAt(String.format("%d",entity.hp), entity.x, entity.y + entity.height / 2 + fontSize, spaceSize, fontSize, Color.YELLOW);
+                renderText(String.format("%d",entity.health), entity.x, entity.y + entity.height / 2 + fontSize, spaceSize, fontSize, Color.YELLOW, TextLayoutEnum.CENTERED);
 
             }
         }
 
-        Texture texture         = this.resourceManager.textureIdMap.get(entity.getTextureIdx());
+        Texture texture         = this.resourceManager.getTextureById(entity.getTextureIdx());
         float [] transMatrix    = this.getTransformationMatrix(entity.x, entity.y,entity.width, entity.height, entity.getRotation());
         this.renderTexture(transMatrix, texture.textureId);
     }

@@ -8,17 +8,19 @@ public class Player  extends Entity{
 	private final int initialHp;
 
     public Player(int hp, float x, float y, float width, float height, int textureIdx){
-		super(hp, x, y, width, height, textureIdx, 0.0f, 0, ResourceManager.STATE_VARIABLES.getOrDefault("playerMS", 1.0f));
+		super(hp, x, y, width, height, textureIdx, 0.0f,  ResourceManager.STATE_VARIABLES.getOrDefault("playerMS", 1.0f));
 			this.lastShot 	= 0;
 			this.initialHp 	= hp;
     }
 
 	public void reset(){
-		this.alive 		= true;
-		this.hp 		= initialHp;
+		this.health = initialHp;
 		this.x 			= 0;
 		this.y 			= 0;
 		this.lastShot 	= 0;
+	}
+	@Override public float getMovementSpeed(){
+		return ResourceManager.STATE_VARIABLES.getOrDefault("playerMS", super.getMovementSpeed());
 	}
 
 	public boolean updatePlayer(InputState inputState, long lastTick){
@@ -52,21 +54,20 @@ public class Player  extends Entity{
 	}
 	@Override
 	protected boolean takeDamage(){
-		if(ResourceManager.STATE_VARIABLES.getOrDefault("invincible", 0.0f).intValue() != 1){
-			this.hp -= 1;
-			boolean dead = this.hp <= 0;
-			this.alive = !dead;
-			return dead;
+		if(ResourceManager.STATE_VARIABLES.getOrDefault("godmode", 0.0f).intValue() != 1){
+			this.health -= 1;
+			return this.health <= 0;
 		}
 		return false;
 	}
-
+	private long getGCD(){
+		return ResourceManager.STATE_VARIABLES.getOrDefault("playerGCDMS", 500.0f).longValue();
+	}
     private boolean canShoot(long lastTick){
 		if(lastShot > lastTick){
 			return false;
 		}
-		final long gcd = ResourceManager.STATE_VARIABLES.getOrDefault("playerGCDMS", 500.0f).longValue();
-		this.lastShot = lastTick + gcd;
+		this.lastShot = lastTick + this.getGCD();
 		return true;
     }
 

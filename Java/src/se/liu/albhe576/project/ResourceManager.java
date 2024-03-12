@@ -17,9 +17,13 @@ public class ResourceManager
 {
 	private final 	int[] 					programs 	= new int[2];
 	private final   Logger                  logger 		= Logger.getLogger("Resource Manager");
-	public 			Map<Integer, Texture> 	textureIdMap;
+	private Map<Integer, Texture> 	textureIdMap;
 	private 		Texture 				tokenTexture;
 	public 			int 					textureVertexArrayId;
+
+	public Texture getTextureById(int id){
+		return this.textureIdMap.getOrDefault(id, null);
+	}
 
 	public void generateTexture(int textureId, int width, int height, ByteBuffer data){
 		glActiveTexture(GL_TEXTURE0);

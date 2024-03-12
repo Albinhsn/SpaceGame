@@ -27,7 +27,7 @@ public class Bullet extends Entity
 
     public Bullet(float x, float y, float width, float height, int textureIdx, Entity parent, float rotation, IAccelerationFunction xIAccelerationFunction, IAccelerationFunction yIAccelerationFunction, float movementSpeed)
     {
-        super(0, x, y, width, height, textureIdx, rotation, 0, movementSpeed);
+        super(1, x, y, width, height, textureIdx, rotation, movementSpeed);
         this.parent = parent;
         this.xIAccelerationFunction = xIAccelerationFunction;
         this.yIAccelerationFunction = yIAccelerationFunction;

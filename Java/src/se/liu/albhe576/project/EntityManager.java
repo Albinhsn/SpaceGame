@@ -11,15 +11,33 @@ public class EntityManager {
     private         List<EntityData>        entityData;
     private 		List<List<WaveData>> 				waves;
     private final   AccelerationFunctions     accelerationFunctions;
-    private final   BulletFactory             bulletFactory;
     private final   Logger                    logger          = Logger.getLogger("Entity Manager");
+    private final BulletData[] bulletData;
+    private int getEntityIdx(Entity parent){
+        return parent instanceof Enemy ? ((Enemy)parent).type : ResourceManager.STATE_VARIABLES.getOrDefault("playerEntityIdx", 4.0f).intValue();
+    }
     public Player getPlayer(){
         EntityData playerData = this.entityData.get(ResourceManager.STATE_VARIABLES.getOrDefault("playerEntityIdx", 4.0f).intValue());
         return new Player(playerData.hp, 0,0, playerData.width, playerData.height, playerData.textureIdx);
     }
 
-    public List<Bullet> getBullets(Entity parent){
-        return this.bulletFactory.makeBullets(parent);
+    public Bullet createBullets(Entity parent){
+        boolean isPlayer = parent.getClass() == Player.class;
+        float yOffset = isPlayer ? 0.5f : -0.5f;
+        BulletData data = this.bulletData[this.getEntityIdx(parent)];
+        IAccelerationFunction [] accelerationFunctions = this.accelerationFunctions.getPath(data.accelerationFunctionIndex);
+        return new Bullet(
+            parent.x,
+         parent.y + yOffset * parent.height,
+            data.width,
+            data.height,
+            data.textureIdx,
+            parent,
+            isPlayer ? 0.0f : 180.0f,
+            accelerationFunctions[0],
+            accelerationFunctions[1],
+            isPlayer ? -data.movementSpeed : data.movementSpeed
+        );
     }
 
     private BulletData[] loadBulletData(){
@@ -152,6 +170,6 @@ public class EntityManager {
         this.accelerationFunctions = new AccelerationFunctions();
         this.loadEntityData();
         this.loadWaveData();
-        this.bulletFactory = new BulletFactory(this.loadBulletData());
+        this.bulletData = loadBulletData();
     }
 }

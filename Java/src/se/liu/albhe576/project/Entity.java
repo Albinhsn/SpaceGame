@@ -4,13 +4,11 @@ import java.util.List;
 
 public abstract class Entity
 {
-    protected int hp;
+    protected int health;
     protected float x;
     protected float y;
-    protected int scoreGiven;
     protected float width;
     protected float height;
-    protected boolean alive;
     protected final float rotation;
     protected final int textureIdx;
     protected final float movementSpeed;
@@ -26,16 +24,14 @@ public abstract class Entity
         return this.rotation;
     }
 
-    protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation, int scoreGiven, float movementSpeed){
-        this.hp             = hp;
+    protected Entity(int hp, float x, float y, float width, float height, int textureIdx, float rotation, float movementSpeed){
+        this.health = hp;
         this.x              = x;
         this.y              = y;
         this.width          = width;
         this.height         = height;
         this.textureIdx     = textureIdx;
-        this.alive          = true;
         this.rotation       = rotation;
-        this.scoreGiven = scoreGiven;
         this.movementSpeed = movementSpeed;
     }
 
@@ -60,10 +56,8 @@ public abstract class Entity
     }
 
     protected boolean takeDamage(){
-        this.hp -= 1;
-        boolean dead = this.hp <= 0;
-        this.alive = !dead;
-        return dead;
+        this.health -= 1;
+        return this.health <= 0;
     }
     private boolean checkBulletCollision(Entity target){
         if(!(this instanceof Bullet bullet)){
@@ -76,20 +70,21 @@ public abstract class Entity
         return this.isWithinScreen() && this.collided(entity) && checkBulletCollision(entity);
     }
 
-    public boolean handleCollision(Entity entity){
+    public void handleCollision(Entity entity){
         if(this.checkCollision(entity)){
             this.takeDamage();
             entity.takeDamage();
-            return true;
         }
-        return false;
-
     }
 
     public void handleCollisions(List<Entity> entities){
         for(Entity entity : entities){
             this.handleCollision(entity);
         }
+    }
+
+    public boolean isAlive(){
+        return this.health > 0;
     }
 
     public float[] getBoundingBox(){
@@ -105,8 +100,8 @@ public abstract class Entity
     }
 
     public boolean isWithinScreen(){
-        final int x = (int) (100.0f - this.width / 2);
-        final int y = (int) (100.0f - this.height / 2);
+        final int x = (int) (100.0f - this.width);
+        final int y = (int) (100.0f - this.height);
         return !(this.x <= -x || this.x >= x || this.y <= -y || this.y >= y);
     }
 }

@@ -7,19 +7,13 @@ import java.util.stream.Collectors;
 
 public class Background {
     static class Meteor extends Entity{
-
         public Meteor(float x, float y, float width, float height, int textureIdx, float movementSpeed) {
-            super(0, x, y, width, height, textureIdx, (float) (Math.random() / 360.0f), 0,movementSpeed);
-        }
-        public void update() {
-            this.y -= this.getMovementSpeed();
+            super(0, x, y, width, height, textureIdx, 0.0f, movementSpeed);
         }
     }
-
     private List<Meteor> meteors;
     private final Timer timer;
     private long lastUpdate;
-
     private final Random rng = new Random();
     private void updateNumberOfMeteors(int numberOfMeteors){
         if(numberOfMeteors > this.meteors.size()){
@@ -44,55 +38,32 @@ public class Background {
                 if(!meteor.isWithinScreen()){
                     this.resetMeteor(meteor);
                 }
-                meteor.update();
+                meteor.y -= meteor.getMovementSpeed();
             }
-
             this.lastUpdate = tick;
         }
         renderer.renderEntities(this.meteors);
     }
 
-    private float getRandomMeteorX(){
-        return rng.nextFloat(-100.0f, 100.0f);
-    }
-    private float getRandomMeteorWidth(){
-        final float lowerBound = 0.25f;
-        final float upperBound = 0.65f;
-        return rng.nextFloat(lowerBound, upperBound);
-    }
-    private float getRandomMeteorHeight(){
-        final float lowerBound = 0.5f;
-        final float upperBound = 1.0f;
-        return rng.nextFloat(lowerBound, upperBound);
-    }
-    private float getRandomMeteorAcceleration(){
-        final float lowerBound = 0.2f;
-        final float upperBound = 1.65f;
-
-        return rng.nextFloat(lowerBound, upperBound);
-    }
-    private float getRandomMeteorY(){
-        return rng.nextFloat(100.0f,  110.0f);
-    }
+    private float getRandomFloatRange(float lowerBound, float upperBound){return rng.nextFloat(lowerBound, upperBound);}
     private void resetMeteor(Entity meteor){
-        meteor.x = this.getRandomMeteorX();
-        meteor.y = this.getRandomMeteorY();
-        meteor.width = this.getRandomMeteorWidth();
-        meteor.height = meteor.width;
+        meteor.x        = this.getRandomFloatRange(-100.0f, 100.0f);
+        meteor.y        = this.getRandomFloatRange(100.0f, 110.0f);
+        meteor.width    = this.getRandomFloatRange(0.25f, 0.65f);
+        meteor.height   = meteor.width;
     }
     private Meteor createRandomMeteor(){
-        final int textureIdx = Texture.BACKGROUND_METEOR;
-        float x = this.getRandomMeteorX();
-        float y = this.getRandomMeteorY();
-        float height = this.getRandomMeteorHeight();
-        float width = height;
-        float movementSpeed = this.getRandomMeteorAcceleration();
+        final int textureIdx    = Texture.BACKGROUND_METEOR;
+        float x                 = this.getRandomFloatRange(-100.f, 100.0f);
+        float y                 = this.getRandomFloatRange(-100.0f, 100.0f);
+        float height            = this.getRandomFloatRange(0.25f, 0.65f);
+        float width             = height;
+        float movementSpeed     = this.getRandomFloatRange(0.25f, 1.65f);
 
         return new Meteor(x,y,width,height,textureIdx, movementSpeed);
     }
     private void initMeteors(){
         final int numberOfMeteors = ResourceManager.STATE_VARIABLES.getOrDefault("numberOfMeteors", 100.0f).intValue();
-
         for(int i = 0; i < numberOfMeteors; i++){
             this.meteors.add(this.createRandomMeteor());
         }

@@ -1,6 +1,6 @@
 package se.liu.albhe576.project;
 
-public class PauseMenuUI extends UI {
+public class PauseMenuUI implements UI {
     private final ButtonUIComponent playButton;
     private final ButtonUIComponent mainMenuButton;
     private final ButtonUIComponent settingsButton;

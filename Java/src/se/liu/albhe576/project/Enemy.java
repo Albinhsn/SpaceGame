@@ -7,8 +7,11 @@ public class Enemy extends Entity{
     private long lastShot;
     private final IAccelerationFunction yIAccelerationFunction;
     private final IAccelerationFunction xIAccelerationFunction;
+    private final int scoreGiven;
     public final int type;
-
+    public int getScoreGiven(){
+        return this.scoreGiven;
+    }
     public boolean hasSpawned(long timeWaveStarted, long lastTick){
         return lastTick >= this.spawnTime + timeWaveStarted;
     }
@@ -33,7 +36,7 @@ public class Enemy extends Entity{
         this.y -= yOffset;
     }
     public boolean update(long timeWaveStarted, long lastTick) {
-        if(this.hasSpawned(timeWaveStarted, lastTick) && this.alive){
+        if(this.hasSpawned(timeWaveStarted, lastTick) && this.isAlive()){
             move(lastTick);
             return willShoot(lastTick);
         }
@@ -41,11 +44,12 @@ public class Enemy extends Entity{
     }
     public Enemy(final int hp, final int enemyType, final float x, final float y, final float width, final float height, int textureIdx, long spawnTime, int scoreGiven, float movementSpeed, IAccelerationFunction xIAccelerationFunction, IAccelerationFunction yIAccelerationFunction)
     {
-        super(hp, x, y, width, height, textureIdx, 0.0f, scoreGiven, movementSpeed);
+        super(hp, x, y, width, height, textureIdx, 0.0f, movementSpeed);
         this.type           = enemyType;
-        this.alive          = true;
         this.spawnTime      = spawnTime;
         this.lastShot       = 0;
+        this.scoreGiven = scoreGiven;
+
 
         this.xIAccelerationFunction = xIAccelerationFunction;
         this.yIAccelerationFunction = yIAccelerationFunction;

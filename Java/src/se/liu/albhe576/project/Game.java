@@ -52,17 +52,19 @@ public class Game
             bullet.handleCollisions(enemies);
             bullet.handleCollision(this.player);
         }
-        this.bullets.removeIf(bullet -> !bullet.alive);
+        this.bullets.removeIf(bullet -> !bullet.isAlive());
 
         for(Entity enemy : enemies){
-            if(!enemy.alive || this.player.handleCollision(enemy)){
-                this.score += enemy.scoreGiven;
+            if(enemy.isAlive()){
+                this.player.handleCollision(enemy);
             }
         }
+
+
     }
     public void updatePlayer(){
         if(player.updatePlayer(this.inputState, this.timer.getLastTick())){
-            this.bullets.addAll(this.entityManager.getBullets(this.player));
+            this.bullets.add(this.entityManager.createBullets(this.player));
         }
     }
 
@@ -77,6 +79,19 @@ public class Game
         return false;
     }
 
+    private void gatherScore(){
+        for(Enemy enemy : this.wave.getEnemies()){
+            if(!enemy.isAlive()){
+                this.score += enemy.getScoreGiven();
+            }
+        }
+    }
+
+    private void updateGameEntities(){
+        this.updatePlayer();
+        this.wave.updateWave(this.bullets, this.timer.getLastTick(), this.entityManager);
+        this.updateBullets();
+    }
 
     private void gameLoop(){
         this.timer.updateTimer();
@@ -85,13 +100,9 @@ public class Game
             if(this.inputState.isKeyPressed(GLFW_KEY_P)){
                 this.updateUIState(UIState.PAUSE_MENU);
             }
-            this.updatePlayer();
-
-            List<Bullet> newEnemyBullets = this.wave.updateWave(this.timer.getLastTick(), this.entityManager);
-            this.bullets.addAll(newEnemyBullets);
-            this.updateBullets();
-
+            this.updateGameEntities();
             this.handleCollisions();
+            this.gatherScore();
             this.wave.removeDeadOrOutOfBoundsEnemies();
         }
 
@@ -128,7 +139,7 @@ public class Game
         }
         if(this.uiState != UIState.SETTINGS_MENU && newState == UIState.SETTINGS_MENU){
             SettingsMenuUI settingsUI = (SettingsMenuUI)  this.uiMap.get(UIState.SETTINGS_MENU);
-            settingsUI.setParentState(this.uiState);
+            settingsUI.parent = this.uiState;
 
         }
         if(this.uiState == UIState.GAME_OVER_MENU && newState != UIState.GAME_OVER_MENU){
@@ -136,8 +147,8 @@ public class Game
         }
 
         if(this.uiState != UIState.CONSOLE   && newState == UIState.CONSOLE){
-            ConsoleUI consoleUI = (ConsoleUI)  this.uiMap.get(UIState.CONSOLE);
-            consoleUI.setParentState(this.uiState);
+            ConsoleUI consoleUI = (ConsoleUI)this.uiMap.get(UIState.CONSOLE);
+            consoleUI.parent = this.uiState;
         }
 
         if(this.uiState == UIState.CONSOLE){
@@ -170,7 +181,7 @@ public class Game
     }
 
     private void checkGameFinished(){
-        if(!this.player.alive){
+        if(!this.player.isAlive()){
             this.uiState = UIState.GAME_OVER_MENU;
             ((GameOverUI) this.uiMap.get(UIState.GAME_OVER_MENU)).lostGame = true;
         }else if(this.wave.isOver()){
@@ -181,26 +192,14 @@ public class Game
         final float fontSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeSmall", 3.0f);
         final float spaceSize = ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeSmall", 5.0f);
         final Color infoStringColor = Color.WHITE;
-        final float x = -100.0f;
-        final float y = 60.0f;
+        final float x = 100.0f;
+        float y = 60.0f;
         long ms = System.currentTimeMillis()  - this.prevTick;
 
-        this.renderer.renderTextStartsAt(
-                String.format("ms:%d", ms),
-                x,
-                y,
-                spaceSize,
-                fontSize,
-                infoStringColor
-        );
-        this.renderer.renderTextStartsAt(
-                String.format("fps:%d", Math.min((int)(1000.0f/ms), 999)),
-                x,
-                y - fontSize * 2,
-                spaceSize,
-                fontSize,
-                infoStringColor
-        );
+        this.renderer.renderText(String.format("ms:%d", ms), x, y, spaceSize, fontSize, infoStringColor, TextLayoutEnum.ENDS_AT);
+        String fpsString = String.format("fps:%d", Math.min((int)(1000.0f/ms), 999));
+        y -= fontSize * 2;
+        this.renderer.renderText(fpsString, x, y, spaceSize, fontSize, infoStringColor, TextLayoutEnum.ENDS_AT);
         this.prevTick = System.currentTimeMillis();
     }
 
@@ -230,7 +229,7 @@ public class Game
                 this.checkGameFinished();
             }
 
-            UIState nextState = this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.hp);
+            UIState nextState = this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.health);
             updateUIState(nextState);
             glfwSwapBuffers(window);
 

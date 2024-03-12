@@ -62,11 +62,11 @@ public class Font {
 
        glBindVertexArray(0);
     }
-    public void updateText(String text, float x, float y, float spaceSize, float fontSize, boolean centered){
+    public void updateText(String text, float x, float y, float spaceSize, float fontSize, TextLayoutEnum textLayout){
         int vertexCount = Font.TEXT_MAX_LENGTH * 4 * 5;
 
         glBindVertexArray(this.dynamicVertexArrayId);
-        float [] vertices = this.buildUpdatedTextVertexArray(vertexCount, text, x, y, spaceSize, fontSize, centered);
+        float [] vertices = this.buildUpdatedTextVertexArray(vertexCount, text, x, y, spaceSize, fontSize, textLayout);
 
         glBindBuffer(GL_ARRAY_BUFFER, this.dynamicVertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_DYNAMIC_DRAW);
@@ -74,7 +74,7 @@ public class Font {
         glBindVertexArray(0);
     }
 
-    private float[] buildUpdatedTextVertexArray(int vertexCount, String text, float x, float y,float spaceSize, float fontSize, boolean centered){
+    private float[] buildUpdatedTextVertexArray(int vertexCount, String text, float x, float y,float spaceSize, float fontSize, TextLayoutEnum textLayout){
         float[] vertices = new float[vertexCount];
         Arrays.fill(vertices, 0);
 
@@ -89,14 +89,17 @@ public class Font {
             this.logger.severe(String.format("Trying to write text with %d characters, %d is max", numLetters, Font.TEXT_MAX_LENGTH));
             numLetters = Font.TEXT_MAX_LENGTH;
         }
+        float totalSize = 0;
+        for(char c : text.toCharArray()){
+            float addedSize = this.types[(byte)c].size * 0.01f * sizeModifier + 0.002f;
+            totalSize += addedSize != 0 ? addedSize : spaceSize * 0.01f;
+        }
 
-        if(centered){
-            float totalSize = 0;
-            for(char c : text.toCharArray()){
-                float addedSize = this.types[(byte)c].size * 0.01f * sizeModifier;
-                totalSize += addedSize != 0 ? addedSize : spaceSize * 0.01f;
-            }
+        if(textLayout == TextLayoutEnum.CENTERED){
             drawX -= totalSize / 2.0f;
+        }
+        else if(textLayout == TextLayoutEnum.ENDS_AT){
+            drawX -= totalSize;
         }
 
         for(int letterIdx = 0, vertexIdx = 0; letterIdx < numLetters; letterIdx++){
@@ -141,15 +144,11 @@ public class Font {
         return vertices;
     }
     private int skipWhiteSpace(String line,int index){
-        while(line.charAt(index) == ' '){
-            index++;
-        }
+        while(line.charAt(index) == ' '){index++;}
         return index;
     }
     private int skipNonWhiteSpace( String line, int index){
-        while(line.charAt(index) != ' '){
-            index++;
-        }
+        while(line.charAt(index) != ' '){index++;}
         return index;
     }
     private void parseFontType(String fontTypeFileLocation){

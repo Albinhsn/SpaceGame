@@ -6,15 +6,11 @@ import static org.lwjgl.glfw.GLFW.glfwSetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.glViewport;
 
-public class SettingsMenuUI extends UI {
-    private         UIState parentState;
+public class SettingsMenuUI implements UI {
     private final   ButtonUIComponent returnButton;
     private final   CheckboxUIComponent vsyncCheckbox;
     private final   DropdownUIComponent<Point> screenSizeDropdown;
-    private final   SliderUIComponent audioSlider;
-    public void setParentState(UIState uiState){
-        this.parentState = uiState;
-    }
+    public UIState parent;
     private void updateWindowSize(long window, Point newWindowSize){
         glfwSetWindowSize(window, newWindowSize.x, newWindowSize.y);
         Game.SCREEN_WIDTH = newWindowSize.x;
@@ -27,10 +23,10 @@ public class SettingsMenuUI extends UI {
         renderer.renderButton(returnButton);
         returnButton.animate(inputState);
         if(returnButton.isReleased(inputState)){
-            return this.parentState;
+            return this.parent;
         }
 
-        renderer.renderTextCenteredAt("vsync", -25.0f, 0, ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeMedium", 10.0f), ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeSmall", 3.0f), Color.WHITE);
+        renderer.renderText("vsync", vsyncCheckbox.x - vsyncCheckbox.width, 0, ResourceManager.STATE_VARIABLES.getOrDefault("fontSpaceSizeMedium", 10.0f), ResourceManager.STATE_VARIABLES.getOrDefault("fontFontSizeSmall", 3.0f), Color.WHITE, TextLayoutEnum.ENDS_AT);
         if(vsyncCheckbox.isReleased(inputState)){
             vsyncCheckbox.toggled = !vsyncCheckbox.toggled;
             glfwSwapInterval(vsyncCheckbox.toggled ? 1 : 0);
@@ -56,12 +52,6 @@ public class SettingsMenuUI extends UI {
         }
         renderer.renderDropdown(screenSizeDropdown);
 
-        if(this.audioSlider.isPressed(inputState)){
-            this.audioSlider.updateSliderPosition(inputState.getMousePosition().x);
-        }
-        renderer.renderSlider(this.audioSlider);
-
-
         return UIState.SETTINGS_MENU;
     }
     public SettingsMenuUI(){
@@ -81,6 +71,5 @@ public class SettingsMenuUI extends UI {
         String[] dropdownItemStrings    = new String[]{"1920x1080", "1600x900", "1024x768", "620x480"};
         Point[] dropdownData            = new Point[]{new Point(1920, 1080), new Point(1600, 900), new Point(1024, 768), new Point(620, 480)};
         this.screenSizeDropdown         = new DropdownUIComponent<Point>(60.0f, 20.0f, "Resolution", dropdownItemStrings, dropdownButtonWidth, dropdownButtonHeight, spaceSizeSmall, fontSize, dropdownData);
-        this.audioSlider                = new SliderUIComponent(Texture.GREY_BOX, 0, 60.0f, 65.0f, 8.0f, Texture.GREY_SLIDER_HORIZONTAL, 5.0f, dropdownButtonHeight, 1, 100);
     }
 }

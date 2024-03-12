@@ -2,15 +2,12 @@ package se.liu.albhe576.project;
 
 import java.util.function.UnaryOperator;
 
-/**
- *
- */
 public class Animation {
     private final float initialWidth;
     private final float initialHeight;
     private long        startedAnimation;
     private long        endedAnimation;
-    private final float       maxSize;
+    private final float maxAddedSize;
     private final long        animationTimer;
     private final UnaryOperator<Float> inFunction;
     private final UnaryOperator<Float> outFunction;
@@ -18,50 +15,45 @@ public class Animation {
     public static final UnaryOperator<Float> easeLinearly = (x) -> x;
     public static final UnaryOperator<Float> easeInCubic = (x) -> x * x * x;
 
-    private float[] animateIn(){
+    public float[] animateIn(){
         long tick = System.currentTimeMillis();
+        this.endedAnimation = tick;
         if(this.startedAnimation == 0){
             this.startedAnimation = tick;
         }
 
         long tickDifference = tick - this.startedAnimation;
-        float increasePerMs = this.maxSize / (float)this.animationTimer;
-        float increase = this.inFunction.apply(Math.min(increasePerMs * tickDifference, 1));
+        float increasePerMs = this.maxAddedSize / (float)this.animationTimer;
+        float increase      = this.inFunction.apply(Math.min(increasePerMs * tickDifference, 1));
 
-        float width  = this.initialWidth + this.maxSize * increase;
-        float height = this.initialHeight + this.maxSize * increase;
-        this.endedAnimation = tick;
+        float width         = this.initialWidth + this.maxAddedSize * increase;
+        float height        = this.initialHeight + this.maxAddedSize * increase;
 
-        return new float[]{width, height};
-
-    }
-
-    private float[]animateOut(){
-        long tickDifference = System.currentTimeMillis() - this.endedAnimation;
-        float increasePerMs = this.maxSize / (float)this.animationTimer;
-        float increase = this.outFunction.apply(1.0f - Math.min(increasePerMs * tickDifference, 1));
-
-        this.startedAnimation = 0;
-        float width  = this.initialWidth  + maxSize * increase;
-        float height = this.initialHeight + maxSize * increase;
         return new float[]{width, height};
     }
 
-    public float[] animate(boolean hovers){
-        return hovers ? animateIn() : animateOut();
+    public float[]animateOut(){
+        long tickDifference     = System.currentTimeMillis() - this.endedAnimation;
+        float increasePerMs     = this.maxAddedSize / (float)this.animationTimer;
+        float increase          = this.outFunction.apply(1.0f - Math.min(increasePerMs * tickDifference, 1));
+        this.startedAnimation   = 0;
+        float width             = this.initialWidth  + maxAddedSize * increase;
+        float height            = this.initialHeight + maxAddedSize * increase;
+        return new float[]{width, height};
     }
 
-    public Animation(float initialWidth, float initialHeight, long animationTimer, float maxSize, UnaryOperator<Float> easeInFunction, UnaryOperator<Float> easeOutFunction){
+
+    public Animation(float initialWidth, float initialHeight, long animationTimer, float maxAddedSize, UnaryOperator<Float> easeInFunction, UnaryOperator<Float> easeOutFunction){
         this.initialWidth       = initialWidth;
         this.initialHeight      = initialHeight;
         this.endedAnimation     = 0;
         this.startedAnimation   = 0;
         this.animationTimer     = animationTimer;
-        this.maxSize            = maxSize;
+        this.maxAddedSize       = maxAddedSize;
         this.inFunction         = easeInFunction;
         this.outFunction        = easeOutFunction;
     }
-    public Animation(float initialWidth, float initialHeight, long animationTimer, float maxSize, UnaryOperator<Float> easeInFunction){
-        this(initialWidth, initialHeight, animationTimer, maxSize, easeInFunction, easeInFunction);
+    public Animation(float initialWidth, float initialHeight, long animationTimer, float maxAddedSize, UnaryOperator<Float> easeInFunction){
+        this(initialWidth, initialHeight, animationTimer, maxAddedSize, easeInFunction, easeInFunction);
     }
 }

@@ -26,7 +26,7 @@ public class UIComponent {
 
     public void animate(InputState inputState){
         if(this.animation != null){
-            float[] newPosition = this.animation.animate(this.hovers(inputState));
+            float[] newPosition = this.hovers(inputState) ? this.animation.animateIn() : this.animation.animateOut();
             this.width          = newPosition[0];
             this.height         = newPosition[1];
         }
