@@ -16,7 +16,8 @@ u32      getTextureId(enum TextureModel textureModel)
   return textures[textureModel].textureId;
 }
 
-static const char* textureLocations[19] = {"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
+#define NUMBER_OF_TEXTURES 19
+static const char* textureLocations[NUMBER_OF_TEXTURES] = {"./resources/images/PNG/Sprites/Ships/spaceShips_001.png",
                                            "./resources/images/PNG/Sprites/Missiles/spaceMissiles_012.png",
                                            "./resources/images/PNG/Default/enemy_B.png",
                                            "./resources/images/PNG/Default/enemy_E.png",
@@ -39,7 +40,7 @@ static const char* textureLocations[19] = {"./resources/images/PNG/Sprites/Ships
 void               generateTextures()
 {
   glActiveTexture(GL_TEXTURE0);
-  for (u32 i = 0; i < 19; i++)
+  for (u32 i = 0; i < NUMBER_OF_TEXTURES; i++)
   {
     Texture* texture = &textures[i];
     glGenTextures(1, &texture->textureId);
@@ -59,6 +60,7 @@ void               generateTextures()
     sta_glGenerateMipmap(GL_TEXTURE_2D);
   }
 }
+#undef NUMBER_OF_TEXTURES
 
 void createTextureVertexArray()
 {

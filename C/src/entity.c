@@ -153,7 +153,6 @@ Bullet* getNewBullet()
   return 0;
 }
 
-
 void createNewBullet(Entity* entity, u64 entityIdx)
 {
   Bullet* bullet        = getNewBullet();
@@ -276,7 +275,6 @@ void loadBulletData()
 
   memset(g_bulletData, 0, sizeof(BulletData) * numberOfBullets);
   fread(g_bulletData, 1, sizeof(BulletData) * numberOfBullets, entityDataFile);
-
 
   for (u32 i = 0; i < numberOfBullets; i++)
   {
