@@ -1,19 +1,41 @@
+#include "background.h"
 #include "common.h"
 #include "entity.h"
 #include "input.h"
-#include "background.h"
 #include "renderer.h"
 #include "timer.h"
 #include "ui.h"
 #include "wave.h"
 #include <stdlib.h>
 
-static void updateUIState(UI* ui, UIState newState)
+struct Game
+{
+  u64    score;
+  u64    lastUpdated;
+  Timer  timer;
+  Player player;
+  Wave   wave;
+};
+typedef struct Game Game;
+
+static void         resetGame(Game* game)
+{
+  game->score       = 0;
+  game->lastUpdated = 0;
+  memset(&g_bullets, 0, sizeof(Bullet) * MAX_BULLET_COUNT);
+  memset(&g_entities, 0, sizeof(Entity) * MAX_ENTITY_COUNT);
+  resetTimer(&game->timer);
+  createPlayer(&game->player);
+  getWave(&game->wave, 0);
+  printf("Restarted game\n");
+}
+
+static void updateUIState(UI* ui, UIState newState, Game* game, Timer* timer)
 {
 
   if (ui->state == UI_GAME_RUNNING && newState != UI_GAME_RUNNING)
   {
-    // stopTimer
+    stopTimer(timer);
   }
 
   if (ui->state != UI_SETTINGS_MENU && newState == UI_SETTINGS_MENU)
@@ -21,11 +43,20 @@ static void updateUIState(UI* ui, UIState newState)
     ui->settingsMenu->parentState = ui->state;
   }
 
+  if (ui->state == UI_GAME_OVER && newState != UI_GAME_OVER)
+  {
+    resetGame(game);
+  }
+
   if (ui->state != UI_CONSOLE && newState == UI_CONSOLE)
   {
     ui->console->parent = ui->state;
   }
 
+  if (newState == UI_GAME_RUNNING && !timer->running)
+  {
+    startTimer(timer);
+  }
   ui->state = newState;
 }
 
@@ -44,7 +75,7 @@ static bool shouldHandleUpdates(Timer* timer, u64* lastUpdated)
 static void renderGameEntities(Wave* wave, Player* player)
 {
   renderEntity(player->entity);
-  for (int i = 0; i < g_bulletCount; i++)
+  for (int i = 0; i < MAX_BULLET_COUNT; i++)
   {
     if (g_bullets[i].entity != 0)
     {
@@ -64,21 +95,19 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* s
 {
   Bullet* bullets = g_bullets;
   Enemy*  enemies = wave->enemies;
-  for (u32 i = 0; i < g_bulletCount; i++)
+  for (u32 i = 0; i < MAX_BULLET_COUNT; i++)
   {
     Bullet* bullet = &bullets[i];
     if (bullet->entity != 0)
     {
       if (entitiesCollided(bullet->entity, player->entity) && !bullet->playerBullet)
       {
-        player->hp -= 1;
         bullet->entity = 0;
         bullet->hp     = 0;
-        printf("Hit player!\n");
-        if (player->hp <= 0)
+        if (getStateVariable("god") != 1)
         {
-          printf("YOU DIED\n");
-          exit(1);
+          player->hp -= 1;
+          printf("Hit player!\n");
         }
       }
 
@@ -112,11 +141,9 @@ static void handleCollisions(Wave* wave, Player* player, u64 currentTick, u64* s
         enemies[i].entity = 0;
       }
 
-      player->hp -= 1;
-      if (player->hp <= 0)
+      if (getStateVariable("god") != 1)
       {
-        printf("YOU DIED\n");
-        exit(1);
+        player->hp -= 1;
       }
     }
   }
@@ -137,8 +164,13 @@ static void gameLoop(UIState* state, InputState* inputState, Wave* wave, Player*
       createNewBullet(player->entity, 4);
     }
     updateWave(wave, timer->lastTick);
-    updateBullets();
+    updateBullets(timer->lastTick);
     handleCollisions(wave, player, timer->lastTick, score);
+    if (player->hp <= 0)
+    {
+      *state = UI_GAME_OVER;
+    }
+    removeOutOfBoundsBullets(timer->lastTick);
   }
 
   renderGameEntities(wave, player);
@@ -174,19 +206,13 @@ i32 main()
   loadBulletData();
   loadStateVariables();
 
-  Timer timer;
-  resetTimer(&timer);
-  startTimer(&timer);
-
   Font font;
   initRenderer(&font);
 
   InputState inputState;
   initInputState(&inputState);
 
-  u64 score = 0;
-
-  UI  ui;
+  UI ui;
   ui.state = UI_MAIN_MENU;
   ConsoleUI      console;
   GameOverUI     gameOver;
@@ -195,16 +221,11 @@ i32 main()
   SettingsMenuUI settingsMenu;
   initUI(&ui, &console, &gameOver, &mainMenu, &pauseMenu, &settingsMenu);
 
-  u64 lastUpdated = 0;
-  u64 prevTick    = 0;
-  g_bulletCount   = 0;
-  g_entityCount   = 1;
+  u64  prevTick = 0;
 
-  Player player;
-  createPlayer(&player);
-
-  Wave wave;
-  getWave(&wave, 0);
+  Game game;
+  memset(&game, 0, sizeof(Game));
+  resetGame(&game);
 
   Background background;
   initBackground(&background);
@@ -226,17 +247,17 @@ i32 main()
     {
       if (inputState.keyboardStateRelease['p'])
       {
-        updateUIState(&ui, UI_PAUSE_MENU);
+        updateUIState(&ui, UI_PAUSE_MENU, &game, &game.timer);
       }
-      gameLoop(&ui.state, &inputState, &wave, &player, &timer, &lastUpdated, &score);
+      gameLoop(&ui.state, &inputState, &game.wave, &game.player, &game.timer, &game.lastUpdated, &game.score);
     }
     else if (handleInput(&inputState))
     {
       break;
     }
 
-    UIState newState = renderUI(&ui, &inputState, score, player.hp);
-    updateUIState(&ui, newState);
+    UIState newState = renderUI(&ui, &inputState, game.score, game.player.hp);
+    updateUIState(&ui, newState, &game, &game.timer);
 
     renderInfoStrings(&prevTick);
     SDL_GL_SwapWindow(g_renderer.window);

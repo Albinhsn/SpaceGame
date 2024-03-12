@@ -1,14 +1,12 @@
 #include "entity.h"
 #include "input.h"
-#include "renderer.h"
 #include "timer.h"
 #include <endian.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-u32         g_entityCount = 1;
-u32         g_bulletCount = 0;
 Bullet      g_bullets[256];
 Entity      g_entities[256];
 EntityData* g_entityData = 0;
@@ -21,21 +19,84 @@ static bool withinScreen(Entity* entity)
   return !(entity->x <= -x || entity->x >= x || entity->y <= -y || entity->y >= y);
 }
 
-static f32 (*animationFuncs[][2])(f32) = {
-    {easeLinearly, easeLinearly},
-    { easeInCubic,  easeInCubic},
-    {easeOutCubic, easeOutCubic},
+static inline f32 sinAcceleration(u64 lastTick, Entity* entity)
+{
+  return sin(lastTick / 500.0f) / 5.0f;
+}
+
+static inline f32 cosAcceleration(u64 lastTick, Entity* entity)
+{
+  return cos(lastTick / 500.0f) / 5.0f;
+}
+
+static inline f32 noMovement(u64 lastTick, Entity* entity)
+{
+  return 0.0f;
+}
+
+static f32 msAcceleration(u64 lastTick, Entity* entity)
+{
+  return entity->movementSpeed;
+}
+
+static f32 sinAccelerationMS(u64 lastTick, Entity* entity)
+{
+  return sinAcceleration(lastTick, entity) + msAcceleration(lastTick, entity);
+}
+
+static f32 cosAccelerationMS(u64 lastTick, Entity* entity)
+{
+  return cosAcceleration(lastTick, entity) + msAcceleration(lastTick, entity);
+}
+
+static f32 bossMovementY(u64 lastTick, Entity* entity)
+{
+  return entity->y >= 50.0f ? 0.2f : sinAcceleration(lastTick, entity);
+}
+
+static f32((*accelerationFunctions[][2])(u64, Entity*)) = {
+    {  sinAcceleration, cosAccelerationMS},
+    {  sinAcceleration,    msAcceleration},
+    {       noMovement, sinAccelerationMS},
+    {  cosAcceleration,     bossMovementY},
+    {cosAccelerationMS,   sinAcceleration},
+    {   msAcceleration,   sinAcceleration},
+    {       noMovement,    msAcceleration},
+    {       noMovement,    msAcceleration},
+    {       noMovement,    msAcceleration},
 };
 
-void updateBullets()
+static inline bool enemyWillShoot(Enemy* enemy, u64 currentTick)
 {
-  for (u32 i = 0; i < g_bulletCount; i++)
+  f32 gcd = rand() % 500 + 1000.0f;
+  if (enemy->lastShot <= currentTick)
+  {
+    enemy->lastShot = currentTick + gcd;
+    return true;
+  }
+  return false;
+}
+
+void updateEnemy(Enemy* enemy, u64 currentTick)
+{
+  enemy->entity->x += accelerationFunctions[enemy->type][0](currentTick, enemy->entity);
+  enemy->entity->y -= accelerationFunctions[enemy->type][1](currentTick, enemy->entity);
+
+  if (enemyWillShoot(enemy, currentTick))
+  {
+    createNewBullet(enemy->entity, enemy->type);
+  }
+}
+
+void updateBullets(u64 lastTick)
+{
+  for (u32 i = 0; i < MAX_BULLET_COUNT; i++)
   {
     Bullet bullet = g_bullets[i];
     if (bullet.entity != 0)
     {
-
-      bullet.entity->y += bullet.entity->rotation == 0 ? bullet.entity->movementSpeed : -bullet.entity->movementSpeed;
+      bullet.entity->x += accelerationFunctions[bullet.accelerationFunctionIndex][0](lastTick, bullet.entity);
+      bullet.entity->y += accelerationFunctions[bullet.accelerationFunctionIndex][1](lastTick, bullet.entity);
     }
   }
 }
@@ -69,12 +130,40 @@ Entity* getPlayerEntity()
 
 Entity* getNewEntity()
 {
-  return &g_entities[g_entityCount++];
+  for (i32 i = 1; i < MAX_ENTITY_COUNT; i++)
+  {
+    if (g_entities[i].textureIdx == 0)
+    {
+      return &g_entities[i];
+    }
+  }
+  return 0;
 }
 
 Bullet* getNewBullet()
 {
-  return &g_bullets[g_bulletCount++];
+  for (i32 i = 0; i < 256; i++)
+  {
+    if (g_bullets[i].entity == 0)
+    {
+      printf("Bullet: %d\n", i);
+      return &g_bullets[i];
+    }
+  }
+  return 0;
+}
+
+void removeOutOfBoundsBullets(u64 currentTick)
+{
+  Bullet* bullets = g_bullets;
+  for (u32 idx = 0; idx < MAX_BULLET_COUNT; idx++)
+  {
+    if (bullets[idx].entity != 0 && (bullets[idx].entity->y <= -120.0f || bullets[idx].entity->x >= 120.0f))
+    {
+      memset(bullets[idx].entity, 0, sizeof(Entity));
+      memset(&bullets[idx], 0, sizeof(Bullet));
+    }
+  }
 }
 
 void createNewBullet(Entity* entity, u64 entityIdx)
@@ -85,9 +174,11 @@ void createNewBullet(Entity* entity, u64 entityIdx)
   BulletData bulletData = g_bulletData[entityIdx];
 
   f32        y          = entity->y + entity->height;
-  initEntity(bullet->entity, entity->x, y, bulletData.width, bulletData.height, bulletData.textureIdx, entityIdx == 4 ? 0 : 180.0f, bulletData.movementSpeed);
-  bullet->playerBullet = entity == getPlayerEntity();
-  bullet->hp           = 1;
+  bullet->playerBullet  = entityIdx == 4;
+  initEntity(bullet->entity, entity->x, y, bulletData.width, bulletData.height, bulletData.textureIdx, bullet->playerBullet ? 0 : 180.0f,
+             bullet->playerBullet ? bulletData.movementSpeed : -bulletData.movementSpeed);
+  bullet->accelerationFunctionIndex = bulletData.accelerationFunctionIndex;
+  bullet->hp                        = 1;
 }
 
 bool playerCanShoot(Player* player, Timer* timer)
@@ -147,14 +238,6 @@ void initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 texture
   entity->movementSpeed = movementSpeed;
 }
 
-void createBullet(Bullet* bullet, Entity* parent)
-{
-  f32 y = parent->y + parent->height;
-  initEntity(bullet->entity, parent->x, y, 2.0f, 4.0f, TEXTURE_PLAYER_BULLET, 0.0f, 0.5f);
-  bullet->playerBullet = parent == getPlayerEntity();
-  bullet->hp           = 1;
-}
-
 void debugEntity(Entity* entity)
 {
 
@@ -206,7 +289,6 @@ void loadBulletData()
   memset(g_bulletData, 0, sizeof(BulletData) * numberOfBullets);
   fread(g_bulletData, 1, sizeof(BulletData) * numberOfBullets, entityDataFile);
 
-  // printf("%d\n", numberOfBullets);
 
   for (u32 i = 0; i < numberOfBullets; i++)
   {

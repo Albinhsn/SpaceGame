@@ -71,7 +71,6 @@ static void initAnimation(Animation* animation, f32 initialWidth, f32 initialHei
   animation->functionIdx      = functionIdx;
 }
 
-
 static f32  (*animationFuncs[])(float) = {easeLinearly, easeInCubic, easeOutCubic};
 
 static void animateIn(f32* width, f32* height, Animation* animation)
@@ -93,8 +92,8 @@ static void animateIn(f32* width, f32* height, Animation* animation)
 
 static void animateOut(f32* width, f32* height, Animation* animation)
 {
-  u64 tickDifference = getTimeInMilliseconds() - animation->endedAnimation;
-  f32 increasePerMs  = animation->maxSize / (f32)animation->animationTimer;
+  u64 tickDifference          = getTimeInMilliseconds() - animation->endedAnimation;
+  f32 increasePerMs           = animation->maxSize / (f32)animation->animationTimer;
   f32 increase                = animationFuncs[animation->functionIdx](1.0f - MIN(increasePerMs * tickDifference, 1));
 
   animation->startedAnimation = 0;
@@ -246,11 +245,11 @@ static UIState renderSettingsMenu(SettingsMenuUI* settingsMenu, InputState* inpu
   return UI_SETTINGS_MENU;
 }
 
-static UIState renderGameOver(GameOverUI* gameOver, InputState* inputState, u32 score)
+static UIState renderGameOver(GameOverUI* gameOver, InputState* inputState, u32 score, i8 playerHp)
 {
   f32 fontSize  = FONT_FONT_SIZE_LARGE;
   f32 spaceSize = FONT_SPACE_SIZE_LARGE;
-  renderTextCentered(gameOver->lostGame ? "GAME OVER" : "GAME WON", &WHITE, 0, 90.0f - FONT_FONT_SIZE_LARGE, fontSize, spaceSize);
+  renderTextCentered(playerHp == 0 ? "GAME OVER" : "GAME WON", &WHITE, 0, 90.0f - FONT_FONT_SIZE_LARGE, fontSize, spaceSize);
 
   char scoreText[32];
   memset(scoreText, 0, 32);
@@ -345,6 +344,10 @@ static UIState handleConsoleInput(ConsoleUI* console, InputState* inputState)
     {
       return UI_EXIT;
     }
+    if (strncmp((char*)console->input, "god", 3) == 0)
+    {
+      setStateVariable("god", 1.0f);
+    }
     if (strncmp((char*)console->input, "meteor", 6) == 0)
     {
       u8 idx = 6;
@@ -356,7 +359,6 @@ static UIState handleConsoleInput(ConsoleUI* console, InputState* inputState)
       u8  l;
       parseIntFromString(&res, (char*)&console->input[idx], &l);
       setStateVariable("numberOfMeteors", res);
-      printf("Setting %d\n", res);
     }
 
     for (i32 i = CONSOLE_NUMBER_OF_COMMANDS_VISIBLE - 2; i >= 0; i--)
@@ -421,7 +423,7 @@ UIState renderUI(UI* ui, InputState* inputState, u32 score, u8 hp)
   }
   case UI_GAME_OVER:
   {
-    return renderGameOver(ui->gameOver, inputState, score);
+    return renderGameOver(ui->gameOver, inputState, score, hp);
   }
   case UI_GAME_RUNNING:
   {
@@ -480,7 +482,6 @@ void initGameOverUI(GameOverUI* gameOver)
 
   initButton(&gameOver->restartButton, RED, "RESTART", spaceSize, fontSize, 0.0f, 0.0f, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
   initButton(&gameOver->mainMenuButton, RED, "MAIN MENU", spaceSize, fontSize, 0.0f, -2 * buttonHeight, buttonWidth, buttonHeight, TEXTURE_GREY_BOX);
-  gameOver->lostGame = false;
 }
 
 void initMainMenuUI(MainMenuUI* mainMenu)

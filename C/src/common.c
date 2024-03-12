@@ -99,7 +99,7 @@ void setStateVariable(const char* key, f32 value)
 
 f32 getStateVariable(const char* key)
 {
-  for (int i = 0; i < 64; i++)
+  for (int i = 0; i < g_stateVariableCounter; i++)
   {
     u64 minLen = MIN(strlen(key), strlen(g_stateVariables[i].key));
     if (strncmp(key, g_stateVariables[i].key, minLen) == 0)

@@ -8,15 +8,25 @@ static f32 getRandomMeteorX()
 }
 static f32 getRandomMeteorY()
 {
-  return (f32)(rand() % 10 + 100);
+  return (f32)(rand() % 50 + 100);
 }
 
-static void initMeteor(Entity* entity)
+static inline void resetMeteor(Entity* entity)
 {
   entity->x             = getRandomMeteorX();
   entity->y             = getRandomMeteorY();
-  entity->width         = getRandomFloat(0.25f, 0.65f);
-  entity->height        = getRandomFloat(0.5f, 1.0f);
+  entity->width         = getRandomFloat(0.25f, 1.00f);
+  entity->height        = entity->width;
+  entity->movementSpeed = getRandomFloat(0.2f, 1.65f);
+  entity->rotation      = 0.0f;
+  entity->textureIdx    = TEXTURE_BACKGROUND_METEOR;
+}
+static inline void initMeteor(Entity* entity)
+{
+  entity->x             = getRandomMeteorX();
+  entity->y             = getRandomFloat(-100.0f, 100.0f);
+  entity->width         = getRandomFloat(0.25f, 1.00f);
+  entity->height        = entity->width;
   entity->movementSpeed = getRandomFloat(0.2f, 1.65f);
   entity->rotation      = 0.0f;
   entity->textureIdx    = TEXTURE_BACKGROUND_METEOR;
@@ -39,7 +49,7 @@ static void updateMeteors(Entity** entity_, u64 count)
     entities[i].y -= entities[i].movementSpeed;
     if (entities[i].y < -100.0f)
     {
-      initMeteor(&entities[i]);
+      resetMeteor(&entities[i]);
     }
   }
 }

@@ -1,5 +1,6 @@
 #include "wave.h"
 #include "common.h"
+#include "entity.h"
 #include "string.h"
 #include <stdio.h>
 
@@ -11,6 +12,9 @@ void      getWave(Wave* res, u64 idx)
   WaveData data        = waveData[idx];
   res->enemyCount      = data.enemyCount;
   res->timeWaveStarted = 0;
+  if(res->enemies != 0){
+    free(res->enemies);
+  }
   res->enemies         = (Enemy*)malloc(sizeof(Enemy) * res->enemyCount);
   for (i32 i = 0; i < data.enemyCount; i++)
   {
@@ -60,22 +64,24 @@ static void loadWaveData(WaveData* data, const char* line)
     data->enemyData[i] = d;
   }
 }
+
 bool enemyIsAlive(Enemy* enemy, u64 timeWaveStarted, u64 currentTick)
 {
-
-  return enemy->entity != 0 && enemy->spawnTime <= currentTick * 0.1f - timeWaveStarted;
+  return enemy->entity != 0 && enemy->spawnTime <= currentTick - timeWaveStarted;
 }
 
-static inline bool enemyWillShoot(Enemy* enemy, u64 currentTick)
+static inline bool isOutOfBounds(Enemy* enemy)
 {
-  f32 gcd = rand() % 500 + 500.0f;
-  if (enemy->lastShot <= currentTick)
-  {
-    enemy->lastShot = currentTick + gcd;
-    return true;
-  }
-  return false;
+  Entity* entity = enemy->entity;
+  f32     minX   = entity->x - entity->width * 0.5f;
+  f32     maxX   = entity->x + entity->width * 0.5f;
+
+  f32     minY   = entity->y - entity->height * 0.5f;
+  f32     maxY   = entity->y + entity->height * 0.5f;
+
+  return minX <= -160.0f || maxX >= 160.0f || minY <= -160.0f || maxY >= 160.0f;
 }
+
 
 void updateWave(Wave* wave, u64 currentTick)
 {
@@ -84,11 +90,7 @@ void updateWave(Wave* wave, u64 currentTick)
   {
     if (enemyIsAlive(&enemies[i], wave->timeWaveStarted, currentTick))
     {
-      enemies[i].entity->y -= enemies[i].entity->movementSpeed;
-      if (enemyWillShoot(&enemies[i], currentTick))
-      {
-        createNewBullet(enemies[i].entity, enemies[i].type);
-      }
+      updateEnemy(&enemies[i], currentTick);
     }
   }
 }

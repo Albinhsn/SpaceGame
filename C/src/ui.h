@@ -99,7 +99,6 @@ struct GameOverUI
 {
   ButtonUIComponent restartButton;
   ButtonUIComponent mainMenuButton;
-  bool              lostGame;
 };
 typedef struct GameOverUI GameOverUI;
 

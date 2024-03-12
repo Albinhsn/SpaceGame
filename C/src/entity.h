@@ -35,14 +35,14 @@ struct Player
 {
   Entity* entity;
   u64     lastShot;
-  u8      hp;
+  i8      hp;
 };
 typedef struct Player Player;
 
 struct Bullet
 {
   Entity* entity;
-  i32 accelerationFunctionIndex;
+  i32     accelerationFunctionIndex;
   u8      hp;
   bool    playerBullet;
 };
@@ -69,26 +69,27 @@ struct Enemy
 };
 typedef struct Enemy Enemy;
 
-extern u32           g_entityCount;
-extern u32           g_bulletCount;
-extern EntityData*   g_entityData;
-extern BulletData*   g_bulletData;
-extern Entity        g_entities[256];
-extern Bullet        g_bullets[256];
+#define MAX_ENTITY_COUNT 256
+#define MAX_BULLET_COUNT 256
+extern EntityData* g_entityData;
+extern BulletData* g_bulletData;
+extern Entity      g_entities[256];
+extern Bullet      g_bullets[256];
 
-Entity*              getPlayerEntity();
-Entity*              getNewEntity();
-Bullet*              getNewBullet();
-void                 loadEntityData();
-void                 loadBulletData();
-void                 updateBullets();
-void                 createNewBullet(Entity* entity, u64 entityIdx);
-bool                 entitiesCollided(Entity* e1, Entity* e2);
-void                 debugPlayer(Player* player);
-void                 debugEntity(Entity* entity);
-void                 createPlayer(Player* player);
-void                 createBullet(Bullet* bullet, Entity* parent);
-void                 initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 textureIdx, f32 rotation, f32 movementSpeed);
-bool                 updatePlayer(InputState* inputState, Player* player, Timer* timer);
+Entity*            getPlayerEntity();
+Entity*            getNewEntity();
+Bullet*            getNewBullet();
+void               loadEntityData();
+void               removeOutOfBoundsBullets(u64 currentTick);
+void               loadBulletData();
+void               updateBullets(u64 lastTick);
+void               updateEnemy(Enemy* enemy, u64 currentTick);
+void               createNewBullet(Entity* entity, u64 entityIdx);
+bool               entitiesCollided(Entity* e1, Entity* e2);
+void               debugPlayer(Player* player);
+void               debugEntity(Entity* entity);
+void               createPlayer(Player* player);
+void               initEntity(Entity* entity, f32 x, f32 y, f32 width, f32 height, u32 textureIdx, f32 rotation, f32 movementSpeed);
+bool               updatePlayer(InputState* inputState, Player* player, Timer* timer);
 
 #endif
