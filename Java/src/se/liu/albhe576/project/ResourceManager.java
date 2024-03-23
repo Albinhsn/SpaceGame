@@ -15,11 +15,14 @@ import static org.lwjgl.opengl.GL40.*;
 
 public class ResourceManager
 {
-	private final 	int[] 					programs 	= new int[2];
+	private final 	int[] 					programs 	= new int[3];
 	private final   Logger                  logger 		= Logger.getLogger("Resource Manager");
-	private Map<Integer, Texture> 	textureIdMap;
+	private 		Map<Integer, Texture> 	textureIdMap;
 	private 		Texture 				tokenTexture;
 	public 			int 					textureVertexArrayId;
+	public int backgroundVertexArrayId;
+	public int backgroundBufferId;
+	public int backgroundIndexBufferId;
 
 	public Texture getTextureById(int id){
 		return this.textureIdMap.getOrDefault(id, null);
@@ -38,6 +41,41 @@ public class ResourceManager
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+
+	private void generateBackgroundBuffers(){
+		int []indices = new int[1000 * 6];
+		for(int i = 0, idx = 0; idx < indices.length; idx += 6, i+=4){
+			indices[idx + 0] = i + 0;
+			indices[idx + 1] = i + 1;
+			indices[idx + 2] = i + 2;
+			indices[idx + 3] = i + 0;
+			indices[idx + 4] = i + 3;
+			indices[idx + 5] = i + 1;
+		}
+
+		int vertexCount = 1000 * 4;
+		float[]vertices = new float[vertexCount];
+		Arrays.fill(vertices, 0);
+
+		this.backgroundVertexArrayId = glGenVertexArrays();
+		glBindVertexArray(this.backgroundVertexArrayId);
+
+		this.backgroundBufferId = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, this.backgroundBufferId);
+		glBufferData(GL_ARRAY_BUFFER, vertices, GL_DYNAMIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		glVertexAttribPointer(0, 2, GL_FLOAT, false, 4 * 4, 0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * 4, 2 * 4);
+
+		this.backgroundIndexBufferId = glGenBuffers();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.backgroundIndexBufferId);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+
+		glBindVertexArray(0);
 	}
 
 	private void generateTextureVertexArray(){
@@ -66,6 +104,7 @@ public class ResourceManager
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 		glBindVertexArray(0);
+
 	}
 
 	private void compileAndAttachShaders(int programId, String vertexShader, String fragmentShader){
@@ -87,6 +126,17 @@ public class ResourceManager
 		}
 	}
 
+	private void compileBackgroundShader(){
+		final int programId = glCreateProgram();
+		this.programs[2] = programId;
+
+		this.compileAndAttachShaders(programId, "./shaders/texture2.vs", "./shaders/texture2.ps");
+
+		glBindAttribLocation(programId, 0, "inputPosition");
+		glBindAttribLocation(programId, 1, "inputTexCoord");
+
+		this.linkProgram(programId);
+	}
 
 	private void compileTextShader(){
 		final int programId = glCreateProgram();
@@ -147,6 +197,7 @@ public class ResourceManager
 	}
 	private void loadTextures(){
 		this.generateTextureVertexArray();
+		this.generateBackgroundBuffers();
 		this.textureIdMap = new HashMap<>();
 
 		// Create a red rectangle texture just in case some texture is missing
@@ -163,6 +214,7 @@ public class ResourceManager
 	private void compileShaders(){
 		this.compileTextureShader();
 		this.compileTextShader();
+		this.compileBackgroundShader();
 	}
 
 	public void loadResources(){

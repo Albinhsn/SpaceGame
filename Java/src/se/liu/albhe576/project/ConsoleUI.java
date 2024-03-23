@@ -123,7 +123,7 @@ public class ConsoleUI implements UI{
                 break;
             }
             case "METEOR":{
-                this.setStateVariable(commandValue, "numberOfMeteors");
+                this.setStateVariable("numberOfMeteors", commandValue);
                 break;
             }
             case "RESTART":{

@@ -42,7 +42,7 @@ public class Background {
             }
             this.lastUpdate = tick;
         }
-        renderer.renderEntities(this.meteors);
+        renderer.renderBackground(this.meteors);
     }
 
     private float getRandomFloatRange(float lowerBound, float upperBound){return rng.nextFloat(lowerBound, upperBound);}

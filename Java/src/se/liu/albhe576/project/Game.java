@@ -232,7 +232,6 @@ public class Game
             UIState nextState = this.uiMap.get(this.uiState).render(this.inputState, this.renderer, this.window, this.score, this.player.health);
             updateUIState(nextState);
             glfwSwapBuffers(window);
-
         }
 
         glfwFreeCallbacks(window);
